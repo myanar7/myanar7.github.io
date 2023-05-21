@@ -1,1 +1,61 @@
-Hello World
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>İletişim Formu</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        
+        h1 {
+            text-align: center;
+        }
+        
+        form {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 10px;
+        }
+        
+        input,
+        textarea {
+            width: 100%;
+            padding: 5px;
+        }
+        
+        button[type="submit"] {
+            background-color: #007bff;
+            color: #fff;
+            padding: 10px;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+        }
+        
+        button[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>İletişim Formu</h1>
+    
+    <form action="https://formspree.io/f/xayzzyen" method="POST">
+        <label>
+            E-posta adresiniz:
+            <input type="email" name="email">
+        </label>
+        <label>
+            Mesajınız:
+            <textarea name="message"></textarea>
+        </label>
+        <button type="submit">Gönder</button>
+    </form>
+</body>
+</html>
