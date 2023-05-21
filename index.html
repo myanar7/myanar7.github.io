@@ -41,9 +41,41 @@
         button[type="submit"]:hover {
             background-color: #0056b3;
         }
+        
+        .app-images {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        
+        .app-image {
+            margin: 0 10px;
+            text-align: center;
+        }
+        
+        .app-image img {
+            width: 150px;
+        }
+        
+        .app-image .caption {
+            font-weight: bold;
+            margin-top: 5px;
+        }
+        
+        .app-image .description {
+            margin-top: 5px;
+        }
     </style>
 </head>
 <body>
+    <div class="app-images">
+        <div class="app-image">
+            <img src="1.jpg" alt="Mobil Uygulama Resmi 1">
+            <div class="caption">Antkara Simit Uygulaması</div>
+            <div class="description">Antkara Simit ekibinin organizasyonel işlerini kendi aralarında düzenlemeleri için yapılmış olan ufak çaplı bir uygulamadır.</div>
+        </div>
+    </div>
+    
     <h1>İletişim Formu</h1>
     
     <form action="https://formspree.io/f/xayzzyen" method="POST">
