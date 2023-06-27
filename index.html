@@ -1,93 +1,59 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="UTF-8">
-    <title>İletişim Formu</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            padding: 20px;
-        }
-        
-        h1 {
-            text-align: center;
-        }
-        
-        form {
-            max-width: 400px;
-            margin: 0 auto;
-        }
-        
-        label {
-            display: block;
-            margin-bottom: 10px;
-        }
-        
-        input,
-        textarea {
-            width: 100%;
-            padding: 5px;
-        }
-        
-        button[type="submit"] {
-            background-color: #007bff;
-            color: #fff;
-            padding: 10px;
-            border: none;
-            cursor: pointer;
-            width: 100%;
-        }
-        
-        button[type="submit"]:hover {
-            background-color: #0056b3;
-        }
-        
-        .app-images {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 20px;
-        }
-        
-        .app-image {
-            margin: 0 10px;
-            text-align: center;
-        }
-        
-        .app-image img {
-            width: 150px;
-        }
-        
-        .app-image .caption {
-            font-weight: bold;
-            margin-top: 5px;
-        }
-        
-        .app-image .description {
-            margin-top: 5px;
-        }
-    </style>
+  <!--
+    If you are serving your web app in a path other than the root, change the
+    href value below to reflect the base path you are serving from.
+
+    The path provided below has to start and end with a slash "/" in order for
+    it to work correctly.
+
+    For more details:
+    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
+
+    This is a placeholder for base href that will be replaced by the value of
+    the `--base-href` argument provided to `flutter build`.
+  -->
+  <base href="/">
+
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="description" content="A new Flutter project.">
+
+  <!-- iOS meta tags & icons -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="ertugrul_elif_nisan">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="favicon.png"/>
+
+  <title>ertugrul_elif_nisan</title>
+  <link rel="manifest" href="manifest.json">
+
+  <script>
+    // The value below is injected by flutter build, do not touch.
+    var serviceWorkerVersion = '3218916434';
+  </script>
+  <!-- This script adds the flutter initialization JS code -->
+  <script src="flutter.js" defer></script>
 </head>
 <body>
-    <div class="app-images">
-        <div class="app-image">
-            <img src="1.jpg" alt="Mobil Uygulama Resmi 1">
-            <div class="caption">Antkara Simit Uygulaması</div>
-            <div class="description">Antkara Simit ekibinin organizasyonel işlerini kendi aralarında düzenlemeleri için yapılmış olan ufak çaplı bir uygulamadır.</div>
-        </div>
-    </div>
-    
-    <h1>İletişim Formu</h1>
-    
-    <form action="https://formspree.io/f/xayzzyen" method="POST">
-        <label>
-            E-posta adresiniz:
-            <input type="email" name="email">
-        </label>
-        <label>
-            Mesajınız:
-            <textarea name="message"></textarea>
-        </label>
-        <button type="submit">Gönder</button>
-    </form>
+  <script>
+    window.addEventListener('load', function(ev) {
+      // Download main.dart.js
+      _flutter.loader.loadEntrypoint({
+        serviceWorker: {
+          serviceWorkerVersion: serviceWorkerVersion,
+        },
+        onEntrypointLoaded: function(engineInitializer) {
+          engineInitializer.initializeEngine().then(function(appRunner) {
+            appRunner.runApp();
+          });
+        }
+      });
+    });
+  </script>
 </body>
 </html>
