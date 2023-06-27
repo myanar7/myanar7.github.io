@@ -6,8 +6,8 @@ const RESOURCES = {
   "favicon-16x16.png": "af5ec8fc9c6d2437f7514d794deab062",
 "version.json": "1df902f837dc546d0eeb0b917ea21a44",
 "favicon.ico": "cab76b0a268f10f02f766e17b35475c3",
-"index.html": "868d98a969d86247a830594478f46c22",
-"/": "868d98a969d86247a830594478f46c22",
+"index.html": "1b1ea2bb89284c6058709874268d94a5",
+"/": "1b1ea2bb89284c6058709874268d94a5",
 "apple-icon.png": "f12c5c483d038d572da708c95fdd6892",
 "apple-icon-144x144.png": "4b7ad154482653120b041ae4d9105ed4",
 "android-icon-192x192.png": "f09e712bb055dabcb919103f4ec71ed5",
@@ -16,6 +16,7 @@ const RESOURCES = {
 "main.dart.js": "96f67b438189637d519d070e271b3e21",
 "ms-icon-310x310.png": "9e7e6542f6f3de973fd3766878e10e58",
 "ms-icon-144x144.png": "4b7ad154482653120b041ae4d9105ed4",
+"flutter.js": "a85fcf6324d3c4d3ae3be1ae4931e9c5",
 "apple-icon-57x57.png": "ceda92ec01916b4cd10fe41786076f89",
 "apple-icon-152x152.png": "12a552aa6340101f12481c72c90193df",
 "favicon.png": "5dcef449791fa27946b3d35ad8803796",
@@ -44,7 +45,11 @@ const RESOURCES = {
 "apple-icon-72x72.png": "718911a9ac49f07af5a17f96cc0fc2f4",
 "apple-icon-120x120.png": "e323355b33aff9102bab251f3d6feac1",
 "favicon-32x32.png": "efa150eaca66e6899cd24e250cd99ee1",
-"ms-icon-70x70.png": "38eaed6cb6b9e19eb477e6a2801fca65"
+"ms-icon-70x70.png": "38eaed6cb6b9e19eb477e6a2801fca65",
+"canvaskit/canvaskit.js": "97937cb4c2c2073c968525a3e08c86a3",
+"canvaskit/profiling/canvaskit.js": "c21852696bc1cc82e8894d851c01921a",
+"canvaskit/profiling/canvaskit.wasm": "371bc4e204443b0d5e774d64a046eb99",
+"canvaskit/canvaskit.wasm": "3de12d898ec208a5f31362cc00f09b9e"
 };
 
 // The application shell files that are downloaded before a service worker can
