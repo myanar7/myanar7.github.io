@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Orbit Shot</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #333;
+            overflow: hidden;
+            font-family: 'Arial', sans-serif;
+        }
+        canvas {
+            background-color: #E0E0E0;
+            display: block;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // --- Configuration ---
+        const canvasWidth = 360;
+        const canvasHeight = 640;
+        canvas.width = canvasWidth;
+        canvas.height = canvasHeight;
+
+        const targetScore = 5;
+        const ballSpeed = 10;
+        const launcher = { x: canvasWidth / 2, y: canvasHeight - 50, radius: 15 };
+
+        // --- Game State ---
+        let score = 0;
+        let gameWon = false;
+        let isBallLaunched = false;
+        let mousePos = { x: canvasWidth / 2, y: canvasHeight / 2 };
+
+        let ball = {
+            x: launcher.x,
+            y: launcher.y,
+            radius: 10,
+            dx: 0,
+            dy: 0
+        };
+
+        let targets = [
+            { x: canvasWidth * 0.3, y: canvasHeight * 0.45, radius: 40, score: 2, hit: false },
+            { x: canvasWidth * 0.7, y: canvasHeight * 0.3, radius: 50, score: 3, hit: false }
+        ];
+
+        // --- Drawing Functions ---
+
+        function drawTrajectory() {
+            if (isBallLaunched || gameWon) return;
+
+            const angle = Math.atan2(mousePos.y - launcher.y, mousePos.x - launcher.x);
+            const endX = launcher.x + Math.cos(angle) * canvasHeight * 2;
+            const endY = launcher.y + Math.sin(angle) * canvasHeight * 2;
+            
+            ctx.setLineDash([4, 8]);
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(launcher.x, launcher.y);
+            ctx.lineTo(endX, endY);
+            ctx.stroke();
+            ctx.setLineDash([]);
+        }
+
+        function drawBall() {
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        function drawTargets() {
+            targets.forEach(target => {
+                ctx.beginPath();
+                if (target.hit) {
+                    ctx.fillStyle = 'rgba(12, 184, 10, 0.2)';
+                    ctx.arc(target.x, target.y, target.radius, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    ctx.strokeStyle = '#0CB80A';
+                    ctx.lineWidth = 3;
+                    ctx.setLineDash([10, 5]);
+                } else {
+                    ctx.strokeStyle = 'white';
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([8, 8]);
+                }
+                
+                ctx.arc(target.x, target.y, target.radius, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                ctx.fillStyle = target.hit ? '#0CB80A' : 'white';
+                ctx.font = 'bold 24px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(target.score, target.x, target.y);
+            });
+        }
+
+        function drawLauncherArea() {
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([10, 5]);
+            ctx.beginPath();
+            ctx.moveTo(0, canvasHeight - 20);
+            ctx.lineTo(canvasWidth, canvasHeight - 20);
+            ctx.stroke();
+            ctx.setLineDash([]);
+        }
+
+        function drawScoreIndicator() {
+            const indicator = { x: canvasWidth / 2, y: 55, radius: 30 };
+            ctx.beginPath();
+            ctx.lineWidth = 4;
+
+            if (gameWon) {
+                ctx.strokeStyle = '#0CB80A';
+                ctx.fillStyle = '#90EE90';
+                ctx.arc(indicator.x, indicator.y, indicator.radius, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.strokeStyle = 'white';
+                ctx.lineWidth = 5;
+                ctx.beginPath();
+                ctx.moveTo(indicator.x - 15, indicator.y + 2);
+                ctx.lineTo(indicator.x - 5, indicator.y + 12);
+                ctx.lineTo(indicator.x + 15, indicator.y - 8);
+                ctx.stroke();
+            } else {
+                ctx.fillStyle = 'white';
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+                ctx.arc(indicator.x, indicator.y, indicator.radius, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.fillStyle = '#999';
+                ctx.font = 'bold 30px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(targetScore, indicator.x, indicator.y);
+            }
+        }
+
+        // --- Game Logic ---
+
+        function resetGame() {
+            isBallLaunched = false;
+            score = 0;
+            gameWon = false;
+            ball.x = launcher.x;
+            ball.y = launcher.y;
+            ball.dx = 0;
+            ball.dy = 0;
+            targets.forEach(t => t.hit = false);
+        }
+
+        function update() {
+            if (!isBallLaunched || gameWon) return;
+
+            ball.x += ball.dx;
+            ball.y += ball.dy;
+
+            if (ball.x + ball.radius >= canvasWidth || ball.x - ball.radius <= 0) {
+                ball.dx *= -1;
+            }
+
+            targets.forEach(target => {
+                if (!target.hit) {
+                    const dist = Math.hypot(ball.x - target.x, ball.y - target.y);
+                    if (dist < ball.radius + target.radius) {
+                        target.hit = true;
+                        score += target.score;
+                        if (score >= targetScore) {
+                            gameWon = true;
+                        }
+                    }
+                }
+            });
+
+            if (ball.y < -ball.radius) {
+                resetGame();
+            }
+        }
+
+        function draw() {
+            ctx.fillStyle = '#CCCCCC';
+            ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+
+            drawLauncherArea();
+            drawScoreIndicator();
+            drawTargets();
+            drawTrajectory();
+            drawBall();
+        }
+
+        // --- Main Loop ---
+        function gameLoop() {
+            update();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        // --- Event Listeners ---
+        function getInteractionPos(evt) {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const clientX = evt.touches ? evt.touches[0].clientX : evt.clientX;
+            const clientY = evt.touches ? evt.touches[0].clientY : evt.clientY;
+            return {
+                x: (clientX - rect.left) * scaleX,
+                y: (clientY - rect.top) * scaleY
+            };
+        }
+
+        function handleInteractionStart(evt) {
+            evt.preventDefault();
+            if (gameWon) {
+                resetGame();
+                return;
+            }
+            if (isBallLaunched) return;
+
+            const pos = getInteractionPos(evt);
+            
+            if (pos.y >= launcher.y) return;
+
+            const angle = Math.atan2(pos.y - launcher.y, pos.x - launcher.x);
+            ball.dx = Math.cos(angle) * ballSpeed;
+            ball.dy = Math.sin(angle) * ballSpeed;
+            isBallLaunched = true;
+        }
+
+        function handleInteractionMove(evt) {
+            evt.preventDefault();
+            mousePos = getInteractionPos(evt);
+        }
+
+        canvas.addEventListener('mousedown', handleInteractionStart);
+        canvas.addEventListener('mousemove', handleInteractionMove);
+        canvas.addEventListener('touchstart', handleInteractionStart, { passive: false });
+        canvas.addEventListener('touchmove', handleInteractionMove, { passive: false });
+
+        gameLoop();
+    </script>
+</body>
+</html> 
