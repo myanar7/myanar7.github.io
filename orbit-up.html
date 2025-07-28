@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Upward Flow Demo</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #333;
+            overflow: hidden;
+            font-family: 'Arial', sans-serif;
+        }
+        canvas {
+            background-color: #E0E0E0;
+            display: block;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // --- Configuration ---
+        const canvasWidth = 360;
+        const canvasHeight = 640;
+        canvas.width = canvasWidth;
+        canvas.height = canvasHeight;
+
+        const ballSpeed = 12;
+        const launcher = { x: canvasWidth / 2, y: canvasHeight - 50, radius: 15 };
+        const topBoundary = 100; // Top dashed line position
+        const scrollThreshold = 80; // When ball reaches this Y position, scroll screen
+
+        // --- Game State ---
+        let score = 0;
+        let isBallLaunched = false;
+        let isGameOver = false;
+        let screenOffset = 0;
+        let mousePos = { x: canvasWidth / 2, y: canvasHeight / 2 };
+        let currentSection = 0;
+        let isScreenScrolling = false;
+        let scrollTarget = 0;
+
+        let ball = {
+            x: launcher.x,
+            y: launcher.y,
+            radius: 10,
+            dx: 0,
+            dy: 0
+        };
+
+        // Dynamic targets that move with screen
+        let targets = [
+            { x: canvasWidth * 0.8, y: 150, radius: 40, score: 5, hit: false },
+            { x: canvasWidth * 0.2, y: 300, radius: 35, score: 3, hit: false }
+        ];
+
+        let obstacles = [
+            { x: canvasWidth * 0.2, y: 200, width: canvasWidth * 0.6, height: 15 },
+            { x: 0, y: 350, width: canvasWidth * 0.7, height: 15 }
+        ];
+
+        // --- Drawing Functions ---
+
+        function drawTrajectory() {
+            if (isBallLaunched || isGameOver) return;
+
+            const angle = Math.atan2(mousePos.y - launcher.y, mousePos.x - launcher.x);
+            const endX = launcher.x + Math.cos(angle) * canvasHeight * 2;
+            const endY = launcher.y + Math.sin(angle) * canvasHeight * 2;
+            
+            ctx.setLineDash([4, 8]);
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(launcher.x, launcher.y);
+            ctx.lineTo(endX, endY);
+            ctx.stroke();
+            ctx.setLineDash([]);
+        }
+
+        function drawBall() {
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        function drawTargets() {
+            targets.forEach(target => {
+                const adjustedY = target.y - screenOffset;
+                
+                // Only draw targets that are visible on screen
+                if (adjustedY + target.radius > 0 && adjustedY - target.radius < canvasHeight) {
+                    ctx.beginPath();
+                    if (target.hit) {
+                        ctx.fillStyle = 'rgba(12, 184, 10, 0.2)';
+                        ctx.arc(target.x, adjustedY, target.radius, 0, Math.PI * 2);
+                        ctx.fill();
+                        
+                        ctx.strokeStyle = '#0CB80A';
+                        ctx.lineWidth = 3;
+                        ctx.setLineDash([10, 5]);
+                    } else {
+                        ctx.strokeStyle = 'white';
+                        ctx.lineWidth = 2;
+                        ctx.setLineDash([8, 8]);
+                    }
+                    
+                    ctx.arc(target.x, adjustedY, target.radius, 0, Math.PI * 2);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+
+                    ctx.fillStyle = target.hit ? '#0CB80A' : 'white';
+                    ctx.font = 'bold 24px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(target.score, target.x, adjustedY);
+                }
+            });
+        }
+
+        function drawObstacles() {
+            obstacles.forEach(obstacle => {
+                const adjustedY = obstacle.y - screenOffset;
+                
+                // Only draw obstacles that are visible on screen
+                if (adjustedY + obstacle.height > 0 && adjustedY < canvasHeight) {
+                    ctx.fillStyle = 'white';
+                    ctx.fillRect(obstacle.x, adjustedY, obstacle.width, obstacle.height);
+                }
+            });
+        }
+
+        function drawBoundaries() {
+            // Top boundary (dashed line)
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([10, 5]);
+            ctx.beginPath();
+            ctx.moveTo(0, topBoundary);
+            ctx.lineTo(canvasWidth, topBoundary);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Bottom boundary (dashed line)
+            ctx.beginPath();
+            ctx.moveTo(0, canvasHeight - 20);
+            ctx.lineTo(canvasWidth, canvasHeight - 20);
+            ctx.stroke();
+        }
+
+        function drawScoreIndicator() {
+            const indicator = { x: canvasWidth / 2, y: 55, radius: 30 };
+            
+            ctx.fillStyle = 'white';
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.arc(indicator.x, indicator.y, indicator.radius, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.fillStyle = '#333';
+            ctx.font = 'bold 30px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(score, indicator.x, indicator.y);
+        }
+
+        function drawStarRating() {
+            const starArea = { x: canvasWidth - 80, y: 20, width: 60, height: 30 };
+            
+            // Draw background
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+            ctx.fillRect(starArea.x, starArea.y, starArea.width, starArea.height);
+            
+            // Draw border
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(starArea.x, starArea.y, starArea.width, starArea.height);
+            
+            // Calculate stars based on score
+            let stars = 0;
+            if (score >= 30) stars = 3;
+            else if (score >= 20) stars = 2;
+            else if (score >= 10) stars = 1;
+            
+            // Draw stars
+            for (let i = 0; i < 3; i++) {
+                const starX = starArea.x + 10 + i * 15;
+                const starY = starArea.y + starArea.height / 2;
+                
+                if (i < stars) {
+                    // Filled star (earned)
+                    ctx.fillStyle = '#FFD700';
+                    ctx.strokeStyle = '#FFA500';
+                } else {
+                    // Empty star (not yet earned)
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+                }
+                
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(starX, starY - 5);
+                ctx.lineTo(starX + 2, starY - 2);
+                ctx.lineTo(starX + 5, starY - 2);
+                ctx.lineTo(starX + 3, starY + 1);
+                ctx.lineTo(starX + 4, starY + 4);
+                ctx.lineTo(starX, starY + 2);
+                ctx.lineTo(starX - 4, starY + 4);
+                ctx.lineTo(starX - 3, starY + 1);
+                ctx.lineTo(starX - 5, starY - 2);
+                ctx.lineTo(starX - 2, starY - 2);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+            }
+        }
+
+        function drawGameOverScreen() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+            ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 36px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('Game Over!', canvasWidth / 2, canvasHeight / 2 - 40);
+            ctx.fillText(`Final Score: ${score}`, canvasWidth / 2, canvasHeight / 2);
+
+            // Restart button
+            const btn = { x: canvasWidth / 2 - 90, y: canvasHeight / 2 + 40, width: 180, height: 50 };
+            ctx.fillStyle = '#90EE90';
+            ctx.strokeStyle = '#0CB80A';
+            ctx.lineWidth = 4;
+            ctx.fillRect(btn.x, btn.y, btn.width, btn.height);
+            ctx.strokeRect(btn.x, btn.y, btn.width, btn.height);
+
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 24px Arial';
+            ctx.fillText('Restart', canvasWidth / 2, btn.y + btn.height / 2);
+        }
+
+        // --- Game Logic ---
+
+        function generateNewSection() {
+            currentSection++;
+            
+            // Clear existing targets and obstacles
+            targets = [];
+            obstacles = [];
+            
+            // Generate completely new targets with random positions and scores
+            const newTargets = [
+                { x: canvasWidth * (0.1 + Math.random() * 0.8), y: 150 + Math.random() * 100, radius: 30 + Math.random() * 20, score: 2 + Math.floor(Math.random() * 5), hit: false },
+                { x: canvasWidth * (0.1 + Math.random() * 0.8), y: 300 + Math.random() * 100, radius: 30 + Math.random() * 20, score: 2 + Math.floor(Math.random() * 5), hit: false },
+                { x: canvasWidth * (0.1 + Math.random() * 0.8), y: 450 + Math.random() * 100, radius: 30 + Math.random() * 20, score: 2 + Math.floor(Math.random() * 5), hit: false },
+                { x: canvasWidth * (0.1 + Math.random() * 0.8), y: 600 + Math.random() * 100, radius: 30 + Math.random() * 20, score: 2 + Math.floor(Math.random() * 5), hit: false }
+            ];
+            
+            // Generate well-positioned obstacles in the upper portion of the screen
+            const newObstacles = [
+                { x: canvasWidth * 0.3, y: -50, width: canvasWidth * 0.4, height: 15 },
+                { x: 0, y: 150, width: canvasWidth * 0.7, height: 15 },
+                { x: canvasWidth * 0.2, y: 250, width: canvasWidth * 0.6, height: 15 }
+            ];
+            
+            targets = newTargets;
+            obstacles = newObstacles;
+        }
+
+        function resetGame() {
+            isBallLaunched = false;
+            isGameOver = false;
+            isScreenScrolling = false;
+            score = 0;
+            screenOffset = 0;
+            scrollTarget = 0;
+            currentSection = 0;
+            ball.x = launcher.x;
+            ball.y = launcher.y;
+            ball.dx = 0;
+            ball.dy = 0;
+            
+            // Reset to initial targets and obstacles (like bottom image)
+            targets = [
+                { x: canvasWidth * 0.8, y: 150, radius: 40, score: 5, hit: false },
+                { x: canvasWidth * 0.2, y: 300, radius: 35, score: 3, hit: false }
+            ];
+            
+            obstacles = [
+                { x: canvasWidth * 0.2, y: 200, width: canvasWidth * 0.6, height: 15 },
+                { x: 0, y: 350, width: canvasWidth * 0.7, height: 15 }
+            ];
+        }
+
+        function update() {
+            if (isGameOver) return;
+
+            // Handle smooth screen scrolling
+            if (isScreenScrolling) {
+                if (screenOffset > scrollTarget) {
+                    screenOffset -= 3; // Slow scroll speed
+                    if (screenOffset <= scrollTarget) {
+                        screenOffset = scrollTarget;
+                        isScreenScrolling = false;
+                        isBallLaunched = false;
+                        ball.x = launcher.x;
+                        ball.y = launcher.y;
+                        ball.dx = 0;
+                        ball.dy = 0;
+                    }
+                }
+                return;
+            }
+
+            if (!isBallLaunched) return;
+
+            ball.x += ball.dx;
+            ball.y += ball.dy;
+
+            // Wall collision
+            if (ball.x + ball.radius >= canvasWidth || ball.x - ball.radius <= 0) {
+                ball.dx *= -1;
+            }
+
+            // Screen scrolling when ball reaches top threshold
+            if (ball.y <= scrollThreshold) {
+                // Start smooth scrolling
+                scrollTarget = screenOffset - 200;
+                isScreenScrolling = true;
+                
+                // Generate new section with completely new layout
+                generateNewSection();
+            }
+
+            // Obstacle collision
+            obstacles.forEach(obstacle => {
+                const adjustedY = obstacle.y - screenOffset;
+                if (ball.x + ball.radius > obstacle.x &&
+                    ball.x - ball.radius < obstacle.x + obstacle.width &&
+                    ball.y + ball.radius > adjustedY &&
+                    ball.y - ball.radius < adjustedY + obstacle.height) {
+
+                    const overlapYTop = (ball.y + ball.radius) - adjustedY;
+                    const overlapYBottom = (adjustedY + obstacle.height) - (ball.y - ball.radius);
+                    const overlapXLeft = (ball.x + ball.radius) - obstacle.x;
+                    const overlapXRight = (obstacle.x + obstacle.width) - (ball.x - ball.radius);
+
+                    if (Math.min(overlapYTop, overlapYBottom) < Math.min(overlapXLeft, overlapXRight)) {
+                        ball.dy *= -1;
+                        ball.y += ball.dy > 0 ? 1 : -1;
+                    } else {
+                        ball.dx *= -1;
+                        ball.x += ball.dx > 0 ? 1 : -1;
+                    }
+                }
+            });
+
+            // Target collision
+            targets.forEach(target => {
+                if (!target.hit) {
+                    const adjustedY = target.y - screenOffset;
+                    const dist = Math.hypot(ball.x - target.x, ball.y - adjustedY);
+                    if (dist < ball.radius + target.radius) {
+                        target.hit = true;
+                        score += target.score;
+                    }
+                }
+            });
+
+            // Check if ball is out of bounds
+            if (ball.y < -ball.radius || ball.y > canvasHeight + ball.radius) {
+                isBallLaunched = false;
+                isGameOver = true;
+            }
+        }
+
+        function draw() {
+            if (isGameOver) {
+                drawGameOverScreen();
+                return;
+            }
+
+            ctx.fillStyle = '#CCCCCC';
+            ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+
+            drawBoundaries();
+            drawScoreIndicator();
+            drawStarRating();
+            drawTargets();
+            drawObstacles();
+            drawTrajectory();
+            drawBall();
+        }
+
+        // --- Main Loop ---
+        function gameLoop() {
+            update();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        // --- Event Listeners ---
+        function getInteractionPos(evt) {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const clientX = evt.touches ? evt.touches[0].clientX : evt.clientX;
+            const clientY = evt.touches ? evt.touches[0].clientY : evt.clientY;
+            return {
+                x: (clientX - rect.left) * scaleX,
+                y: (clientY - rect.top) * scaleY
+            };
+        }
+
+        function handleInteractionStart(evt) {
+            evt.preventDefault();
+            const pos = getInteractionPos(evt);
+
+            if (isGameOver) {
+                const btn = { x: canvasWidth / 2 - 90, y: canvasHeight / 2 + 40, width: 180, height: 50 };
+                if (pos.x > btn.x && pos.x < btn.x + btn.width && pos.y > btn.y && pos.y < btn.y + btn.height) {
+                    resetGame();
+                }
+                return;
+            }
+
+            if (isBallLaunched) return;
+
+            if (pos.y >= launcher.y) return;
+
+            const angle = Math.atan2(pos.y - launcher.y, pos.x - launcher.x);
+            ball.dx = Math.cos(angle) * ballSpeed;
+            ball.dy = Math.sin(angle) * ballSpeed;
+            isBallLaunched = true;
+        }
+
+        function handleInteractionMove(evt) {
+            evt.preventDefault();
+            mousePos = getInteractionPos(evt);
+        }
+
+        canvas.addEventListener('mousedown', handleInteractionStart);
+        canvas.addEventListener('mousemove', handleInteractionMove);
+        canvas.addEventListener('touchstart', handleInteractionStart, { passive: false });
+        canvas.addEventListener('touchmove', handleInteractionMove, { passive: false });
+
+        resetGame();
+        gameLoop();
+    </script>
+</body>
+</html>
