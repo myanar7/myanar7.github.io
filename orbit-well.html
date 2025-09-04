@@ -61,6 +61,7 @@ let lastHitBallPos=null;
 let gameEnded=false;
 let offsetY=0, targetOffsetY=0;
 let progressPercent=0;
+let canShoot=true;
 
 const levelsData=[
   {targets:[1,1,1], moving:['upDown','none','none']},
@@ -74,6 +75,8 @@ let targets=[], ballStartX=100;
 let mainBall={x:0,y:0};
 let particleArray=[];
 let displayedProgress=0;
+let stars=[];
+let originalTargets=[]; // Orijinal hedef durumlarını sakla
 
 function resize(){
   canvasWidth=window.innerWidth;
@@ -89,6 +92,9 @@ function setupLevel(){
   skillMultiShotActive=false; skillLaserActive=false; skillMissileActive=false;
   lastHitBallPos=null; targets=[]; gameEnded=false; endPopup.style.display='none';
   displayedProgress = progressPercent;
+  canShoot=true;
+  stars=[];
+  originalTargets=[]; // Orijinal hedefleri sıfırla
 
   const ld=levelsData[level];
   let usedX=[];
@@ -98,17 +104,54 @@ function setupLevel(){
     while(usedX.some(px => Math.abs(px-x)<100));
     usedX.push(x);
     let y = 100 + Math.random()*((canvasHeight/1.5)-100);
-    targets.push({
+    const target = {
+      baseX:x, x:x, y:y, value:ld.targets[i], hit:false,
+      moveType: ld.moving[i] || 'none', dir:1
+    };
+    targets.push(target);
+    // Orijinal hedef durumunu sakla
+    originalTargets.push({
       baseX:x, x:x, y:y, value:ld.targets[i], hit:false,
       moveType: ld.moving[i] || 'none', dir:1
     });
   }
   ballStartX=canvasWidth/2;
   offsetY=0; targetOffsetY=0;
+  
+  // Yıldız objelerini yerleştir
+  const starCount = Math.min(3 + level, 8); // Seviye arttıkça daha fazla yıldız
+  let usedStarPositions = [];
+  for(let i = 0; i < starCount; i++) {
+    let x, y;
+    do {
+      x = 80 + Math.random() * (canvasWidth - 160);
+      y = 120 + Math.random() * ((canvasHeight/2) - 120);
+    } while(usedStarPositions.some(pos => Math.abs(pos.x - x) < 80 && Math.abs(pos.y - y) < 80));
+    
+    usedStarPositions.push({x, y});
+    stars.push({
+      x: x,
+      y: y,
+      size: 20 + Math.random() * 15 // 20-35 arası boyut
+    });
+  }
 }
 
 function drawLifeCircle(){
   lifeCircle.textContent = life;
+}
+
+function resetHitTargets(){
+  // Vurulan hedefleri orijinal durumlarına geri döndür
+  targets.forEach((target, index) => {
+    if(target.hit && originalTargets[index]) {
+      target.hit = false;
+      target.x = originalTargets[index].x;
+      target.y = originalTargets[index].y;
+      target.baseX = originalTargets[index].baseX;
+      target.dir = originalTargets[index].dir;
+    }
+  });
 }
 
 function drawTarget(t){
@@ -120,6 +163,33 @@ function drawTarget(t){
 }
 
 function drawBall(b){ ctx.beginPath(); ctx.fillStyle='#3498db'; ctx.arc(b.x,b.y+offsetY,ballRadius,0,Math.PI*2); ctx.fill(); }
+
+function drawStar(star) {
+  const x = star.x;
+  const y = star.y + targetOffsetY;
+  const size = star.size;
+  
+  ctx.save();
+  ctx.fillStyle = '#e74c3c'; // Kırmızı renk
+  ctx.strokeStyle = '#c0392b'; // Koyu kırmızı kenar
+  ctx.lineWidth = 2;
+  
+  ctx.beginPath();
+  // Yıldız şekli çizimi (eşkenar dörtgen)
+  ctx.moveTo(x, y - size); // Üst
+  ctx.lineTo(x + size * 0.6, y - size * 0.3); // Sağ üst
+  ctx.lineTo(x + size, y); // Sağ
+  ctx.lineTo(x + size * 0.6, y + size * 0.3); // Sağ alt
+  ctx.lineTo(x, y + size); // Alt
+  ctx.lineTo(x - size * 0.6, y + size * 0.3); // Sol alt
+  ctx.lineTo(x - size, y); // Sol
+  ctx.lineTo(x - size * 0.6, y - size * 0.3); // Sol üst
+  ctx.closePath();
+  
+  ctx.fill();
+  ctx.stroke();
+  ctx.restore();
+}
 
 function moveTargets(){
   targets.forEach(t=>{
@@ -148,13 +218,38 @@ function moveBalls(){
         lastHitBallPos={ballX:b.x, ballY:b.y, targetX:t.x, targetY:t.y};
       }
     });
+    
+    // Yıldız çarpışma kontrolü (engel olarak)
+    stars.forEach(star => {
+      let dx = b.x - star.x, dy = b.y - star.y, dist = Math.sqrt(dx*dx + dy*dy);
+      if(dist < ballRadius + star.size * 0.5) {
+        // Vurulan hedefleri geri getir (ceza sistemi)
+        resetHitTargets();
+        
+        // Topu fırlatma konumuna döndür
+        b.x = mainBall.x;
+        b.y = mainBall.y;
+        b.vx = 0;
+        b.vy = 0;
+        b.offscreen = true; // Topu kaldır
+        canShoot = true; // Yeni top atma izni ver
+        // Partikül efekti
+        spawnParticles(star.x, star.y, 15, 4, '#e74c3c', 3);
+      }
+    });
   });
 
+  // Tüm toplar ekrandan kaybolduğunda yeni top atılabilir
+  const remainingBalls = balls.filter(b=>!b.offscreen);
+  if(remainingBalls.length === 0 && balls.length > 0) {
+    canShoot = true;
+  }
+  
   balls=balls.filter(b=>!b.offscreen);
 }
 
 function shootBall(){
-  if(!aimStart || !aimCurrent) return;
+  if(!aimStart || !aimCurrent || !canShoot) return;
   const dx=aimCurrent.x-aimStart.x;
   const dy=aimCurrent.y-aimStart.y;
   let angle=Math.atan2(dy,dx);
@@ -168,14 +263,15 @@ function shootBall(){
   }else{
     balls.push({x:mainBall.x,y:mainBall.y,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,offscreen:false});
   }
+  canShoot=false;
   aiming=false; aimStart=null; aimCurrent=null;
 }
 
-canvas.addEventListener('mousedown',e=>{ aiming=true; aimStart={x:e.clientX,y:e.clientY}; aimCurrent={x:e.clientX,y:e.clientY}; });
-canvas.addEventListener('mousemove',e=>{ if(!aiming) return; aimCurrent={x:e.clientX,y:e.clientY}; });
+canvas.addEventListener('mousedown',e=>{ if(canShoot) { aiming=true; aimStart={x:e.clientX,y:e.clientY}; aimCurrent={x:e.clientX,y:e.clientY}; } });
+canvas.addEventListener('mousemove',e=>{ if(!aiming || !canShoot) return; aimCurrent={x:e.clientX,y:e.clientY}; });
 canvas.addEventListener('mouseup',shootBall);
-canvas.addEventListener('touchstart',e=>{ const pos={x:e.touches[0].clientX,y:e.touches[0].clientY}; aiming=true; aimStart=pos; aimCurrent=pos; e.preventDefault(); },{passive:false});
-canvas.addEventListener('touchmove',e=>{ if(!aiming) return; const pos={x:e.touches[0].clientX,y:e.touches[0].clientY}; aimCurrent=pos; e.preventDefault(); },{passive:false});
+canvas.addEventListener('touchstart',e=>{ if(canShoot) { const pos={x:e.touches[0].clientX,y:e.touches[0].clientY}; aiming=true; aimStart=pos; aimCurrent=pos; e.preventDefault(); } },{passive:false});
+canvas.addEventListener('touchmove',e=>{ if(!aiming || !canShoot) return; const pos={x:e.touches[0].clientX,y:e.touches[0].clientY}; aimCurrent=pos; e.preventDefault(); },{passive:false});
 canvas.addEventListener('touchend',e=>{ shootBall(); e.preventDefault(); },{passive:false});
 
 multiShotBtn.onclick=()=>{ if(balls.length===0) skillMultiShotActive=true; };
@@ -267,6 +363,7 @@ function updateProgressBar(){
 function draw(){
   ctx.clearRect(0,0,canvasWidth,canvasHeight);
   targets.forEach(drawTarget);
+  stars.forEach(drawStar);
   balls.forEach(drawBall);
   drawBall(mainBall);
   drawAimLine();
