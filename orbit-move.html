@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Ball Shooting Game</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;font-family:"Segoe UI",Tahoma,Geneva,Verdana,sans-serif;display:flex;flex-direction:column;overflow:hidden;background:#D9D9D9;}
+#hud{position:relative;height:60px;background:rgba(0,0,0,0.6);color:white;font-weight:700;display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid rgba(255,255,255,0.2);padding:0 15px;z-index:10;}
+#progressContainer{flex-grow:1;height:20px;background:rgba(255,255,255,0.2);margin-left:50px;margin-right:50px;border-radius:10px;overflow:hidden;}
+#progressBar{width:0%;height:100%;background:#f1c40f;transition:width 0.5s ease;}
+#lifeCircle{width:50px;height:50px;border-radius:50%;background:linear-gradient(to bottom,#3498db,#2980b9);box-shadow:0 0 5px rgba(255,255,255,0.7);display:flex;align-items:center;justify-content:center;font-weight:900;color:white;font-size:20px;}
+#gameArea{position:relative;flex-grow:1;overflow:hidden;}
+#gameCanvas{display:block;width:100%;height:100%;background:#D9D9D9;}
+#skills{position:absolute;bottom:0px;left:0;width:100%;display:flex;justify-content:center;gap:15px;z-index:10;padding:10px 0;background:rgba(0,0,0,0.6);}
+.skill-button{background:#27ae60;border:none;color:white;font-weight:700;padding:10px 22px;border-radius:8px;cursor:pointer;font-size:18px;transition:background-color 0.3s;}
+.skill-button:hover{background:#1e8449;}
+.laser-button{background:#d35400;}
+.laser-button:hover{background:#b03e00;}
+.missile-button{background:#8e44ad;}
+.missile-button:hover{background:#732d91;}
+#resetBtn{background:#c0392b;border:none;padding:12px 18px;font-weight:700;border-radius:8px;cursor:pointer;color:white;transition:background-color 0.3s;}
+#resetBtn:hover{background:#962d22;}
+#endPopup{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.8);color:white;font-size:32px;font-weight:900;padding:30px 50px;border-radius:20px;display:none;z-index:50;}
+</style>
+</head>
+<body>
+<div id="hud">
+<div id="lifeCircle">15</div>
+<div id="progressContainer"><div id="progressBar"></div></div>
+<button id="resetBtn">Yeniden Başlat</button>
+</div>
+<div id="gameArea">
+<canvas id="gameCanvas"></canvas>
+<div id="skills">
+<button class="skill-button" id="multiShot">🎯 Çok Top</button>
+<button class="skill-button laser-button" id="laserShot">🔫 Lazer</button>
+<button class="skill-button missile-button" id="missileShot">🚀 Füze</button>
+</div>
+<div id="endPopup">MALAZGİRT 🎉</div>
+</div>
+<script>
+(() => {
+const canvas=document.getElementById('gameCanvas');
+const ctx=canvas.getContext('2d');
+const multiShotBtn=document.getElementById('multiShot');
+const laserShotBtn=document.getElementById('laserShot');
+const missileShotBtn=document.getElementById('missileShot');
+const resetBtn=document.getElementById('resetBtn');
+const endPopup=document.getElementById('endPopup');
+const progressBar=document.getElementById('progressBar');
+const lifeCircle=document.getElementById('lifeCircle');
+
+let canvasWidth, canvasHeight;
+let level=0, life=15;
+const ballRadius=15, baseBallSpeed=8;
+let balls=[], aiming=false, aimStart=null, aimCurrent=null;
+let skillMultiShotActive=false, skillLaserActive=false, skillMissileActive=false;
+let lastHitX=null;
+let gameEnded=false;
+let offsetY=0, targetOffsetY=0;
+let progressPercent=0;
+const levelsData=[
+{targets:[1,1,1], moving:['upDown','none','none']},
+{targets:[2,1,2], moving:['upDown','none','none']},
+{targets:[2,3,1], moving:['leftRight','upDown','none']},
+{targets:[3,2,2,1], moving:['upDown','none','leftRight','none']},
+{targets:[3,3,3,2,1], moving:['leftRight','upDown','none','none','none']}
+];
+
+let targets=[], mainBall={x:0,y:0};
+let particleArray=[]; let displayedProgress=0;
+let draggingBall=false, ballLocked=false, angleSelect=false;
+
+// **Tüm seviyelerde drag aktif**
+const dragEnabled = true;
+
+function resize(){
+    canvasWidth=window.innerWidth;
+    canvasHeight=window.innerHeight-60;
+    canvas.width=canvasWidth;
+    canvas.height=canvasHeight;
+    mainBall.y=canvasHeight - ballRadius - 70;
+    mainBall.x = lastHitX!==null ? lastHitX : canvasWidth/2;
+}
+
+function setupLevel(){
+    balls=[]; aiming=false; aimStart=null; aimCurrent=null;
+    skillMultiShotActive=false; skillLaserActive=false; skillMissileActive=false;
+    targets=[]; gameEnded=false; endPopup.style.display='none';
+    displayedProgress = progressPercent;
+    ballLocked=false; angleSelect=false;
+
+    mainBall.x = lastHitX!==null ? lastHitX : canvasWidth/2;
+
+    const ld=levelsData[level];
+    let usedX=[];
+    for(let i=0;i<ld.targets.length;i++){
+        let x;
+        do{
+            x=50+Math.random()*(canvasWidth-100);
+        }while(usedX.some(px=>Math.abs(px-x)<100));
+        usedX.push(x);
+        let y=100 + Math.random()*((canvasHeight/1.5)-100);
+        targets.push({
+            baseX:x, x:x, y:y, value:ld.targets[i], hit:false,
+            moveType:ld.moving[i]||'none', dir:1
+        });
+    }
+    offsetY=0; targetOffsetY=0;
+}
+
+// **Sürükleme: X konumu belirle, sonra top sabitlensin**
+canvas.addEventListener('mousedown', e=>{
+    if(!ballLocked && dragEnabled){
+        draggingBall=true;
+        mainBall.x = e.clientX;
+    } else if(ballLocked){
+        aiming=true;
+        aimStart={x:mainBall.x,y:mainBall.y};
+        aimCurrent={x:e.clientX,y:e.clientY};
+        angleSelect=true;
+    }
+});
+canvas.addEventListener('mousemove', e=>{
+    if(draggingBall){
+        mainBall.x = e.clientX;
+        if(mainBall.x<ballRadius) mainBall.x=ballRadius;
+        if(mainBall.x>canvasWidth-ballRadius) mainBall.x=canvasWidth-ballRadius;
+    }
+    if(aiming && angleSelect) aimCurrent={x:e.clientX,y:e.clientY};
+});
+canvas.addEventListener('mouseup', e=>{
+    if(draggingBall){
+        draggingBall=false;
+        ballLocked=true; // Top sabitlendi
+    } else if(aiming && angleSelect){
+        shootBall();
+    }
+});
+canvas.addEventListener('touchstart', e=>{
+    const pos={x:e.touches[0].clientX, y:e.touches[0].clientY};
+    if(!ballLocked && dragEnabled){
+        draggingBall=true;
+        mainBall.x = pos.x;
+    } else if(ballLocked){
+        aiming=true;
+        aimStart={x:mainBall.x,y:mainBall.y};
+        aimCurrent={x:pos.x,y:pos.y};
+        angleSelect=true;
+    }
+    e.preventDefault();
+},{passive:false});
+canvas.addEventListener('touchmove', e=>{
+    const pos={x:e.touches[0].clientX, y:e.touches[0].clientY};
+    if(draggingBall){
+        mainBall.x=pos.x;
+        if(mainBall.x<ballRadius) mainBall.x=ballRadius;
+        if(mainBall.x>canvasWidth-ballRadius) mainBall.x=canvasWidth-ballRadius;
+    }
+    if(aiming && angleSelect) aimCurrent=pos;
+    e.preventDefault();
+},{passive:false});
+canvas.addEventListener('touchend', e=>{
+    if(draggingBall){
+        draggingBall=false;
+        ballLocked=true;
+    } else if(aiming && angleSelect){
+        shootBall();
+    }
+    e.preventDefault();
+},{passive:false});
+
+function shootBall(){
+    if(!aimStart || !aimCurrent) return;
+    const dx=aimCurrent.x-aimStart.x;
+    const dy=aimCurrent.y-aimStart.y;
+    let angle=Math.atan2(dy,dx);
+    let speed=baseBallSpeed;
+    if(skillMultiShotActive){
+        for(let i=-1;i<=1;i++){
+            const angle2=angle+0.25*i;
+            balls.push({x:mainBall.x,y:mainBall.y,vx:Math.cos(angle2)*speed,vy:Math.sin(angle2)*speed,offscreen:false});
+        }
+        skillMultiShotActive=false;
+    } else {
+        balls.push({x:mainBall.x,y:mainBall.y,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,offscreen:false});
+    }
+    aiming=false; aimStart=null; aimCurrent=null; angleSelect=false;
+    ballLocked=false;
+    lastHitX = mainBall.x; // Son X pozisyonunu kaydet
+}
+
+multiShotBtn.onclick=()=>{ if(balls.length===0) skillMultiShotActive=true; };
+laserShotBtn.onclick=()=>{ if(balls.length===0) skillLaserActive=true; };
+missileShotBtn.onclick=()=>{ if(balls.length===0) skillMissileActive=true; };
+
+resetBtn.onclick=()=>{
+    if(gameEnded){ level=0; progressPercent=0; displayedProgress=0; lastHitX=null; }
+    setupLevel(); drawLifeCircle();
+};
+
+function drawLifeCircle(){ lifeCircle.textContent=life; }
+function drawTarget(t){ if(t.hit) return;
+    ctx.setLineDash([8,6]); ctx.strokeStyle='#000'; ctx.lineWidth=3;
+    ctx.beginPath(); ctx.arc(t.x,t.y+targetOffsetY,30,0,Math.PI*2); ctx.stroke();
+    ctx.setLineDash([]); ctx.fillStyle='black'; ctx.font='28px Arial Black, sans-serif';
+    ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(t.value,t.x,t.y+targetOffsetY);
+}
+function drawBall(b){ ctx.beginPath(); ctx.fillStyle='#3498db'; ctx.arc(b.x,b.y+offsetY,ballRadius,0,Math.PI*2); ctx.fill(); }
+function moveTargets(){ targets.forEach(t=>{ if(t.moveType==='upDown'){ t.y+=t.dir*1.8; if(t.y<80 || t.y>canvasHeight/2) t.dir*=-1; }else if(t.moveType==='leftRight'){ t.x+=t.dir*2; if(t.x<50 || t.x>canvasWidth-50) t.dir*=-1; } }); }
+function moveBalls(){ balls.forEach(b=>{ if(b.offscreen) return; b.x+=b.vx; b.y+=b.vy; if(b.x-ballRadius<0){b.x=ballRadius;b.vx=-b.vx;} if(b.x+ballRadius>canvasWidth){b.x=canvasWidth-ballRadius;b.vx=-b.vx;} if(b.y-ballRadius<0){b.y=ballRadius;b.vy=-b.vy;} if(b.y-ballRadius>canvasHeight){b.offscreen=true;} });
+balls.forEach(b=>{ if(b.offscreen) return; targets.forEach(t=>{ if(t.hit) return; let dx=b.x-t.x, dy=b.y-t.y, dist=Math.sqrt(dx*dx+dy*dy); if(dist<ballRadius+30){ t.hit=true; lastHitX = b.x; } }); });
+balls=balls.filter(b=>!b.offscreen);
+}
+function drawAimLine(){ if(!aiming || !aimStart || !aimCurrent) return; ctx.strokeStyle='red'; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(mainBall.x,mainBall.y); ctx.lineTo(aimCurrent.x,aimCurrent.y); ctx.stroke(); }
+function nextLevel(){ if(level<levelsData.length-1){ level++; life--; progressPercent+=8; setupLevel(); drawLifeCircle(); } else { gameEnded=true; progressPercent=100; endPopup.style.display='block'; } }
+function checkLevelProgress(){ if(balls.length===0) return; if(balls.some(b=>b.y-ballRadius<=0)){ nextLevel(); targetOffsetY=-canvasHeight; } }
+function animateLevelTransition(){ const dy=(0-targetOffsetY)*0.08; targetOffsetY+=dy; if(Math.abs(dy)<0.5) targetOffsetY=0; }
+function spawnParticles(x,y,count,size,color,speed=2){ for(let i=0;i<count;i++){ particleArray.push({x,y,vx:(Math.random()-0.5)*speed*2,vy:(Math.random()-0.5)*speed*2,size:size*Math.random(),color,life:30+Math.random()*20}); } }
+function updateParticles(){ particleArray.forEach(p=>{ p.x+=p.vx; p.y+=p.vy; p.life--; }); particleArray=particleArray.filter(p=>p.life>0); }
+function drawParticles(){ particleArray.forEach(p=>{ ctx.beginPath(); ctx.arc(p.x,p.y+offsetY,p.size,0,Math.PI*2); ctx.fillStyle=p.color; ctx.fill(); }); }
+function updateProgressBar(){ let targetProgress=progressPercent; displayedProgress += (targetProgress - displayedProgress)*0.08; progressBar.style.width=displayedProgress+'%'; }
+function draw(){ ctx.clearRect(0,0,canvasWidth,canvasHeight); targets.forEach(drawTarget); balls.forEach(drawBall); drawBall(mainBall); if(angleSelect) drawAimLine(); }
+function gameLoop(){ moveTargets(); moveBalls(); checkLevelProgress(); animateLevelTransition(); updateProgressBar(); updateParticles(); draw(); drawParticles(); requestAnimationFrame(gameLoop); }
+
+window.addEventListener('resize',()=>{ resize(); setupLevel(); drawLifeCircle(); });
+resize(); setupLevel(); drawLifeCircle(); gameLoop();
+
+})();
+</script>
+</body>
+</html>
