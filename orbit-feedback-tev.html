@@ -1,0 +1,1094 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Ball Shooting – Bölüm 1–8</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;background:#d9d9d9;font-family:Montserrat,Segoe UI,system-ui,-apple-system,sans-serif;overflow:hidden}
+
+  /* ===== HUD ===== */
+  #hud{position:relative; z-index:3; height:78px;display:flex;align-items:center;justify-content:space-between;padding:10px 14px}
+  #leftCluster{display:flex;align-items:center;gap:12px}
+
+  /* Ammo + Currencies */
+  #ammoCircle{width:56px;height:56px;border-radius:50%;background:#2ecc71;display:grid;place-items:center;box-shadow:0 0 0 4px #1f9c52 inset}
+  #ammoText{color:#000;font-weight:900;font-size:22px;line-height:1}
+  #currencies{display:flex;flex-direction:column;gap:6px;min-width:120px}
+  .curRow{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:10px;background:rgba(255,255,255,.55);backdrop-filter:saturate(1.1)}
+  .curRow .icon{display:inline-grid;place-items:center}
+  .curRow .icon svg{width:20px;height:20px;display:block}
+  .curRow b{font-size:16px}
+
+  /* ===== Progress ===== */
+  #progressWrap{flex:1;display:flex;align-items:center;justify-content:center}
+  .bar{position:relative;width:min(58vw,560px);height:22px;background:#f8e19a;border-radius:12px;overflow:visible}
+  .barFill{position:absolute;left:0;top:0;height:100%;width:0%;background:#f39c12;transition:width .2s}
+  .milestone{
+    position:absolute;top:50%;transform:translate(-50%,-50%);
+    width:56px;height:56px;border-radius:50%;display:grid;place-items:center;font-weight:900;font-size:18px;
+    color:#111;background:#fff;border:4px solid #fff;box-shadow:0 0 0 2px rgba(0,0,0,.05),0 10px 20px rgba(0,0,0,.18);
+    transition:all .15s;z-index:2;
+  }
+  .milestone::after{content:"";position:absolute;inset:7px;border-radius:50%;background:radial-gradient(circle at 50% 40%, rgba(255,255,255,.95), rgba(255,255,255,.12));opacity:.85}
+  .milestone.reached{background:#f39c12;color:#fff;border-color:#f39c12;box-shadow:0 0 0 5px rgba(243,156,18,.35),0 12px 24px rgba(0,0,0,.22)}
+  .milestone.active{outline:3px dotted #e74c3c;outline-offset:4px}
+  .ms40{left:40%}.ms60{left:60%}.ms80{left:80%}.ms100{left:100%}
+
+  /* Pause */
+  #pauseBtn{width:46px;height:46px;border:3px solid #111;border-radius:10px;display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer}
+  #pauseBtn span{display:block;width:6px;height:24px;background:#111;border-radius:2px}
+
+  /* ===== Üst çizgi ===== */
+  #spacerTop{height:18px}
+  #topDashed{position:relative; z-index:1; height:28px; border-top:6px dashed #fff; opacity:.95}
+  #finishLabel{
+    position:absolute;left:50%;top:0;transform:translate(-50%,-55%);
+    font-weight:900;font-size:34px;color:#f0b429;letter-spacing:2px;display:none;pointer-events:none;z-index:2;
+    background:#d9d9d9; padding:0 10px; border-radius:10px;
+  }
+
+  /* ===== GAME ===== */
+  #gameArea{position:relative;flex:1}
+  #gameCanvas{width:100%;height:100%;display:block;background:#d9d9d9}
+
+  /* ===== Alt Toolbar ===== */
+  #toolbar{position:absolute;left:0;right:0;bottom:0;z-index:2;background:rgba(0,0,0,.08);padding:10px 12px 12px;border-top:4px dashed #fff}
+  #bottomFinishLabel{
+    position:absolute;left:50%;top:-36px;transform:translateX(-50%);
+    font-weight:900;font-size:34px;color:#f0b429;letter-spacing:2px;display:none;background:#d9d9d9;padding:0 10px;border-radius:10px
+  }
+  #skills{display:flex;gap:10px;align-items:center;justify-content:center}
+  .skill{min-width:54px;height:54px;padding:8px 12px;border-radius:14px;background:#fff2;border:2px dashed #fff;color:#111;display:flex;align-items:center;gap:8px;backdrop-filter:saturate(1.1);font-weight:800;cursor:pointer}
+  .skill b{font-size:15px}
+  .skill span{font-size:18px}
+  #shopBtn{width:46px;height:46px;border-radius:10px;background:#2ecc71;color:#fff;display:grid;place-items:center;font-size:34px;font-weight:900;margin-left:12px}
+
+  /* ===== Pop-ups ===== */
+  .modal{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,.88);color:#fff;border-radius:18px;padding:24px 26px;text-align:center;display:none;z-index:50;min-width:min(90vw,420px)}
+  .modal h2{margin-bottom:10px;font-size:26px}
+  .modal p{opacity:.9;margin-bottom:18px}
+  .btn{background:#f39c12;color:#1b1b1b;font-weight:900;border:none;padding:12px 18px;border-radius:10px;font-size:18px;cursor:pointer}
+  .btn:hover{background:#d68910}
+  #pauseModal .row{display:flex;gap:16px;justify-content:center}
+  .round{width:72px;height:72px;border-radius:50%;background:#fff;color:#1b1b1b;display:grid;place-items:center;font-size:34px;font-weight:900;cursor:pointer}
+  .round.secondary{background:#ffe1ad}
+  .disabled{opacity:.5;cursor:not-allowed}
+
+  @media (max-width:520px){
+    #hud{height:74px}
+    #pauseBtn{width:42px;height:42px}
+    .bar{height:20px}
+    .milestone{width:52px;height:52px;font-size:17px}
+    #finishLabel{font-size:28px}
+    #spacerTop{height:16px}
+    #currencies{min-width:auto}
+  }
+</style>
+</head>
+<body>
+  <!-- ===== HUD ===== -->
+  <div id="hud">
+    <div id="leftCluster">
+      <div id="ammoCircle"><div id="ammoText">20</div></div>
+      <div id="currencies">
+        <div class="curRow">
+          <span class="icon" aria-label="gold">
+            <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" role="img">
+              <defs>
+                <radialGradient id="g" cx="50%" cy="35%" r="65%">
+                  <stop offset="0%" stop-color="#fff27a"/>
+                  <stop offset="55%" stop-color="#f9c646"/>
+                  <stop offset="100%" stop-color="#d89e1f"/>
+                </radialGradient>
+              </defs>
+              <circle cx="32" cy="32" r="26" fill="url(#g)" stroke="#b37a12" stroke-width="4"/>
+              <circle cx="32" cy="32" r="16" fill="rgba(255,255,255,.25)"/>
+            </svg>
+          </span>
+          <b id="goldText">103</b>
+        </div>
+        <div class="curRow"><span class="icon">💎</span><b id="gemText">7</b></div>
+      </div>
+    </div>
+
+    <div id="progressWrap">
+      <div class="bar">
+        <div class="barFill" id="barFill"></div>
+        <div class="milestone ms40" id="ms40">40</div>
+        <div class="milestone ms60" id="ms60">60</div>
+        <div class="milestone ms80" id="ms80">80</div>
+        <div class="milestone ms100" id="ms100">100</div>
+      </div>
+    </div>
+
+    <div id="pauseBtn" title="Durdur / Devam"><span></span><span></span></div>
+  </div>
+
+  <div id="spacerTop"></div>
+  <div id="topDashed"><div id="finishLabel">FINISH</div></div>
+
+  <!-- ===== GAME ===== -->
+  <div id="gameArea">
+    <canvas id="gameCanvas"></canvas>
+
+    <div id="toolbar">
+      <div id="bottomFinishLabel">FINISH</div>
+      <div id="skills">
+        <button class="skill" id="multiShot"><span>🎯</span><b id="multiShotC">5</b></button>
+        <button class="skill" id="boomerangShot"><span>🪃</span><b id="boomerangC">5</b></button>
+        <button class="skill" id="explodeShot"><span>💥</span><b id="explodeC">5</b></button>
+        <button class="skill" id="slowMotion"><span>🐢</span><b id="slowC">3</b></button>
+        <div id="shopBtn" title="Mağaza +">+</div>
+      </div>
+    </div>
+
+    <!-- Bölüm bitiş popup -->
+    <div class="modal" id="chapterModal">
+      <h2 id="chapterTitle">I. Bölüm bitti</h2>
+      <p>Tebrikler! Sonraki bölüm için hazır ol.</p>
+      <button class="btn" id="chapterNextBtn">II. Bölüme Geç</button>
+    </div>
+
+    <!-- Pause popup -->
+    <div class="modal" id="pauseModal">
+      <h2>Duraklatıldı</h2>
+      <p>Devam etmek veya oyunu yeniden başlatmak ister misin?</p>
+      <div class="row">
+        <div class="round secondary" id="resumeBtn" title="Yürüt">▶</div>
+        <div class="round" id="restartBtn" title="Yeniden Başlat">⟳</div>
+      </div>
+    </div>
+  </div>
+
+<script>
+(() => {
+  const canvas = document.getElementById('gameCanvas');
+  const ctx = canvas.getContext('2d');
+  const barFill = document.getElementById('barFill');
+  const msEls=[document.getElementById('ms40'),document.getElementById('ms60'),document.getElementById('ms80'),document.getElementById('ms100')];
+  const ammoText=document.getElementById('ammoText');
+  const pauseBtn=document.getElementById('pauseBtn');
+  const pauseModal=document.getElementById('pauseModal');
+  const resumeBtn=document.getElementById('resumeBtn');
+  const restartBtn=document.getElementById('restartBtn');
+  const chapterModal=document.getElementById('chapterModal');
+  const chapterTitle=document.getElementById('chapterTitle');
+  const chapterNextBtn=document.getElementById('chapterNextBtn');
+  const topDashed=document.getElementById('topDashed');
+  const finishLabel=document.getElementById('finishLabel');
+  const toolbar=document.getElementById('toolbar');
+  const bottomFinishLabel=document.getElementById('bottomFinishLabel');
+  const goldText=document.getElementById('goldText');
+  const gemText=document.getElementById('gemText');
+
+  const multiBtn=document.getElementById('multiShot');
+  const boomBtn=document.getElementById('boomerangShot');
+  const explBtn=document.getElementById('explodeShot');
+  const slowBtn=document.getElementById('slowMotion');
+  const multiC=document.getElementById('multiShotC');
+  const boomC=document.getElementById('boomerangC');
+  const explC=document.getElementById('explodeC');
+  const slowC=document.getElementById('slowC');
+
+  let W=0,H=0,paused=false;
+
+  // chapter: 0=I, 1=II, 2=III, 3=IV, 4=V, 5=VI, 6=VII, 7=VIII
+  let chapter=0, levelIndex=0;
+  let ammo=20, progress=0, dispProgress=0;
+  let balls=[], mainBall={x:0,y:0};
+  let targets=[], hazards=[], blueTargets=[];
+  let blocks=[]; // Bölüm 5 ve 8.2 platformlar
+  let mines=[], mineBooms=[]; // Bölüm 6
+  let spikes=[];              // Bölüm 7 + 8
+  // 8. bölüm eklentileri
+  let rotors=[];     // dönen çubuklar
+  let orbits=[];     // dönen halka yapıları (merkezden)
+  let partyT=0;      // DANDANAKAN konfeti süresi
+
+  let usedBoom=false, locked=false, drag=false, aiming=false;
+  let angleStart=null, angleCur=null, lastX=null;
+  let slowActive=false, slowTime=0;
+  let levelFailGuard=false;
+  const ballRadius=15, baseBallSpeed=8;
+
+  let sMulti=5,sBoom=5,sExpl=5,sSlow=3;
+  let fMulti=false,fBoom=false,fExpl=false;
+  let levelExplodeLock=false;
+
+  let gold=103, gem=7;
+  let levelCleared=false;
+
+  /* ===== Bölüm 1–7: (orijinal veriler) ===== */
+  const chapter1=[
+    {vals:[1,1], moves:['none','none']},
+    {vals:[2,1], moves:['leftRight','none']},
+    {vals:[2,2], moves:['none','leftRight']},
+    {vals:[2,2], moves:['none','upDown']},
+    {vals:[3,3,3], moves:['none','upDown','upDown'], finish:true}
+  ];
+  const chapter2=[
+    {vals:[4,3], moves:['none','circleCW'], circles:[null,{r:90,speed:0.02}]},
+    {vals:[5,3], moves:['circleCW','circleCCW'], circles:[{r:110,speed:0.02},{r:90,speed:-0.022}]},
+    {vals:[5,4], moves:['circleCCW','circleCW'], circles:[{r:100,speed:-0.02},{r:100,speed:0.02}]},
+    {vals:[5,5], moves:['none','none'], hazards:[{move:'leftRight',val:-1}]},
+    {vals:[7,6], moves:['none','none'], hazards:[{move:'leftRight',val:-1},{move:'upDown',val:-1}], finish:true}
+  ];
+  const chapter3=[
+    {vals:[11,1], moves:['none','none']},
+    {vals:[5,3], moves:['none','none'], blue:[{label:'x5'}], hazards:[{val:-1}]},
+    {vals:[5,4], moves:['none','none'], blue:[{label:'x5'},{label:'x5'}], hazards:[{val:-1}]},
+    {vals:[5,11,5], moves:['none','none','none'], hazards:[{val:-11,move:'leftRight'}]},
+    {vals:[6,7], moves:['none','none'], blue:[{label:'x15'}], hazards:[{val:-2,move:'leftRight'},{val:-3,move:'upDown'}], finish:true}
+  ];
+  const chapter4=[
+    {vals:[7,9,3], moves:['none','none','none']},
+    {vals:[3,9,7], moves:['none','none','none'], hazards:[{val:-1}]},
+    {vals:[9,2], moves:['none','none'], blue:[{label:'2x'}]},
+    {vals:[9,2,7], moves:['none','none','none'], hazards:[{val:-3}]},
+    {vals:[9,5,2], moves:['none','none','none'], blue:[{label:'4x'}], finish:true}
+  ];
+  const chapter5 = [
+    { vals:[1],   moves:['none'], blocks:[{ anchor:'target', idx:0, dy:220, widthRatio:0.45, thick:12, move:'none' }] },
+    { vals:[1,1], moves:['none','none'], blocks:[{ anchor:'target', idx:1, dy:140, widthRatio:0.60, thick:12, move:'none' }] },
+    { vals:[2,1], moves:['none','none'], blocks:[{ anchor:'target', idx:1, dy:140, widthRatio:0.60, thick:12, move:'upDown', speed:1.8 }] },
+    { vals:[3,2], moves:['none','none'], blocks:[
+        { anchor:'target', idx:0, dy:140, widthRatio:0.55, thick:12, move:'upDown',   speed:1.8 },
+        { anchor:'target', idx:1, dy:200, widthRatio:0.55, thick:12, move:'leftRight', speed:2.2 }
+      ]},
+    { vals:[5,4], moves:['none','none'], blocks:[
+        { anchor:'target', idx:0, dy:160, widthRatio:0.58, thick:12, move:'leftRight', speed:2.2 },
+        { anchor:'target', idx:1, dy:220, widthRatio:0.48, thick:12, move:'none' }
+      ], finish:true }
+  ];
+  const chapter6 = [
+    { vals:[1], moves:['none'], mines:[ {px:0.78, py:0.66, move:'none'} ] },
+    { vals:[5,1], moves:['none','none'], mines:[ {px:0.78, py:0.70, move:'leftRight', speed:2.2} ] },
+    { vals:[1,7], moves:['none','none'], blue:[{label:'x4'}],
+      mines:[ {px:0.20, py:0.42, move:'upDown',speed:1.8}, {px:0.82, py:0.72, move:'none'} ] },
+    { vals:[1,12], moves:['none','none'], blue:[{label:'x5'}],
+      mines:[ {px:0.16, py:0.28, move:'upDown',speed:1.7}, {px:0.86, py:0.78, move:'leftRight',speed:2.1} ] },
+    { vals:[8,3], moves:['none','none'], blue:[{label:'x12'}],
+      mines:[ {px:0.20, py:0.55, move:'leftRight', speed:2.0, dir:-1},
+              {px:0.80, py:0.55, move:'leftRight', speed:2.0, dir: 1},
+              {px:0.85, py:0.30, move:'leftRight', speed:2.0},
+              {px:0.15, py:0.35, move:'upDown',    speed:1.7} ],
+      finish:true }
+  ];
+  const chapter7 = [
+    { vals:[5,3], moves:['none','none'],
+      spikes:[ {tip:{px:0.06,py:0.80}, dir:'right'}, {tip:{px:0.94,py:0.62}, dir:'left'} ] },
+    { vals:[9,4], moves:['none','none'],
+      spikes:[ {tip:{px:0.05,py:0.55}, dir:'right'},{tip:{px:0.05,py:0.68}, dir:'right'},{tip:{px:0.05,py:0.81}, dir:'right'},
+               {tip:{px:0.95,py:0.62}, dir:'left'}, {tip:{px:0.95,py:0.78}, dir:'left'} ] },
+    { vals:[7,1], moves:['none','none'], blue:[{label:'x4'}],
+      spikes:[ {tip:{px:0.06,py:0.22}, dir:'right'},{tip:{px:0.06,py:0.32}, dir:'right'},
+               {tip:{px:0.94,py:0.28}, dir:'left'}, {tip:{px:0.06,py:0.88}, dir:'right'} ] },
+    { vals:[1,12], moves:['none','none'], blue:[{label:'x5'}],
+      spikeRows:[ {edge:'top', count:4, x0:0.12, x1:0.88, py:0.18},
+                  {edge:'left',  count:3, y0:0.40, y1:0.70, px:0.05},
+                  {edge:'right', count:3, y0:0.46, y1:0.76, px:0.95} ] },
+    { vals:[10,12,12,10], moves:['none','none','none','none'], blue:[{label:'x20'}],
+      hazards:[{val:-10, move:'none'}],
+      spikeRows:[ {edge:'top', count:5, x0:0.08, x1:0.92, py:0.18},
+                  {edge:'left',  count:2, y0:0.42, y1:0.64, px:0.05},
+                  {edge:'right', count:2, y0:0.46, y1:0.68, px:0.95},
+                  {edge:'bottom', count:3, x0:0.06, x1:0.30, py:0.92},
+                  {edge:'bottom', count:3, x0:0.70, x1:0.94, py:0.92} ],
+      finish:true }
+  ];
+
+  /* ===== Bölüm 8 – Dikenli Mekanikler ===== */
+  const chapter8 = [
+    // 8.1 – İki dikey diken duvarı birbirine yaklaş-uzaklaş
+    { vals:[7,12,12], moves:['none','none','none'],
+      positions:[ {px:0.20,py:0.30}, {px:0.28,py:0.58}, {px:0.62,py:0.58} ],
+      blue:[{label:'x4'}],
+      bluePositions:[ {px:0.50,py:0.40} ],
+      spikes:[
+        ...Array.from({length:8},(_,i)=>({tip:{px:0.32,py:0.28+ i*0.06}, dir:'right', move:'leftRight', speed:1.6, vdir: 1, size:44})),
+        ...Array.from({length:8},(_,i)=>({tip:{px:0.68,py:0.28+ i*0.06}, dir:'left',  move:'leftRight', speed:1.6, vdir:-1, size:44}))
+      ]
+    },
+
+    // 8.2 – Sabit platformlar üzerinde üçlü dikenler
+    { vals:[7,12], moves:['none','none'],
+      positions:[ {px:0.28,py:0.40}, {px:0.72,py:0.60} ],
+      blue:[{label:'x4'}], bluePositions:[ {px:0.32,py:0.74} ],
+      // platformları oransal yerleştir
+      blocks:[
+        { xRatio:0.22, yRatio:0.40, widthRatio:0.26, thick:12, move:'none' },
+        { xRatio:0.76, yRatio:0.32, widthRatio:0.22, thick:12, move:'none' },
+        { xRatio:0.22, yRatio:0.76, widthRatio:0.26, thick:12, move:'none' },
+        { xRatio:0.72, yRatio:0.70, widthRatio:0.26, thick:12, move:'none' }
+      ],
+      spikes:[
+        {tip:{px:0.18,py:0.40}, dir:'up'}, {tip:{px:0.22,py:0.40}, dir:'up'}, {tip:{px:0.26,py:0.40}, dir:'up'},
+        {tip:{px:0.70,py:0.32}, dir:'up'}, {tip:{px:0.76,py:0.32}, dir:'up'}, {tip:{px:0.82,py:0.32}, dir:'up'},
+        {tip:{px:0.18,py:0.76}, dir:'up'}, {tip:{px:0.22,py:0.76}, dir:'up'}, {tip:{px:0.26,py:0.76}, dir:'up'},
+        {tip:{px:0.68,py:0.70}, dir:'up'}, {tip:{px:0.72,py:0.70}, dir:'up'}, {tip:{px:0.76,py:0.70}, dir:'up'}
+      ]
+    },
+
+    // 8.3 – Tek dönen çubuk (CW), üstünde dikenler
+    { vals:[7,12], moves:['none','none'],
+      positions:[ {px:0.24,py:0.42}, {px:0.76,py:0.46} ],
+      blue:[{label:'x4'}], bluePositions:[ {px:0.50,py:0.70} ],
+      rotors:[ { cx:0.52, cy:0.44, lenRatio:0.78, thick:14, speed: 0.020, spikeCount:6, edgeDir:'up' } ]
+    },
+
+    // 8.4 – İki çubuk; üst CW, alt CCW
+    { vals:[10], moves:['none'], positions:[ {px:0.50,py:0.46} ],
+      rotors:[
+        { cx:0.35, cy:0.40, lenRatio:0.70, thick:14, speed: 0.022,  spikeCount:4, edgeDir:'up' },
+        { cx:0.65, cy:0.64, lenRatio:0.70, thick:14, speed: -0.022, spikeCount:4, edgeDir:'up' }
+      ]
+    },
+
+    // 8.5 – Ortada CCW üçgen etkisi + dışta CW diken halkası (FINISH)
+    { vals:[10,10,10], moves:['none','none','none'],
+      positions:[ {px:0.50,py:0.28}, {px:0.20,py:0.66}, {px:0.80,py:0.66} ],
+      blue:[{label:'x5'}], bluePositions:[ {px:0.22,py:0.36} ],
+      orbits:[
+        { cx:0.50, cy:0.54, rRatio:0.22, speed: 0.025, count:12, edge:'out', spikeSize:48 },   // dış halka (CW)
+        { cx:0.50, cy:0.54, rRatio:0.09, speed:-0.035, count:3,  edge:'out', spikeSize:56 }    // iç üçgen (CCW)
+      ],
+      finish:true
+    }
+  ];
+
+  /* ===== Bölüm seçici ===== */
+  const chapters = [chapter1,chapter2,chapter3,chapter4,chapter5,chapter6,chapter7,chapter8];
+  function currentSet(){ return chapters[chapter]; }
+  function isInverted(){ return chapter===3; } // yalnızca IV ters
+
+  /* ===== Layout ===== */
+  const SAFE_GAP=10;
+  function size(){
+    const hudH=document.getElementById('hud').offsetHeight;
+    const spacerH=document.getElementById('spacerTop').offsetHeight;
+    const dashedH=document.getElementById('topDashed').offsetHeight;
+    const totalTop=hudH+spacerH+dashedH;
+
+    W=canvas.width=window.innerWidth;
+    H=canvas.height=window.innerHeight-totalTop;
+
+    const th=toolbar.offsetHeight;
+
+    if(isInverted()){
+      mainBall.y=ballRadius+50;
+    }else{
+      mainBall.y=H-th-ballRadius-SAFE_GAP;
+      if(mainBall.y<ballRadius+40) mainBall.y=ballRadius+40;
+    }
+    mainBall.x= lastX ?? W/2;
+  }
+  window.addEventListener('resize', size);
+
+  /* ===== Helpers & UI ===== */
+  function setFinishUI(active){
+    if(isInverted()){
+      toolbar.style.borderTopColor = active ? '#f0b429' : '#fff';
+      bottomFinishLabel.style.display = active ? 'block' : 'none';
+      topDashed.style.borderTopColor = '#fff';
+      finishLabel.style.display='none';
+    }else{
+      toolbar.style.borderTopColor = '#fff';
+      bottomFinishLabel.style.display='none';
+      topDashed.style.borderTopColor = active ? '#f0b429' : '#fff';
+      finishLabel.style.display     = active ? 'block' : 'none';
+    }
+  }
+  function setAmmo(v){ ammo=v; if(ammo<0) ammo=0; ammoText.textContent=ammo; }
+  function setGold(v){ gold=v; goldText.textContent=v; }
+  function setGem(v){ gem=v; gemText.textContent=v; }
+
+  function updateMilestones(pct){
+    const list=[[40,msEls[0]],[60,msEls[1]],[80,msEls[2]],[100,msEls[3]]];
+    list.forEach(([n,el])=>{ el.classList.toggle('reached', pct>=n); el.classList.remove('active'); });
+    (list.find(([n])=>pct<n)||list[list.length-1])[1].classList.add('active');
+  }
+
+  function checkLevelCleared(){ levelCleared = targets.every(t=>t.hit) && blueTargets.every(t=>t.hit); }
+  function rand(min,max){return Math.random()*(max-min)+min;}
+
+  /* ====== Bloklar (Bölüm 5 & 8.2) ====== */
+  function makeBlock(def){
+    const k = { x: 0, y: 0, w: 200, h: (def.thick||12), move: def.move||'none', dir: 1, speed: def.speed||2 };
+    // oransal yerleşim (8.2)
+    if(def.xRatio!=null || def.yRatio!=null){
+      k.w = (def.widthRatio!=null) ? Math.max(60, def.widthRatio * W) : (def.width || Math.min(0.5*W, W-40));
+      const cx = (def.xRatio!=null) ? def.xRatio * W : (W - k.w)/2;
+      k.x = Math.max(20, Math.min(W - k.w - 20, cx - k.w/2));
+      k.y = (def.yRatio!=null) ? Math.max(80, Math.min(H-140, def.yRatio * H)) : (H*0.65);
+      return k;
+    }
+    // hedefe göre hizalama (mevcut davranış)
+    if(def.anchor === 'target'){
+      const t = targets[def.idx];
+      const wr = Math.max(60, (def.widthRatio||0.5) * W);
+      k.w = Math.min(wr, W-40);
+      k.x = Math.max(20, Math.min(W - k.w - 20, (t.x - k.w/2)));
+      k.y = t.y + (def.dy||140);
+    } else {
+      k.w = def.width || Math.min(0.5*W, W-40);
+      k.x = def.x || (W - k.w)/2;
+      k.y = def.y || (H*0.65);
+    }
+    return k;
+  }
+  function drawBlock(b){ ctx.fillStyle='#fff'; ctx.fillRect(b.x,b.y,b.w,b.h); }
+
+  /* ====== Mayınlar (Bölüm 6) ====== */
+  const MINE_R = 22;
+  function makeMine(def){
+    const x = Math.max(60, Math.min(W-60, (def.px ?? 0.5) * W));
+    const y = Math.max(80, Math.min(H-140, (def.py ?? 0.5) * H));
+    return { x, y, move:def.move||'none', speed:def.speed||2, dir: def.dir || 1, angle:0 };
+  }
+  function drawMine(m){
+    ctx.save(); ctx.translate(m.x, m.y);
+    ctx.fillStyle='rgba(231,76,60,.75)';
+    ctx.beginPath(); ctx.arc(0,0,MINE_R,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='rgba(192,57,43,.9)';
+    const spike = (rot)=>{ ctx.save(); ctx.rotate(rot); ctx.beginPath(); ctx.moveTo(0,-MINE_R-6); ctx.lineTo(-8,-MINE_R+6); ctx.lineTo(8,-MINE_R+6); ctx.closePath(); ctx.fill(); ctx.restore(); };
+    spike(0); spike(Math.PI/2); spike(Math.PI); spike(3*Math.PI/2);
+    ctx.restore();
+  }
+
+  /* ====== Dikenler (genel + 7-8) ====== */
+  const TIP_R = 12;
+  function makeSpike(def){
+    const size = def.size || 44;
+    const tipX = Math.max(30, Math.min(W-30, (def.tip.px ?? 0.5)*W));
+    const tipY = Math.max(60, Math.min(H-120, (def.tip.py ?? 0.5)*H));
+    const dir = def.dir || 'left';
+    const h = size, w = size*0.9;
+    let p1={x:tipX,y:tipY}, p2, p3;
+    if(dir==='right'){ const cx=tipX-h, cy=tipY; p2={x:cx, y:cy-w/2}; p3={x:cx, y:cy+w/2}; }
+    else if(dir==='left'){ const cx=tipX+h, cy=tipY; p2={x:cx, y:cy-w/2}; p3={x:cx, y:cy+w/2}; }
+    else if(dir==='up'){ const cx=tipX, cy=tipY+h; p2={x:cx-w/2, y:cy}; p3={x:cx+w/2, y:cy}; }
+    else { const cx=tipX, cy=tipY-h; p2={x:cx-w/2, y:cy}; p3={x:cx+w/2, y:cy}; }  // down
+    return {
+      tip:{x:tipX,y:tipY}, a:p1, b:p2, c:p3, dir, size:h, baseW:w,
+      move: def.move || 'none', speed: def.speed || 0, vdir: def.vdir || 1,
+      parent: def.parent || null, lx: def.lx || 0, ly: def.ly || 0, angOff: def.angOff || 0
+    };
+  }
+  function drawSpike(s){
+    ctx.fillStyle='rgba(206, 93, 93, .9)';
+    ctx.beginPath();
+    ctx.moveTo(s.a.x,s.a.y); ctx.lineTo(s.b.x,s.b.y); ctx.lineTo(s.c.x,s.c.y); ctx.closePath(); ctx.fill();
+  }
+  function makeRow(row){
+    const arr=[]; const count=row.count||3;
+    if(row.edge==='top'||row.edge==='bottom'){
+      const y = (row.py ?? (row.edge==='top'?0.18:0.92))*H;
+      const x0=(row.x0 ?? 0.12)*W, x1=(row.x1 ?? 0.88)*W;
+      for(let i=0;i<count;i++){
+        const x = x0 + (x1-x0)*(i+0.5)/count;
+        arr.push(makeSpike({tip:{px:x/W,py:y/H}, dir: row.edge==='top'?'down':'up', size:44}));
+      }
+    }else{
+      const x = (row.px ?? (row.edge==='left'?0.05:0.95))*W;
+      const y0=(row.y0 ?? 0.40)*H, y1=(row.y1 ?? 0.76)*H;
+      for(let i=0;i<count;i++){
+        const y = y0 + (y1-y0)*(i+0.5)/count;
+        arr.push(makeSpike({tip:{px:x/W,py:y/H}, dir: row.edge==='left'?'right':'left', size:44}));
+      }
+    }
+    return arr;
+  }
+
+  // dönen çubuk
+  function drawRotor(r){
+    ctx.save();
+    ctx.translate(r.cx, r.cy);
+    ctx.rotate(r.angle);
+    ctx.fillStyle = '#f6b10a';
+    const w = r.len, h = r.thick;
+    ctx.beginPath();
+    const rx = w/2, ry = h/2, rr = ry;
+    ctx.moveTo(-rx+rr,-ry);
+    ctx.lineTo(rx-rr,-ry);
+    ctx.arc(rx-rr,0,rr,-Math.PI/2,Math.PI/2);
+    ctx.lineTo(-rx+rr,ry);
+    ctx.arc(-rx+rr,0,rr,Math.PI/2,-Math.PI/2);
+    ctx.closePath(); ctx.fill();
+    ctx.restore();
+  }
+
+  function drawMineExplosion(e){
+    const p = 1 - e.t/e.life;
+    const R = 22 + 60*p;
+    ctx.save();
+    ctx.globalAlpha = 0.5*(1-p);
+    ctx.strokeStyle='#e74c3c'; ctx.lineWidth=6*(1-p)+1;
+    ctx.beginPath(); ctx.arc(e.x,e.y,R,0,Math.PI*2); ctx.stroke();
+    ctx.globalAlpha = 0.9*(1-p);
+    for(let i=0;i<6;i++){
+      const a = e.seed + i*(Math.PI*2/6);
+      const r = 20 + 50*p;
+      const sx = e.x + Math.cos(a)*r, sy = e.y + Math.sin(a)*r;
+      ctx.beginPath(); ctx.arc(sx,sy,3+3*(1-p),0,Math.PI*2); ctx.fillStyle='#ffb3a6'; ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  function triggerMineAt(x,y){
+    mineBooms.push({x,y,t:22,life:22,seed:Math.random()*Math.PI*2});
+    balls.length=0;
+    restartFailOnce();
+  }
+
+  /* ===== Level kurulum ===== */
+  function initTargets(levelObj){
+    targets=[]; hazards=[]; blueTargets=[]; blocks=[]; mines=[]; mineBooms=[]; spikes=[]; rotors=[]; orbits=[];
+    const used=[];
+
+    // hedefler
+    for(let i=0;i<levelObj.vals.length;i++){
+      const pos = (levelObj.positions && levelObj.positions[i]) || {};
+      const x = Math.max(60, Math.min(W-60, ((pos.px ?? (0.15+Math.random()*0.7)))*W));
+      const y = Math.max(120, Math.min(H/1.7, ((pos.py ?? (0.20+Math.random()*0.5)))*H));
+      const mv=levelObj.moves[i]||'none';
+      const t={x,y,val:levelObj.vals[i],hit:false,move:mv,dir:1,angle:rand(0,Math.PI*2)};
+      if(mv.startsWith && mv.startsWith('circle')){
+        const circ=(levelObj.circles && levelObj.circles[i]) || {r:100,speed:(mv==='circleCW'?0.02:-0.02)};
+        t.cx=x; t.cy=y; t.r=circ.r; t.speed=circ.speed || (mv==='circleCW'?0.02:-0.02);
+      }
+      targets.push(t);
+    }
+
+    // mavi
+    (levelObj.blue||[]).forEach((b,i)=>{
+      const pos = (levelObj.bluePositions && levelObj.bluePositions[i]) || {};
+      const x = Math.max(60, Math.min(W-60, ((pos.px ?? (0.2+Math.random()*0.6)))*W));
+      const y = Math.max(120, Math.min(H/1.7, ((pos.py ?? (0.3+Math.random()*0.4)))*H));
+      blueTargets.push({x,y,label:b.label||'x5',hit:false,move:'none',dir:1});
+    });
+
+    // negatifler
+    (levelObj.hazards||[]).forEach((h,i)=>{
+      const pos = (levelObj.hazardPositions && levelObj.hazardPositions[i]) || {};
+      const x = Math.max(60, Math.min(W-60, ((pos.px ?? (0.2+Math.random()*0.6)))*W));
+      const y = Math.max(120, Math.min(H/1.7, ((pos.py ?? (0.3+Math.random()*0.4)))*H));
+      hazards.push({x, y, move:h.move||'leftRight', dir:1, val:h.val ?? -1, cd:0, hit:false});
+    });
+
+    // blok, mayın, diken
+    (levelObj.blocks || []).forEach(def => blocks.push(makeBlock(def)));
+    (levelObj.mines  || []).forEach(def => mines.push(makeMine(def)));
+    (levelObj.spikes || []).forEach(def=> spikes.push(makeSpike(def)));
+    (levelObj.spikeRows || []).forEach(r => { makeRow(r).forEach(s=>spikes.push(s)); });
+
+    // rotors
+    (levelObj.rotors || []).forEach(r=>{
+      const R = { type:'rotor', cx:(r.cx??0.5)*W, cy:(r.cy??0.5)*H, len:(r.lenRatio??0.6)*W, thick:r.thick||14, angle:r.angle||0, speed:r.speed||0.02 };
+      rotors.push(R);
+      const n = r.spikeCount || 5;
+      for(let i=0;i<n;i++){
+        const t = (i+0.5)/n - 0.5;
+        const lx = t * R.len;
+        const ly = -(R.thick/2 + 28);
+        const s = makeSpike({tip:{px:0.5,py:0.5}, dir:(r.edgeDir||'up'), size:r.spikeSize||44, parent:R});
+        s.lx = lx; s.ly = ly; s.parent = R;
+        spikes.push(s);
+      }
+    });
+
+    // orbits (dairesel dikenler)
+    (levelObj.orbits || []).forEach(o=>{
+      const O = { type:'orbit', cx:(o.cx??0.5)*W, cy:(o.cy??0.5)*H, r:(o.rRatio??0.3)*Math.min(W,H), speed:o.speed||0.02 };
+      orbits.push(O);
+      const n = o.count || 8;
+      for(let i=0;i<n;i++){
+        const ang = (i/n)*Math.PI*2 + (o.start||0);
+        const sp = makeSpike({tip:{px:0.5,py:0.5}, dir:o.dir||'left', size:o.spikeSize||44, parent:O});
+        sp.angOff = ang; sp.parent = O;
+        spikes.push(sp);
+      }
+    });
+
+    setFinishUI(!!levelObj.finish);
+    checkLevelCleared();
+  }
+
+  function setupLevel(){
+    balls=[]; usedBoom=false; drag=false; aiming=false; levelFailGuard=false;
+    levelExplodeLock=false; locked=false;
+    initTargets(currentSet()[levelIndex]);
+    mainBall.x = lastX ?? W/2;
+  }
+
+  function resetAll(){
+    chapter=0; levelIndex=0; progress=0; dispProgress=0; lastX=null;
+    setAmmo(20); setGold(103); setGem(7);
+    sMulti=5; sBoom=5; sExpl=5; sSlow=3;
+    multiC.textContent=sMulti; boomC.textContent=sBoom; explC.textContent=sExpl; slowC.textContent=sSlow;
+    fMulti=fBoom=fExpl=false; slowActive=false; slowTime=0; partyT=0;
+    chapterModal.style.display='none';
+    setupLevel();
+  }
+
+  /* ===== Drawing ===== */
+  function drawTarget(t){
+    if(t.hit) return;
+    ctx.setLineDash([8,6]); ctx.strokeStyle='#fff'; ctx.lineWidth=3;
+    ctx.beginPath(); ctx.arc(t.x,t.y,30,0,Math.PI*2); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle='#fff'; ctx.font='bold 26px Montserrat, Arial'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(t.val,t.x,t.y);
+  }
+  function drawBlue(b){
+    if(b.hit) return;
+    ctx.setLineDash([10,6]); ctx.strokeStyle='#2da8ff'; ctx.lineWidth=4;
+    ctx.beginPath(); ctx.arc(b.x,b.y,30,0,Math.PI*2); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle='#2da8ff'; ctx.font='900 22px Montserrat, Arial'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(b.label,b.x,b.y+1);
+  }
+  function drawHazard(h){
+    if(h.hit) return;
+    ctx.setLineDash([10,6]); ctx.strokeStyle='#e53935'; ctx.lineWidth=4;
+    ctx.beginPath(); ctx.arc(h.x,h.y,30,0,Math.PI*2); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle='#e53935'; ctx.font='bold 26px Montserrat, Arial'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(h.val.toString(),h.x,h.y+1);
+  }
+  function drawBall(b){
+    ctx.beginPath();
+    ctx.fillStyle=b.color?b.color:(b.expl?'#e74c3c':'#3498db');
+    ctx.arc(b.x,b.y,ballRadius,0,Math.PI*2); ctx.fill();
+  }
+  function drawMain(){ ctx.beginPath(); ctx.fillStyle='#2980b9'; ctx.arc(mainBall.x,mainBall.y,ballRadius,0,Math.PI*2); ctx.fill(); }
+
+  /* ===== Movement ===== */
+  function moveTargets(){
+    const k=slowActive?0.35:1;
+    targets.forEach(t=>{
+      if(t.move==='leftRight'){ t.x+=t.dir*2*k; if(t.x<50||t.x>W-50) t.dir*=-1; }
+      if(t.move==='upDown'){ t.y+=t.dir*1.8*k; if(t.y<80||t.y>H/2) t.dir*=-1; }
+      if(t.move && t.move.startsWith && t.move.startsWith('circle')){
+        t.angle += (t.speed||0.02)*k;
+        t.x = t.cx + Math.cos(t.angle)*(t.r||100);
+        t.y = t.cy + Math.sin(t.angle)*(t.r||100);
+      }
+    });
+    hazards.forEach(h=>{
+      if(h.hit) return;
+      if(h.move==='leftRight'){ h.x+=h.dir*2*k; if(h.x<50||h.x>W-50) h.dir*=-1; }
+      if(h.move==='upDown'){ h.y+=h.dir*1.8*k; if(h.y<80||h.y>H/2) h.dir*=-1; }
+      if(h.cd>0) h.cd--;
+    });
+
+    // bloklar
+    blocks.forEach(b=>{
+      const kk = k;
+      if(b.move==='leftRight'){
+        b.x += b.dir * (b.speed||2) * kk;
+        if(b.x < 20){ b.x=20; b.dir=1; }
+        if(b.x + b.w > W-20){ b.x=W-20-b.w; b.dir=-1; }
+      }
+      if(b.move==='upDown'){
+        b.y += b.dir * (b.speed||1.8) * kk;
+        const topLim = 80, botLim = Math.max(120, H/2);
+        if(b.y < topLim){ b.y = topLim; b.dir = 1; }
+        if(b.y > botLim){ b.y = botLim; b.dir = -1; }
+      }
+    });
+
+    // mayınlar
+    mines.forEach(m=>{
+      if(m.move==='leftRight'){
+        m.x += (m.speed||2) * (m.dir||1) * k;
+        const l=50, r=W-50;
+        if(m.x<l){ m.x=l; m.dir=1; }
+        if(m.x>r){ m.x=r; m.dir=-1; }
+      }
+      if(m.move==='upDown'){
+        m.y += (m.speed||1.8) * (m.dir||1) * k;
+        const t=80, b=H-140;
+        if(m.y<t){ m.y=t; m.dir=1; }
+        if(m.y>b){ m.y=b; m.dir=-1; }
+      }
+    });
+
+    // -- Spikes: parent'e bağlı olanlar ve bağımsız hareketliler --
+    spikes.forEach(s=>{
+      if(s.parent){
+        if(s.parent.type==='rotor'){
+          const a=s.parent.angle, lx=s.lx, ly=s.ly;
+          const x = s.parent.cx + Math.cos(a)*lx - Math.sin(a)*ly;
+          const y = s.parent.cy + Math.sin(a)*lx + Math.cos(a)*ly;
+          const upd = makeSpike({tip:{px:x/W,py:y/H}, dir:s.dir, size:s.size, parent:s.parent});
+          s.tip=upd.tip; s.a=upd.a; s.b=upd.b; s.c=upd.c;
+        }else if(s.parent.type==='orbit'){
+          s.angOff += (s.parent.speed||0.02)*k;
+          const x = s.parent.cx + Math.cos(s.angOff)*s.parent.r;
+          const y = s.parent.cy + Math.sin(s.angOff)*s.parent.r;
+          const upd = makeSpike({tip:{px:x/W,py:y/H}, dir:s.dir, size:s.size, parent:s.parent});
+          s.tip=upd.tip; s.a=upd.a; s.b=upd.b; s.c=upd.c;
+        }
+      }else{
+        if(s.move==='leftRight'){
+          const v = (s.speed||1.6)*(s.vdir||1)*k;
+          s.tip.x+=v; s.a.x+=v; s.b.x+=v; s.c.x+=v;
+          const L=40,R=W-40; if(s.tip.x<L||s.tip.x>R){
+            const d=(s.tip.x<L)?(L-s.tip.x):(R-s.tip.x);
+            s.tip.x+=d; s.a.x+=d; s.b.x+=d; s.c.x+=d; s.vdir*=-1;
+          }
+        }
+        if(s.move==='upDown'){
+          const v=(s.speed||1.6)*(s.vdir||1)*k;
+          s.tip.y+=v; s.a.y+=v; s.b.y+=v; s.c.y+=v;
+          const T=80,B=H-140; if(s.tip.y<T||s.tip.y>B){
+            const d=(s.tip.y<T)?(T-s.tip.y):(B-s.tip.y);
+            s.tip.y+=d; s.a.y+=d; s.b.y+=d; s.c.y+=d; s.vdir*=-1;
+          }
+        }
+      }
+    });
+
+    // -- rotor açısı --
+    rotors.forEach(r=>{ r.angle += (r.speed||0.02)*k; });
+  }
+
+  function explodeAt(cx,cy){
+    const near=targets.filter(t=>!t.hit)
+      .sort((a,b)=>Math.hypot(a.x-cx,a.y-cy)-Math.hypot(b.x-cx,b.y-cy))
+      .slice(0,3);
+    near.forEach(t=>t.hit=true);
+    checkLevelCleared();
+  }
+
+  function markHit(t){ t.hit=true; checkLevelCleared(); }
+
+  function restartFailOnce(){
+    if(levelFailGuard) return;
+    levelFailGuard=true;
+    if(ammo>0) setAmmo(ammo-1);
+    setupLevel();
+  }
+
+  // Bölüm sonu modalı – 8. bölüm özel metin/konfeti
+  function roman(n){ return ['I','II','III','IV','V','VI','VII','VIII','IX','X'][n] || (n+1).toString(); }
+  function showChapterEndModal(){
+    const isLast = (chapter >= chapters.length-1);
+    if(chapter===7){ // VIII bitti
+      chapterTitle.textContent = 'DANDANAKAN!';
+      chapterNextBtn.textContent = 'Tebrikler!';
+      chapterNextBtn.disabled = true;
+      chapterNextBtn.classList.add('disabled');
+      partyT = 480; // ~8 sn konfeti
+      chapterModal.style.display='block';
+      return;
+    }
+    const title = `${roman(chapter)}. Bölüm bitti`;
+    const next = isLast ? 'Tebrikler!' : `${roman(chapter+1)}. Bölüme Geç`;
+    chapterTitle.textContent = title;
+    chapterNextBtn.textContent = next;
+    chapterNextBtn.disabled = isLast;
+    chapterNextBtn.classList.toggle('disabled', isLast);
+    chapterModal.style.display='block';
+  }
+
+  function nextLevel(){
+    setGold(gold+5);
+    const last=(levelIndex>=currentSet().length-1);
+    if(!last){ levelIndex++; progress+=20; setupLevel(); }
+    else{ showChapterEndModal(); }
+  }
+
+  chapterNextBtn.onclick=()=>{
+    chapterModal.style.display='none';
+    if(chapter < chapters.length-1){
+      chapter++;
+      levelIndex=0; progress=0; dispProgress=0;
+      setupLevel(); size();
+    }
+  };
+
+  /* ===== Input ===== */
+  function canvasPos(e){ const r=canvas.getBoundingClientRect(); return {x:e.clientX, y:e.clientY-r.top}; }
+  function canAimNow(){ return !levelExplodeLock; }
+
+  canvas.addEventListener('mousedown',e=>{
+    if(paused) return;
+    const {x,y}=canvasPos(e);
+    if(!locked){ drag=true; mainBall.x=x; }
+    else if(ammo>0 && canAimNow()){ aiming=true; angleStart={x:mainBall.x,y:mainBall.y}; angleCur={x,y}; }
+  });
+  canvas.addEventListener('mousemove',e=>{
+    if(paused) return;
+    const {x,y}=canvasPos(e);
+    if(drag){ mainBall.x=Math.max(ballRadius,Math.min(W-ballRadius,x)); }
+    if(aiming){ angleCur={x,y}; }
+  });
+  canvas.addEventListener('mouseup',e=>{
+    if(paused) return;
+    if(drag){ drag=false; locked=true; }
+    else if(aiming){ shoot(); }
+  });
+
+  canvas.addEventListener('touchstart',e=>{
+    if(paused) return;
+    const t=e.touches[0], r=canvas.getBoundingClientRect();
+    const x=t.clientX, y=t.clientY-r.top;
+    if(!locked){ drag=true; mainBall.x=x; }
+    else if(ammo>0 && canAimNow()){ aiming=true; angleStart={x:mainBall.x,y:mainBall.y}; angleCur={x,y}; }
+    e.preventDefault();
+  },{passive:false});
+  canvas.addEventListener('touchmove',e=>{
+    if(paused) return;
+    const t=e.touches[0], r=canvas.getBoundingClientRect();
+    const x=t.clientX, y=t.clientY-r.top;
+    if(drag){ mainBall.x=Math.max(ballRadius,Math.min(W-ballRadius,x)); }
+    if(aiming){ angleCur={x,y}; }
+    e.preventDefault();
+  },{passive:false});
+  canvas.addEventListener('touchend',e=>{
+    if(paused) return;
+    if(drag){ drag=false; locked=true; }
+    else if(aiming){ shoot(); }
+    e.preventDefault();
+  },{passive:false});
+
+  /* ===== Skills ===== */
+  multiBtn.onclick=()=>{ if(!paused && balls.length===0 && sMulti>0){ fMulti=true; sMulti--; multiC.textContent=sMulti; } };
+  boomBtn.onclick=()=>{ if(!paused && balls.length===0 && sBoom>0){ fBoom=true; sBoom--; boomC.textContent=sBoom; } };
+  explBtn.onclick=()=>{ if(!paused && balls.length===0 && sExpl>0){ fExpl=true; sExpl--; explC.textContent=sExpl; } };
+  slowBtn.onclick=()=>{ if(!paused && sSlow>0){ slowActive=true; sSlow--; slowC.textContent=sSlow; slowTime=240; } };
+
+  function shoot(){
+    if(!angleStart||!angleCur||ammo<=0) return;
+    const dx=angleCur.x-angleStart.x, dy=angleCur.y-angleStart.y;
+    const ang=Math.atan2(dy,dx), sp=baseBallSpeed;
+
+    // 3. bölüm: yatay ters yön
+    const dirSign = (chapter===2 ? -1 : 1);
+    const vxBase = Math.cos(ang) * sp * dirSign;
+    const vyBase = Math.sin(ang) * sp;
+
+    let newBall;
+    if(fBoom && !usedBoom){
+      newBall={x:mainBall.x,y:mainBall.y,vx:vxBase,vy:vyBase,boom:true,ret:false,ox:mainBall.x,oy:mainBall.y,phase:0,off:false,hzCD:0};
+      fBoom=false; usedBoom=true;
+    } else if(fMulti){
+      const colors=['#3498db','#e74c3c','#f1c40f'];
+      for(let i=-1;i<=1;i++){
+        const a=ang+0.25*i;
+        const vx = Math.cos(a)*sp*dirSign;
+        const vy = Math.sin(a)*sp;
+        balls.push({x:mainBall.x,y:mainBall.y,vx,vy,color:colors[i+1],off:false,hzCD:0});
+      }
+      fMulti=false;
+    } else if(fExpl){
+      newBall={x:mainBall.x,y:mainBall.y,vx:vxBase,vy:vyBase,expl:true,expCooldown:0,expHit:false,off:false,hzCD:0};
+      fExpl=false; levelExplodeLock=true;
+    } else {
+      newBall={x:mainBall.x,y:mainBall.y,vx:vxBase,vy:vyBase,off:false,hzCD:0};
+    }
+
+    if(newBall) balls.push(newBall);
+
+    aiming=false; angleStart=null; angleCur=null;
+    if(!(usedBoom && newBall && newBall.boom)) locked=false;
+    lastX=mainBall.x;
+  }
+
+  /* ===== Pause ===== */
+  function setPaused(v){ paused=v; pauseModal.style.display = paused ? 'block' : 'none'; }
+  pauseBtn.onclick=()=> setPaused(true);
+  resumeBtn.onclick=()=> setPaused(false);
+  restartBtn.onclick=()=>{ setPaused(false); resetAll(); };
+
+  /* ===== Loop ===== */
+  function update(){
+    if(!paused){
+      ctx.clearRect(0,0,W,H);
+      moveTargets();
+
+      balls.forEach(b=>{
+        if(b.off) return;
+
+        b.x+=b.vx; b.y+=b.vy;
+
+        // Kenarlar
+        if(b.x - ballRadius <= 0){
+          if(b.boom && !b.ret){ b.x=ballRadius; b.vx=0; b.vy=0; b.ret=true; }
+          else { b.x=ballRadius; b.vx*=-1; }
+        }
+        if(b.x + ballRadius >= W){
+          if(b.boom && !b.ret){ b.x=W-ballRadius; b.vx=0; b.vy=0; b.ret=true; }
+          else { b.x=W-ballRadius; b.vx*=-1; }
+        }
+
+        // Üst–Alt mantığı: inverted ise ters
+        if(!isInverted()){
+          if(b.y - ballRadius <= 0){
+            if(b.boom && !b.ret){ b.y=ballRadius; b.vx=0; b.vy=0; b.ret=true; }
+            else if(b.expl){
+              lastX=b.x;
+              if(!b.expHit || levelCleared){ b.off=true; nextLevel(); return; }
+              b.y=ballRadius; b.vy*=-1;
+            } else {
+              lastX=b.x; b.off=true; nextLevel(); return;
+            }
+          }
+          if(b.y + ballRadius > H){
+            b.off=true; balls.length=0; restartFailOnce(); return;
+          }
+        }else{
+          if(b.y + ballRadius >= H){
+            if(b.boom && !b.ret){ b.y=H-ballRadius; b.vx=0; b.vy=0; b.ret=true; }
+            else if(b.expl){
+              lastX=b.x;
+              if(!b.expHit || levelCleared){ b.off=true; nextLevel(); return; }
+              b.y=H-ballRadius; b.vy*=-1;
+            } else {
+              lastX=b.x; b.off=true; nextLevel(); return;
+            }
+          }
+          if(b.y - ballRadius <= 0){
+            b.off=true; balls.length=0; restartFailOnce(); return;
+          }
+        }
+
+        // Blok çarpışması
+        for(const B of blocks){
+          const cx = Math.max(B.x, Math.min(b.x, B.x + B.w));
+          const cy = Math.max(B.y, Math.min(b.y, B.y + B.h));
+          const dx = b.x - cx, dy = b.y - cy;
+          if(dx*dx + dy*dy < ballRadius*ballRadius){
+            const overlapX = (B.w/2 + ballRadius) - Math.abs((B.x + B.w/2) - b.x);
+            const overlapY = (B.h/2 + ballRadius) - Math.abs((B.y + B.h/2) - b.y);
+            if(overlapX < overlapY){
+              const n = Math.sign(b.x - (B.x + B.w/2)) || 1;
+              b.x += n * overlapX * 1.05; b.vx = -b.vx * 0.9;
+            }else{
+              const n = Math.sign(b.y - (B.y + B.h/2)) || 1;
+              b.y += n * overlapY * 1.05; b.vy = -b.vy * 0.9;
+            }
+            lastX=b.x;
+          }
+        }
+
+        // Mayın çarpışması
+        for(const m of mines){
+          if(Math.hypot(b.x-m.x, b.y-m.y) < ballRadius + (MINE_R+6)){ triggerMineAt(m.x,m.y); return; }
+        }
+
+        // Diken (ucu)
+        for(const s of spikes){
+          const d = Math.hypot(b.x - s.tip.x, b.y - s.tip.y);
+          if(d < ballRadius + TIP_R){ triggerMineAt(s.tip.x, s.tip.y); return; }
+        }
+
+        // Hedef çarpışmaları
+        for(const t of targets){
+          if(t.hit) continue;
+          if(Math.hypot(b.x-t.x,b.y-t.y) < ballRadius+30){
+            if(b.expl && b.expCooldown<=0){ explodeAt(t.x,t.y); b.expCooldown=18; b.expHit=true; }
+            else { markHit(t); }
+            lastX=b.x;
+          }
+        }
+        for(const bt of blueTargets){
+          if(bt.hit) continue;
+          if(Math.hypot(b.x-bt.x,b.y-bt.y) < ballRadius+30){
+            bt.hit=true; setGem(gem+3); checkLevelCleared(); lastX=b.x;
+          }
+        }
+
+        // Negatif çarpışmaları
+        for(const h of hazards){
+          if(h.hit) continue;
+          if(Math.hypot(b.x-h.x,b.y-h.y) < ballRadius+30){
+            if((b.hzCD||0)<=0){
+              setAmmo(ammo - Math.abs(h.val||1)); h.hit=true; b.hzCD=18;
+            }
+          }
+        }
+
+        if(b.hzCD>0) b.hzCD--;
+
+        // Boomerang dönüş
+        if(b.boom && b.ret){
+          const dx=b.ox-b.x, dy=b.oy-b.y;
+          b.phase=(b.phase||0)+0.15;
+          b.vx=dx*0.15 + Math.sin(b.phase)*2; b.vy=dy*0.15;
+          if(Math.abs(dx)<2 && Math.abs(dy)<2){
+            b.off=true;
+            if(!levelExplodeLock) locked=false;
+          }
+        }
+
+        if(b.expl && b.expCooldown>0) b.expCooldown--;
+      });
+
+      hazards=hazards.filter(h=>!h.hit);
+      balls=balls.filter(b=>!b.off);
+
+      if(slowActive){ slowTime--; if(slowTime<=0) slowActive=false; }
+
+      // Çizim
+      targets.forEach(drawTarget);
+      blueTargets.forEach(drawBlue);
+      hazards.forEach(drawHazard);
+      blocks.forEach(drawBlock);
+      rotors.forEach(drawRotor);     // dönen çubuklar
+      spikes.forEach(drawSpike);
+      mines.forEach(drawMine);
+      mineBooms.forEach(drawMineExplosion);
+      balls.forEach(drawBall);
+      drawMain();
+
+      // Patlama animasyon ömrü
+      mineBooms.forEach(e=>e.t--);
+      mineBooms = mineBooms.filter(e=>e.t>0);
+
+      if(aiming && angleStart && angleCur){
+        ctx.strokeStyle='#e74c3c'; ctx.lineWidth=3;
+        ctx.beginPath(); ctx.moveTo(mainBall.x,mainBall.y); ctx.lineTo(angleCur.x,angleCur.y); ctx.stroke();
+      }
+
+      dispProgress+=(progress-dispProgress)*0.08;
+      barFill.style.width=dispProgress+'%';
+      const list=[[40,msEls[0]],[60,msEls[1]],[80,msEls[2]],[100,msEls[3]]];
+      list.forEach(([n,el])=>{ el.classList.toggle('reached', dispProgress>=n); el.classList.remove('active'); });
+      (list.find(([n])=>dispProgress<n)||list[list.length-1])[1].classList.add('active');
+
+      // Konfeti (VIII bitişi)
+      if(partyT>0){
+        if(!window._confetti){
+          const arr=[]; for(let i=0;i<90;i++){
+            arr.push({x:Math.random()*W, y:-Math.random()*200, vy:2+Math.random()*3, vx:(Math.random()-.5)*2, r:3+Math.random()*3, rot:Math.random()*6.28, vr:(Math.random()-.5)*0.2});
+          }
+          window._confetti=arr;
+        }
+        const arr=window._confetti;
+        arr.forEach(p=>{
+          p.x += p.vx; p.y += p.vy; p.rot += p.vr;
+          ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.rot);
+          ctx.fillStyle = ['#ffcc00','#ff6b6b','#4cd137','#00a8ff','#9b59b6'][p.r|0 % 5];
+          ctx.fillRect(-p.r,-p.r,p.r*2,p.r*2);
+          ctx.restore();
+          if(p.y>H+40){ p.y=-40; p.x=Math.random()*W; }
+        });
+        partyT--; if(partyT<=0){ window._confetti=null; }
+      }
+    }
+    requestAnimationFrame(update);
+  }
+
+  /* ===== Start ===== */
+  function init(){
+    size();
+    setupLevel();
+    ammoText.textContent=ammo; goldText.textContent=gold; gemText.textContent=gem;
+    requestAnimationFrame(update);
+  }
+  init();
+})();
+</script>
+</body>
+</html>
