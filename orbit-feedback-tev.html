@@ -25,16 +25,30 @@
   #progressWrap{flex:1;display:flex;align-items:center;justify-content:center}
   .bar{position:relative;width:min(58vw,560px);height:22px;background:#f8e19a;border-radius:12px;overflow:visible}
   .barFill{position:absolute;left:0;top:0;height:100%;width:0%;background:#f39c12;transition:width .2s}
-  .milestone{
+  .scoreCircle{
     position:absolute;top:50%;transform:translate(-50%,-50%);
-    width:56px;height:56px;border-radius:50%;display:grid;place-items:center;font-weight:900;font-size:18px;
-    color:#111;background:#fff;border:4px solid #fff;box-shadow:0 0 0 2px rgba(0,0,0,.05),0 10px 20px rgba(0,0,0,.18);
+    width:48px;height:48px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:900;font-size:16px;
+    color:#111;background:#fff;border:3px solid #fff;box-shadow:0 0 0 2px rgba(0,0,0,.05),0 8px 16px rgba(0,0,0,.18);
     transition:all .15s;z-index:2;
   }
-  .milestone::after{content:"";position:absolute;inset:7px;border-radius:50%;background:radial-gradient(circle at 50% 40%, rgba(255,255,255,.95), rgba(255,255,255,.12));opacity:.85}
-  .milestone.reached{background:#f39c12;color:#fff;border-color:#f39c12;box-shadow:0 0 0 5px rgba(243,156,18,.35),0 12px 24px rgba(0,0,0,.22)}
-  .milestone.active{outline:3px dotted #e74c3c;outline-offset:4px}
-  .ms40{left:40%}.ms60{left:60%}.ms80{left:80%}.ms100{left:100%}
+  .scoreCircle::after{content:"";position:absolute;inset:6px;border-radius:50%;background:radial-gradient(circle at 50% 40%, rgba(255,255,255,.95), rgba(255,255,255,.12));opacity:.85}
+  .scoreCircle.reached{background:#f39c12;color:#fff;border-color:#f39c12;box-shadow:0 0 0 4px rgba(243,156,18,.35),0 10px 20px rgba(0,0,0,.22)}
+  .scoreCircle.active{outline:3px dotted #e74c3c;outline-offset:3px}
+  .star1{left:33.33%}.star2{left:66.66%}.star3{left:100%}
+  
+  /* Yıldız içindeki puan bilgisi */
+  .scoreCircle .puanInfo{
+    font-size:8px;font-weight:700;color:#666;margin-top:-2px;line-height:1;
+  }
+  
+  /* Dinamik puan dairesi */
+  .scoreIndicator{
+    position:absolute;top:50%;transform:translate(-50%,-50%);
+    width:40px;height:40px;border-radius:50%;display:grid;place-items:center;font-weight:900;font-size:14px;
+    color:#111;background:#fff;border:3px solid #f39c12;box-shadow:0 0 0 2px rgba(0,0,0,.1),0 6px 12px rgba(0,0,0,.2);
+    transition:all .2s;z-index:3;
+  }
+  .scoreIndicator::after{content:"";position:absolute;inset:4px;border-radius:50%;background:radial-gradient(circle at 50% 40%, rgba(255,255,255,.95), rgba(255,255,255,.12));opacity:.9}
 
   /* Pause */
   #pauseBtn{width:46px;height:46px;border:3px solid #111;border-radius:10px;display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer}
@@ -54,7 +68,8 @@
   #gameCanvas{width:100%;height:100%;display:block;background:#d9d9d9}
 
   /* ===== Alt Toolbar ===== */
-  #toolbar{position:absolute;left:0;right:0;bottom:0;z-index:2;background:rgba(0,0,0,.08);padding:10px 12px 12px;border-top:4px dashed #fff}
+  #toolbar{position:absolute;left:0;right:0;bottom:0;z-index:2;background:rgba(0,0,0,.08);padding:10px 12px 12px;border-top:4px dashed #fff;transition:transform 0.3s ease-out}
+  #toolbar.hidden{transform:translateY(100%)}
   #bottomFinishLabel{
     position:absolute;left:50%;top:-36px;transform:translateX(-50%);
     font-weight:900;font-size:34px;color:#f0b429;letter-spacing:2px;display:none;background:#d9d9d9;padding:0 10px;border-radius:10px
@@ -71,7 +86,7 @@
   .modal p{opacity:.9;margin-bottom:18px}
   .btn{background:#f39c12;color:#1b1b1b;font-weight:900;border:none;padding:12px 18px;border-radius:10px;font-size:18px;cursor:pointer}
   .btn:hover{background:#d68910}
-  #pauseModal .row{display:flex;gap:16px;justify-content:center}
+  .row{display:flex;gap:16px;justify-content:center;align-items:center}
   .round{width:72px;height:72px;border-radius:50%;background:#fff;color:#1b1b1b;display:grid;place-items:center;font-size:34px;font-weight:900;cursor:pointer}
   .round.secondary{background:#ffe1ad}
   .disabled{opacity:.5;cursor:not-allowed}
@@ -116,10 +131,10 @@
     <div id="progressWrap">
       <div class="bar">
         <div class="barFill" id="barFill"></div>
-        <div class="milestone ms40" id="ms40">40</div>
-        <div class="milestone ms60" id="ms60">60</div>
-        <div class="milestone ms80" id="ms80">80</div>
-        <div class="milestone ms100" id="ms100">100</div>
+        <div class="scoreCircle star1" id="star1">⭐<div class="puanInfo">10</div></div>
+        <div class="scoreCircle star2" id="star2">⭐<div class="puanInfo">20</div></div>
+        <div class="scoreCircle star3" id="star3">⭐<div class="puanInfo">30</div></div>
+        <div class="scoreIndicator" id="scoreIndicator">0</div>
       </div>
     </div>
 
@@ -160,6 +175,27 @@
         <div class="round" id="restartBtn" title="Yeniden Başlat">⟳</div>
       </div>
     </div>
+
+    <!-- Game Over popup -->
+    <div class="modal" id="gameOverModal">
+      <h2>Oyun Bitti!</h2>
+      <p>Topunuz bitti. Tekrar denemek ister misiniz?</p>
+      <div class="row">
+        <div class="round" id="retryBtn" title="Tekrar Dene">🔄</div>
+        <div class="round secondary" id="mainMenuBtn" title="Ana Menü">🏠</div>
+      </div>
+    </div>
+
+    <!-- Chapter Retry popup -->
+    <div class="modal" id="chapterRetryModal">
+      <h2>Yetersiz Puan!</h2>
+      <p>Bu bölümü geçmek için en az 1 yıldız (10 puan) toplamanız gerekiyor.</p>
+      <p>Mevcut puanınız: <strong id="currentScore">0</strong> puan</p>
+      <div class="row">
+        <div class="round" id="chapterRetryBtn" title="Bölümü Tekrar Oyna">🔄</div>
+        <div class="round secondary" id="chapterRetryMenuBtn" title="Ana Menü">🏠</div>
+      </div>
+    </div>
   </div>
 
 <script>
@@ -167,13 +203,21 @@
   const canvas = document.getElementById('gameCanvas');
   const ctx = canvas.getContext('2d');
   const barFill = document.getElementById('barFill');
-  const msEls=[document.getElementById('ms40'),document.getElementById('ms60'),document.getElementById('ms80'),document.getElementById('ms100')];
+  const starEls=[document.getElementById('star1'),document.getElementById('star2'),document.getElementById('star3')];
+  const scoreIndicator = document.getElementById('scoreIndicator');
   const ammoText=document.getElementById('ammoText');
   const pauseBtn=document.getElementById('pauseBtn');
   const pauseModal=document.getElementById('pauseModal');
   const resumeBtn=document.getElementById('resumeBtn');
   const restartBtn=document.getElementById('restartBtn');
   const chapterModal=document.getElementById('chapterModal');
+  const gameOverModal=document.getElementById('gameOverModal');
+  const retryBtn=document.getElementById('retryBtn');
+  const mainMenuBtn=document.getElementById('mainMenuBtn');
+  const chapterRetryModal=document.getElementById('chapterRetryModal');
+  const chapterRetryBtn=document.getElementById('chapterRetryBtn');
+  const chapterRetryMenuBtn=document.getElementById('chapterRetryMenuBtn');
+  const currentScoreEl=document.getElementById('currentScore');
   const chapterTitle=document.getElementById('chapterTitle');
   const chapterNextBtn=document.getElementById('chapterNextBtn');
   const topDashed=document.getElementById('topDashed');
@@ -209,6 +253,7 @@
 
   let usedBoom=false, locked=false, drag=false, aiming=false;
   let angleStart=null, angleCur=null, lastX=null;
+  let isOnBall=false; // Topun üstünde mi kontrolü
   let slowActive=false, slowTime=0;
   let levelFailGuard=false;
   const ballRadius=15, baseBallSpeed=8;
@@ -219,6 +264,7 @@
 
   let gold=103, gem=7;
   let levelCleared=false;
+  let score=0, maxScore=30; // Puan sistemi: 10, 20, 30 puan için 3 yıldız
 
   /* ===== Bölüm 1–7: (orijinal veriler) ===== */
   const chapter1=[
@@ -403,14 +449,57 @@
   function setAmmo(v){ ammo=v; if(ammo<0) ammo=0; ammoText.textContent=ammo; }
   function setGold(v){ gold=v; goldText.textContent=v; }
   function setGem(v){ gem=v; gemText.textContent=v; }
+  function setScore(v){ 
+    score=v; 
+    if(score<0) score=0; 
+    if(score>maxScore) score=maxScore;
+    updateScoreDisplay();
+  }
+  function addScore(v){ setScore(score + v); }
 
-  function updateMilestones(pct){
-    const list=[[40,msEls[0]],[60,msEls[1]],[80,msEls[2]],[100,msEls[3]]];
-    list.forEach(([n,el])=>{ el.classList.toggle('reached', pct>=n); el.classList.remove('active'); });
-    (list.find(([n])=>pct<n)||list[list.length-1])[1].classList.add('active');
+  function updateScoreDisplay(){
+    const pct = (score / maxScore) * 100;
+    barFill.style.width = pct + '%';
+    
+    // Dinamik puan dairesini güncelle
+    scoreIndicator.textContent = score;
+    scoreIndicator.style.left = pct + '%';
+    
+    // Yıldız durumlarını güncelle
+    const thresholds = [10, 20, 30]; // 1. yıldız: 10, 2. yıldız: 20, 3. yıldız: 30
+    starEls.forEach((el, i) => {
+      const threshold = thresholds[i];
+      
+      // Eğer puan bu yıldızın eşiğini geçtiyse yıldızı gizle
+      if(score >= threshold) {
+        el.style.display = 'none';
+        el.classList.add('reached');
+        el.classList.remove('active');
+      } else {
+        el.style.display = 'flex'; // flex olarak değiştir
+        el.classList.remove('reached');
+        el.classList.remove('active');
+      }
+    });
+    
+    // Aktif yıldızı belirle (bir sonraki hedef)
+    const activeIndex = thresholds.findIndex(t => score < t);
+    if(activeIndex !== -1) {
+      starEls[activeIndex].classList.add('active');
+    } else {
+      // Tüm yıldızlar kazanıldıysa son yıldızı aktif göster
+      starEls[starEls.length-1].classList.add('active');
+    }
   }
 
   function checkLevelCleared(){ levelCleared = targets.every(t=>t.hit) && blueTargets.every(t=>t.hit); }
+  function checkGameOver(){
+    const remainingLevels = currentSet().length - levelIndex;
+    if((ammo <= 0 && balls.length === 0) || (ammo < remainingLevels && balls.length === 0)){
+      gameOverModal.style.display = 'block';
+      paused = true;
+    }
+  }
   function rand(min,max){return Math.random()*(max-min)+min;}
 
   /* ====== Bloklar (Bölüm 5 & 8.2) ====== */
@@ -539,7 +628,10 @@
   function triggerMineAt(x,y){
     mineBooms.push({x,y,t:22,life:22,seed:Math.random()*Math.PI*2});
     balls.length=0;
-    restartFailOnce();
+    // Level'i yeniden kurma, sadece topu sıfırla
+    drag=false; aiming=false; isOnBall=false;
+    mainBall.x = lastX ?? W/2;
+    checkGameOver();
   }
 
   /* ===== Level kurulum ===== */
@@ -617,18 +709,24 @@
 
   function setupLevel(){
     balls=[]; usedBoom=false; drag=false; aiming=false; levelFailGuard=false;
-    levelExplodeLock=false; locked=false;
+    levelExplodeLock=false; isOnBall=false;
+    // Puanı sadece bölüm başında sıfırla, level'lerde koru
+    if(levelIndex === 0) setScore(0);
     initTargets(currentSet()[levelIndex]);
     mainBall.x = lastX ?? W/2;
   }
 
   function resetAll(){
     chapter=0; levelIndex=0; progress=0; dispProgress=0; lastX=null;
-    setAmmo(20); setGold(103); setGem(7);
+    setAmmo(10); setGold(103); setGem(7); setScore(0); // İlk bölüm için 10 top hakkı
     sMulti=5; sBoom=5; sExpl=5; sSlow=3;
     multiC.textContent=sMulti; boomC.textContent=sBoom; explC.textContent=sExpl; slowC.textContent=sSlow;
     fMulti=fBoom=fExpl=false; slowActive=false; slowTime=0; partyT=0;
     chapterModal.style.display='none';
+    gameOverModal.style.display='none';
+    chapterRetryModal.style.display='none';
+    // Toolbar'ı göster
+    toolbar.classList.remove('hidden');
     setupLevel();
   }
 
@@ -765,12 +863,23 @@
   function restartFailOnce(){
     if(levelFailGuard) return;
     levelFailGuard=true;
-    if(ammo>0) setAmmo(ammo-1);
-    setupLevel();
+    // Level'i yeniden kurma, sadece topu sıfırla
+    balls=[]; 
+    drag=false; 
+    aiming=false; 
+    isOnBall=false;
+    mainBall.x = lastX ?? W/2;
   }
 
   // Bölüm sonu modalı – 8. bölüm özel metin/konfeti
   function roman(n){ return ['I','II','III','IV','V','VI','VII','VIII','IX','X'][n] || (n+1).toString(); }
+  
+  function showChapterRetryModal(){
+    currentScoreEl.textContent = score;
+    chapterRetryModal.style.display = 'block';
+    paused = true;
+  }
+  
   function showChapterEndModal(){
     const isLast = (chapter >= chapters.length-1);
     if(chapter===7){ // VIII bitti
@@ -795,7 +904,14 @@
     setGold(gold+5);
     const last=(levelIndex>=currentSet().length-1);
     if(!last){ levelIndex++; progress+=20; setupLevel(); }
-    else{ showChapterEndModal(); }
+    else{ 
+      // Bölüm sonunda en az 1 yıldız (10 puan) kontrolü
+      if(score < 10){
+        showChapterRetryModal();
+      } else {
+        showChapterEndModal(); 
+      }
+    }
   }
 
   chapterNextBtn.onclick=()=>{
@@ -803,19 +919,78 @@
     if(chapter < chapters.length-1){
       chapter++;
       levelIndex=0; progress=0; dispProgress=0;
+      setAmmo(10); // Yeni bölüm için 10 top hakkı
+      setScore(0); // Yeni bölüm için puanı sıfırla
       setupLevel(); size();
     }
   };
 
+  // Game Over modal butonları
+  retryBtn.onclick=()=>{
+    gameOverModal.style.display='none';
+    paused = false;
+    // O bölümün ilk leveline dön
+    levelIndex = 0;
+    progress = 0;
+    dispProgress = 0;
+    setAmmo(10); // O bölümün hakkını ver
+    setScore(0); // Puanı sıfırla
+    setupLevel();
+  };
+
+  mainMenuBtn.onclick=()=>{
+    gameOverModal.style.display='none';
+    paused = false;
+    resetAll(); // Tamamen sıfırla
+  };
+
+  // Chapter Retry modal butonları
+  chapterRetryBtn.onclick=()=>{
+    chapterRetryModal.style.display='none';
+    paused = false;
+    // Bölümü tekrar oyna
+    levelIndex = 0;
+    progress = 0;
+    dispProgress = 0;
+    setAmmo(10); // Bölüm hakkını ver
+    setScore(0); // Puanı sıfırla
+    setupLevel();
+  };
+
+  chapterRetryMenuBtn.onclick=()=>{
+    chapterRetryModal.style.display='none';
+    paused = false;
+    resetAll(); // Tamamen sıfırla
+  };
+
   /* ===== Input ===== */
   function canvasPos(e){ const r=canvas.getBoundingClientRect(); return {x:e.clientX, y:e.clientY-r.top}; }
-  function canAimNow(){ return !levelExplodeLock; }
+  function canAimNow(){ return !levelExplodeLock && balls.length === 0; }
+  function isOnMainBall(x, y){ 
+    return Math.hypot(x - mainBall.x, y - mainBall.y) <= ballRadius + 10; // 10px tolerans
+  }
 
   canvas.addEventListener('mousedown',e=>{
     if(paused) return;
     const {x,y}=canvasPos(e);
-    if(!locked){ drag=true; mainBall.x=x; }
-    else if(ammo>0 && canAimNow()){ aiming=true; angleStart={x:mainBall.x,y:mainBall.y}; angleCur={x,y}; }
+    isOnBall = isOnMainBall(x, y);
+    
+    // Top hareket halindeyken hiçbir işlem yapılamaz
+    if(balls.length > 0) return;
+    
+    if(isOnBall){
+      // Topun üstüne basıldı - sürükleme modu
+      drag=true; 
+      mainBall.x=x; 
+      toolbar.classList.add('hidden');
+    }
+    else if(!isOnBall && ammo>0 && canAimNow()){
+      // Topun dışına basıldı - fırlatma modu
+      aiming=true; 
+      angleStart={x:mainBall.x,y:mainBall.y}; 
+      angleCur={x,y}; 
+      toolbar.classList.add('hidden');
+    }
   });
   canvas.addEventListener('mousemove',e=>{
     if(paused) return;
@@ -825,16 +1000,38 @@
   });
   canvas.addEventListener('mouseup',e=>{
     if(paused) return;
-    if(drag){ drag=false; locked=true; }
-    else if(aiming){ shoot(); }
+    if(drag){ 
+      drag=false; 
+      toolbar.classList.remove('hidden');
+    }
+    else if(aiming){ 
+      shoot(); 
+      toolbar.classList.remove('hidden');
+    }
   });
 
   canvas.addEventListener('touchstart',e=>{
     if(paused) return;
     const t=e.touches[0], r=canvas.getBoundingClientRect();
     const x=t.clientX, y=t.clientY-r.top;
-    if(!locked){ drag=true; mainBall.x=x; }
-    else if(ammo>0 && canAimNow()){ aiming=true; angleStart={x:mainBall.x,y:mainBall.y}; angleCur={x,y}; }
+    isOnBall = isOnMainBall(x, y);
+    
+    // Top hareket halindeyken hiçbir işlem yapılamaz
+    if(balls.length > 0) return;
+    
+    if(isOnBall){
+      // Topun üstüne basıldı - sürükleme modu
+      drag=true; 
+      mainBall.x=x; 
+      toolbar.classList.add('hidden');
+    }
+    else if(!isOnBall && ammo>0 && canAimNow()){
+      // Topun dışına basıldı - fırlatma modu
+      aiming=true; 
+      angleStart={x:mainBall.x,y:mainBall.y}; 
+      angleCur={x,y}; 
+      toolbar.classList.add('hidden');
+    }
     e.preventDefault();
   },{passive:false});
   canvas.addEventListener('touchmove',e=>{
@@ -847,8 +1044,14 @@
   },{passive:false});
   canvas.addEventListener('touchend',e=>{
     if(paused) return;
-    if(drag){ drag=false; locked=true; }
-    else if(aiming){ shoot(); }
+    if(drag){ 
+      drag=false; 
+      toolbar.classList.remove('hidden');
+    }
+    else if(aiming){ 
+      shoot(); 
+      toolbar.classList.remove('hidden');
+    }
     e.preventDefault();
   },{passive:false});
 
@@ -863,10 +1066,10 @@
     const dx=angleCur.x-angleStart.x, dy=angleCur.y-angleStart.y;
     const ang=Math.atan2(dy,dx), sp=baseBallSpeed;
 
-    // 3. bölüm: yatay ters yön
+    // Sapan mekanizması: sürüklenen yönün zıttı yönünde fırlat
     const dirSign = (chapter===2 ? -1 : 1);
-    const vxBase = Math.cos(ang) * sp * dirSign;
-    const vyBase = Math.sin(ang) * sp;
+    const vxBase = Math.cos(ang + Math.PI) * sp * dirSign; // +Math.PI ile yönü ters çevir
+    const vyBase = Math.sin(ang + Math.PI) * sp;
 
     let newBall;
     if(fBoom && !usedBoom){
@@ -876,8 +1079,8 @@
       const colors=['#3498db','#e74c3c','#f1c40f'];
       for(let i=-1;i<=1;i++){
         const a=ang+0.25*i;
-        const vx = Math.cos(a)*sp*dirSign;
-        const vy = Math.sin(a)*sp;
+        const vx = Math.cos(a + Math.PI)*sp*dirSign; // +Math.PI ile yönü ters çevir
+        const vy = Math.sin(a + Math.PI)*sp;
         balls.push({x:mainBall.x,y:mainBall.y,vx,vy,color:colors[i+1],off:false,hzCD:0});
       }
       fMulti=false;
@@ -890,8 +1093,10 @@
 
     if(newBall) balls.push(newBall);
 
+    // Her atışta ammo eksilt
+    setAmmo(ammo-1);
+
     aiming=false; angleStart=null; angleCur=null;
-    if(!(usedBoom && newBall && newBall.boom)) locked=false;
     lastX=mainBall.x;
   }
 
@@ -935,7 +1140,12 @@
             }
           }
           if(b.y + ballRadius > H){
-            b.off=true; balls.length=0; restartFailOnce(); return;
+            b.off=true; balls.length=0; 
+            // Level'i yeniden kurma, sadece topu sıfırla
+            drag=false; aiming=false; isOnBall=false;
+            mainBall.x = lastX ?? W/2;
+            checkGameOver();
+            return;
           }
         }else{
           if(b.y + ballRadius >= H){
@@ -949,7 +1159,12 @@
             }
           }
           if(b.y - ballRadius <= 0){
-            b.off=true; balls.length=0; restartFailOnce(); return;
+            b.off=true; balls.length=0; 
+            // Level'i yeniden kurma, sadece topu sıfırla
+            drag=false; aiming=false; isOnBall=false;
+            mainBall.x = lastX ?? W/2;
+            checkGameOver();
+            return;
           }
         }
 
@@ -988,28 +1203,44 @@
           if(t.hit) continue;
           if(Math.hypot(b.x-t.x,b.y-t.y) < ballRadius+30){
             if(b.expl && b.expCooldown<=0){ explodeAt(t.x,t.y); b.expCooldown=18; b.expHit=true; }
-            else { markHit(t); }
+            else { 
+              markHit(t); 
+              addScore(t.val); // Hedef değeri kadar puan ekle
+            }
             lastX=b.x;
           }
         }
         for(const bt of blueTargets){
           if(bt.hit) continue;
           if(Math.hypot(b.x-bt.x,b.y-bt.y) < ballRadius+30){
-            bt.hit=true; setGem(gem+3); checkLevelCleared(); lastX=b.x;
+            bt.hit=true; 
+            setGem(gem+3); 
+            addScore(5); // Mavi hedef için 5 puan
+            checkLevelCleared(); 
+            lastX=b.x;
           }
         }
 
-        // Negatif çarpışmaları
+        // Negatif çarpışmaları (sadece puan düşürür, ammo eksiltmez)
         for(const h of hazards){
           if(h.hit) continue;
           if(Math.hypot(b.x-h.x,b.y-h.y) < ballRadius+30){
-            if((b.hzCD||0)<=0){
-              setAmmo(ammo - Math.abs(h.val||1)); h.hit=true; b.hzCD=18;
+            // Her hazard için ayrı cooldown kontrolü
+            if((h.cd||0)<=0){
+              // Puan düşür, ammo eksiltme
+              addScore(h.val); // Negatif değer puan düşürür
+              h.hit=true; 
+              h.cd=18; // Hazard'ın kendi cooldown'u
             }
           }
         }
 
         if(b.hzCD>0) b.hzCD--;
+        
+        // Hazard cooldown'larını güncelle
+        hazards.forEach(h => {
+          if(h.cd > 0) h.cd--;
+        });
 
         // Boomerang dönüş
         if(b.boom && b.ret){
@@ -1018,7 +1249,6 @@
           b.vx=dx*0.15 + Math.sin(b.phase)*2; b.vy=dy*0.15;
           if(Math.abs(dx)<2 && Math.abs(dy)<2){
             b.off=true;
-            if(!levelExplodeLock) locked=false;
           }
         }
 
@@ -1048,14 +1278,18 @@
 
       if(aiming && angleStart && angleCur){
         ctx.strokeStyle='#e74c3c'; ctx.lineWidth=3;
-        ctx.beginPath(); ctx.moveTo(mainBall.x,mainBall.y); ctx.lineTo(angleCur.x,angleCur.y); ctx.stroke();
+        ctx.beginPath(); 
+        // Sapan mekanizması: çizgiyi sürüklenen yönün zıttı yönünde göster
+        const dx=angleCur.x-angleStart.x, dy=angleCur.y-angleStart.y;
+        const ang=Math.atan2(dy,dx);
+        const previewX = mainBall.x + Math.cos(ang + Math.PI) * 80;
+        const previewY = mainBall.y + Math.sin(ang + Math.PI) * 80;
+        ctx.moveTo(mainBall.x,mainBall.y); 
+        ctx.lineTo(previewX, previewY); 
+        ctx.stroke();
       }
 
-      dispProgress+=(progress-dispProgress)*0.08;
-      barFill.style.width=dispProgress+'%';
-      const list=[[40,msEls[0]],[60,msEls[1]],[80,msEls[2]],[100,msEls[3]]];
-      list.forEach(([n,el])=>{ el.classList.toggle('reached', dispProgress>=n); el.classList.remove('active'); });
-      (list.find(([n])=>dispProgress<n)||list[list.length-1])[1].classList.add('active');
+      // Puan sistemi artık updateScoreDisplay() ile yönetiliyor
 
       // Konfeti (VIII bitişi)
       if(partyT>0){
