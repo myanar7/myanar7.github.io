@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Karaman Son Dakika</title>
+
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='630'%3E%3Crect width='100%25' height='100%25' fill='%23ffb6c1'/%3E%3Ctext x='50%25' y='52%25' dominant-baseline='middle' text-anchor='middle' font-size='64' font-family='Arial' fill='%23ffffff'%3E🎉 SÜRPRİZ %3C/text%3E%3C/svg%3E">
+
+  <style>
+    :root {
+      --bg1: #ffd1e1;
+      --bg2: #fff6f9;
+      --ink: #2b2233;
+      --accent: #ff4d6d;
+      --accent-2: #7b2cbf;
+      --card: #ffffffcc;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      color: var(--ink);
+      background: radial-gradient(1200px 800px at 10% 10%, var(--bg1), var(--bg2));
+      overflow-x: hidden;
+    }
+
+    .wrapper {
+      min-height: 100%;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      position: relative;
+      isolation: isolate;
+    }
+
+    .card {
+      width: min(900px, 100%);
+      background: var(--card);
+      backdrop-filter: blur(6px);
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.12);
+      padding: clamp(20px, 4vw, 36px);
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: clamp(28px, 4.2vw, 44px);
+      line-height: 1.15;
+    }
+
+    .sub {
+      margin: 0 0 24px;
+      font-size: clamp(16px, 2.4vw, 20px);
+      opacity: .8;
+    }
+
+    .btn {
+      appearance: none;
+      border: 0;
+      border-radius: 14px;
+      padding: 14px 22px;
+      font-size: clamp(16px, 2.6vw, 18px);
+      cursor: pointer;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: #fff;
+      font-weight: 700;
+      transition: transform .08s ease, filter .2s ease;
+      box-shadow: 0 10px 30px rgba(123,44,191,.35);
+    }
+    .btn:hover { filter: brightness(1.05); }
+    .btn:active { transform: translateY(1px) scale(.99); }
+
+    .video-shell {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      border-radius: 16px;
+      overflow: hidden;
+      background: #000;
+      display: none;
+      margin-top: 18px;
+      box-shadow: 0 8px 30px rgba(0,0,0,.25);
+    }
+
+    .credit {
+      margin-top: 14px;
+      font-size: 13px;
+      opacity: .7;
+    }
+
+    /* Uçuşan balonlar (arkaplan) */
+    .balloon {
+      position: absolute;
+      width: 26px; height: 34px;
+      border-radius: 50% 50% 50% 50%/60% 60% 40% 40%;
+      background: radial-gradient(circle at 30% 30%, #fff8, transparent 40%), #ff6b6b;
+      opacity: .8;
+      animation: floatUp linear infinite;
+      filter: drop-shadow(0 6px 10px rgba(0,0,0,.15));
+      z-index: -1;
+    }
+    .balloon::after {
+      content: "";
+      position: absolute;
+      bottom: -10px; left: 50%;
+      width: 2px; height: 14px;
+      background: #4443;
+      transform: translateX(-50%);
+    }
+    @keyframes floatUp {
+      0% { transform: translateY(20vh) translateX(0) rotate(2deg); }
+      100% { transform: translateY(-120vh) translateX(-10px) rotate(-4deg); }
+    }
+
+    /* Konfeti kanvası (en üste) */
+    #confetti {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 999;
+      display: none;
+    }
+
+    /* “Sürprizi aç” alanı */
+    .cta {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+      align-items: center;
+    }
+
+    .note {
+      background: #ffffffb8;
+      border: 2px dashed #00000018;
+      padding: 12px 14px;
+      border-radius: 12px;
+      font-size: 14px;
+    }
+
+    /* Küçük imza */
+    .sig {
+      margin-top: 10px;
+      font-size: 12px;
+      opacity: .55;
+      text-align: right;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="confetti"></canvas>
+
+  <div class="wrapper">
+    <!-- Arkaplana birkaç balon ekleyelim -->
+    <div id="balloons"></div>
+
+    <div class="card">
+      <h1>Doğum günün kutlu olsun, Elif! 🎂✨</h1>
+      <p class="sub">Balonlar biraz şov olmuş olabilir :D</p>
+
+      <div class="cta">
+        <button class="btn" id="revealBtn">🎁 Sürprizi Aç</button>
+      </div>
+
+      <div class="video-shell" id="videoShell" aria-label="YouTube Video">
+        <!-- Video burada görünecek -->
+        <iframe id="player" title="Elif'e Sürpriz" width="100%" height="100%" frameborder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
+      </div>
+
+      <div class="sig">—</div>
+    </div>
+  </div>
+
+  <script>
+    // 🔧 SADECE BURAYI DÜZENLE:
+    // YouTube'daki normal bağlantıyı yapıştır (örneğin: https://www.youtube.com/watch?v=dQw4w9WgXcQ)
+    const YOUTUBE_URL = "https://www.youtube.com/watch?v=-IbPXXfSP-w&list=RD-IbPXXfSP-w";
+
+    // URL'yi güvenli şekilde "embed" formatına çevirir
+    function toEmbed(url) {
+      try {
+        const u = new URL(url);
+        let id = "";
+        if (u.hostname.includes("youtu.be")) {
+          id = u.pathname.replace("/", "");
+        } else {
+          // watch?v=... veya diğer varyantlar
+          id = u.searchParams.get("v");
+          if (!id && u.pathname.startsWith("/shorts/")) {
+            id = u.pathname.split("/")[2];
+          }
+        }
+        if (!id) return null;
+        // Autoplay + dikkat dağıtmasın
+        return `https://www.youtube.com/embed/${id}?autoplay=1&rel=0&modestbranding=1&playsinline=1`;
+      } catch {
+        return null;
+      }
+    }
+
+    // Balonları üret
+    (function spawnBalloons() {
+      const container = document.getElementById("balloons");
+      const count = Math.min(24, Math.floor(window.innerWidth / 40) + 6);
+      const palette = ["#ff6b6b","#ffd166","#06d6a0","#4cc9f0","#b5179e","#f72585","#48bfe3","#80ed99"];
+      for (let i = 0; i < count; i++) {
+        const b = document.createElement("div");
+        b.className = "balloon";
+        const delay = (Math.random() * 6).toFixed(2);
+        const dur = (10 + Math.random() * 12).toFixed(2);
+        const left = Math.random() * 100;
+        const color = palette[Math.floor(Math.random() * palette.length)];
+        b.style.left = left + "vw";
+        b.style.animationDuration = dur + "s";
+        b.style.animationDelay = delay + "s";
+        b.style.background = `radial-gradient(circle at 30% 30%, #fff8, transparent 40%), ${color}`;
+        container.appendChild(b);
+      }
+    })();
+
+    // Konfeti basit uygulama
+    const confetti = (() => {
+      const canvas = document.getElementById("confetti");
+      const ctx = canvas.getContext("2d");
+      let w, h, pieces = [], running = false, rafId;
+
+      function resize() {
+        w = canvas.width = window.innerWidth * devicePixelRatio;
+        h = canvas.height = window.innerHeight * devicePixelRatio;
+        ctx.scale(devicePixelRatio, devicePixelRatio);
+      }
+      window.addEventListener("resize", () => { cancelAnimationFrame(rafId); resize(); });
+
+      function spawn(n = 140) {
+        pieces = [];
+        for (let i = 0; i < n; i++) {
+          pieces.push({
+            x: Math.random() * window.innerWidth,
+            y: -10 - Math.random() * 40,
+            r: 3 + Math.random() * 5,
+            a: Math.random() * Math.PI * 2,
+            v: 1 + Math.random() * 2.2,
+            w: Math.random() * 0.15 + 0.02,
+            color: `hsl(${Math.random()*360}, 90%, 60%)`
+          });
+        }
+      }
+
+      function tick() {
+        ctx.clearRect(0,0,canvas.width, canvas.height);
+        pieces.forEach(p => {
+          p.y += p.v;
+          p.a += p.w;
+          p.x += Math.sin(p.a) * 0.9;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+          ctx.fillStyle = p.color;
+          ctx.fill();
+        });
+        pieces = pieces.filter(p => p.y < window.innerHeight + 20);
+        if (pieces.length && running) rafId = requestAnimationFrame(tick);
+        else running = false;
+      }
+
+      function start() {
+        resize();
+        canvas.style.display = "block";
+        spawn();
+        running = true;
+        tick();
+        setTimeout(() => { canvas.style.display = "none"; }, 2800);
+      }
+      return { start };
+    })();
+
+    // Buton davranışı
+    const btn = document.getElementById("revealBtn");
+    const shell = document.getElementById("videoShell");
+    const player = document.getElementById("player");
+    const hint = document.getElementById("hint");
+
+    btn.addEventListener("click", () => {
+      const embed = toEmbed(YOUTUBE_URL);
+      if (!embed) {
+        alert("Hmmm… Görünüşe göre YouTube bağlantısı hatalı. Lütfen kodun başındaki YOUTUBE_URL değerini kontrol et.");
+        return;
+      }
+      player.src = embed;
+      shell.style.display = "block";
+      hint.style.display = "none";
+      btn.disabled = true;
+      btn.textContent = "🎉 İyi ki doğdun Elif!";
+      confetti.start();
+      // Odağı videoya aktar
+      player.focus({ preventScroll: false });
+    }, { once: true });
+
+    // Güvenlik: başka sayfalara kaçmasın (ör. gömülü öneriler)
+    document.addEventListener("click", (e) => {
+      const a = e.target.closest("a");
+      if (a && a.target !== "_blank") {
+        a.setAttribute("target", "_blank");
+        a.setAttribute("rel", "noopener");
+      }
+    });
+  </script>
+</body>
+</html>
