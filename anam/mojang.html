@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mahjong Solitaire - Annem İçin Özel Oyun</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Arial',sans-serif;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+    min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;}
+.game-container{display:none;background:rgba(255,255,255,0.1);backdrop-filter:blur(10px);border-radius:20px;padding:20px;
+    box-shadow:0 8px 32px rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.2);}
+.game-title{text-align:center;font-size:2.5em;margin-bottom:20px;
+    background:linear-gradient(45deg,#ffd700,#ffed4e);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.game-info{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;padding:10px 20px;
+    background:rgba(255,255,255,0.1);border-radius:15px;}
+.score,.moves{font-size:1.2em;font-weight:bold;}
+.game-board{position:relative;background:linear-gradient(145deg,#2c3e50,#34495e);border-radius:15px;
+    padding:20px;box-shadow:inset 0 4px 8px rgba(0,0,0,0.3);min-width:700px;min-height:500px;}
+.tile{position:absolute;width:90px;height:90px;background:black;border:2px solid white;border-radius:10px;
+    display:flex;align-items:center;justify-content:center;font-size:40px;cursor:pointer;transition:all 0.3s ease;
+    box-shadow:0 4px 10px rgba(0,0,0,0.5);user-select:none;color:white;}
+.tile:hover{transform:translateY(-5px);box-shadow:0 8px 16px rgba(255,255,255,0.3);border-color:#ffd700;}
+.tile.selected{background:linear-gradient(145deg,#ffd700,#ffed4e);border-color:#ff6b6b;
+    transform:translateY(-8px);box-shadow:0 12px 24px rgba(255,107,107,0.6);color:black;}
+.tile.matched{opacity:0.3;transform:scale(0.8);pointer-events:none;}
+.tile.removing{animation:removeTile 0.5s ease-out forwards;}
+@keyframes removeTile{to{opacity:0;transform:scale(0) rotate(180deg);}}
+.win-message{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
+    background:linear-gradient(145deg,#2ecc71,#27ae60);color:white;padding:40px;border-radius:20px;text-align:center;
+    font-size:1.5em;box-shadow:0 20px 40px rgba(0,0,0,0.5);z-index:1000;display:none;animation:winPulse 2s infinite;}
+@keyframes winPulse{0%,100%{transform:translate(-50%,-50%) scale(1);}50%{transform:translate(-50%,-50%) scale(1.05);}}
+.video-container{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);
+    display:none;align-items:center;justify-content:center;z-index:2000;}
+.video-container video{max-width:90%;max-height:90%;border-radius:10px;box-shadow:0 20px 40px rgba(0,0,0,0.8);}
+.youtube-popup{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);
+    display:flex;align-items:center;justify-content:center;z-index:3000;flex-direction:column;}
+.youtube-popup iframe{width:80%;height:45%;border:none;border-radius:10px;}
+.close-youtube{margin-top:20px;padding:10px 20px;font-size:1.2em;border:none;border-radius:10px;cursor:pointer;}
+.close-youtube:hover{background:rgba(255,255,255,0.2);}
+.instructions{text-align:center;margin-bottom:20px;font-size:1.2em;opacity:0.9;}
+</style>
+</head>
+<body>
+
+<!-- Youtube popup -->
+<div class="youtube-popup" id="youtubePopup">
+    <iframe id="youtubeIframe" src="" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+    <button class="close-youtube" id="closeYoutubeBtn">Kapat</button>
+</div>
+
+<div class="game-container" id="gameContainer">
+    <h1 class="game-title">🎴 Mahjong Solitaire 🎴</h1>
+    <p class="instructions">Aynı taşları eşleştirerek tüm taşları temizle!</p>
+    <div class="game-info">
+        <div class="score">Puan: <span id="score">0</span></div>
+        <div class="moves">Hamle: <span id="moves">0</span></div>
+    </div>
+    <div class="game-board" id="gameBoard"></div>
+</div>
+
+<div class="win-message" id="winMessage">
+    <h2>🎉 Tebrikler! 🎉</h2>
+    <p>Oyunu başarıyla tamamladınız!</p>
+    <p>Sürpriz videonuz açılıyor...</p>
+</div>
+
+<div class="video-container" id="videoContainer">
+    <button class="close-video" onclick="closeVideo()">×</button>
+    <video id="surpriseVideo" controls autoplay>
+        <source src="surprise-video.mp4" type="video/mp4">
+        <p>Video yüklenemedi. Tarayıcınızın video formatını desteklediğinden emin olun.</p>
+    </video>
+</div>
+
+<script>
+const youtubeVideoId = "MYgpRTKiMEU"; // <-- Buraya YouTube ID ekle
+const youtubePopup = document.getElementById("youtubePopup");
+const youtubeIframe = document.getElementById("youtubeIframe");
+const closeYoutubeBtn = document.getElementById("closeYoutubeBtn");
+const gameContainer = document.getElementById("gameContainer");
+
+youtubeIframe.src = `https://www.youtube.com/embed/${youtubeVideoId}?autoplay=1`;
+
+closeYoutubeBtn.addEventListener("click", ()=>{
+    youtubePopup.style.display="none";
+    gameContainer.style.display="block";
+    startGame();
+});
+
+class MahjongGame{
+    constructor(){
+        this.board=document.getElementById('gameBoard');
+        this.scoreElement=document.getElementById('score');
+        this.movesElement=document.getElementById('moves');
+        this.winMessage=document.getElementById('winMessage');
+        this.videoContainer=document.getElementById('videoContainer');
+        this.surpriseVideo=document.getElementById('surpriseVideo');
+        this.score=0;this.moves=0;this.selectedTile=null;this.tiles=[];this.gameWon=false;
+        this.tileTypes=['🀄','🀅','🀆','🀇','🀈','🀉','🀊','🀋','🀌','🀍','🀎','🀏'];
+        this.initGame();
+    }
+    initGame(){this.createBoard();this.updateDisplay();}
+    createBoard(){
+        const layout=[];const cols=6, rows=4, startX=50, startY=50, gapX=110, gapY=110;
+        for(let r=0;r<rows;r++){for(let c=0;c<cols;c++){layout.push({x:startX+c*gapX,y:startY+r*gapY,z:0});}}
+        const tilePairs=[];
+        for(let i=0;i<layout.length/2;i++){const tileType=this.tileTypes[i%this.tileTypes.length];tilePairs.push(tileType,tileType);}
+        this.shuffleArray(tilePairs);this.tiles=[];
+        layout.forEach((pos,index)=>{
+            const tile=this.createTile(tilePairs[index],pos,index);
+            this.tiles.push(tile);
+            this.board.appendChild(tile.element);
+        });
+    }
+    createTile(type,pos,id){
+        const tileElement=document.createElement('div');
+        tileElement.className='tile';tileElement.textContent=type;
+        tileElement.style.left=pos.x+'px';tileElement.style.top=pos.y+'px';tileElement.style.zIndex=pos.z;
+        const tile={id,type,element:tileElement,position:pos,matched:false,removable:false};
+        tileElement.addEventListener('click',()=>this.selectTile(tile));
+        return tile;
+    }
+    selectTile(tile){
+        if(tile.matched)return;
+        if(this.selectedTile===null){this.selectedTile=tile;tile.element.classList.add('selected');}
+        else if(this.selectedTile===tile){this.selectedTile.element.classList.remove('selected');this.selectedTile=null;}
+        else if(this.selectedTile.type===tile.type){this.matchTiles(this.selectedTile,tile);this.selectedTile=null;}
+        else{this.selectedTile.element.classList.remove('selected');this.selectedTile=tile;tile.element.classList.add('selected');}
+    }
+    matchTiles(t1,t2){t1.matched=true;t2.matched=true;t1.element.classList.add('matched','removing');t2.element.classList.add('matched','removing');this.score+=100;this.moves++;this.updateDisplay();setTimeout(()=>{t1.element.remove();t2.element.remove();this.checkWin();},500);}
+    checkWin(){if(this.tiles.every(t=>t.matched)){this.gameWon=true;this.showWinMessage();}}
+    showWinMessage(){this.winMessage.style.display='block';setTimeout(()=>{this.winMessage.style.display='none';this.showSurpriseVideo();},2000);}
+    showSurpriseVideo(){this.videoContainer.style.display='flex';this.surpriseVideo.play().catch(e=>console.log(e));}
+    updateDisplay(){this.scoreElement.textContent=this.score;this.movesElement.textContent=this.moves;}
+    shuffleArray(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}}
+}
+
+function startGame(){new MahjongGame();}
+function closeVideo(){document.getElementById('videoContainer').style.display='none';document.getElementById('surpriseVideo').pause();}
+document.addEventListener('keydown',e=>{if(e.key==='Escape') closeVideo();});
+</script>
+
+</body>
+</html>
