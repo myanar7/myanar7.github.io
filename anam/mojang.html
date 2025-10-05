@@ -8,37 +8,43 @@
 *{margin:0;padding:0;box-sizing:border-box;}
 body{font-family:'Arial',sans-serif;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
     min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;}
-.game-container{display:none;background:rgba(255,255,255,0.1);backdrop-filter:blur(10px);border-radius:20px;padding:20px;
-    box-shadow:0 8px 32px rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.2);}
-.game-title{text-align:center;font-size:2.5em;margin-bottom:20px;
+.game-container{display:none;background:rgba(255,255,255,0.1);backdrop-filter:blur(10px);border-radius:15px;padding:10px;
+    box-shadow:0 8px 32px rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.2);width:95%;max-width:480px;}
+.game-title{text-align:center;font-size:2em;margin-bottom:10px;
     background:linear-gradient(45deg,#ffd700,#ffed4e);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
-.game-info{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;padding:10px 20px;
-    background:rgba(255,255,255,0.1);border-radius:15px;}
-.score,.moves{font-size:1.2em;font-weight:bold;}
-.game-board{position:relative;background:linear-gradient(145deg,#2c3e50,#34495e);border-radius:15px;
-    padding:20px;box-shadow:inset 0 4px 8px rgba(0,0,0,0.3);min-width:700px;min-height:500px;}
-.tile{position:absolute;width:90px;height:90px;background:black;border:2px solid white;border-radius:10px;
-    display:flex;align-items:center;justify-content:center;font-size:40px;cursor:pointer;transition:all 0.3s ease;
-    box-shadow:0 4px 10px rgba(0,0,0,0.5);user-select:none;color:white;}
-.tile:hover{transform:translateY(-5px);box-shadow:0 8px 16px rgba(255,255,255,0.3);border-color:#ffd700;}
+.game-info{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;padding:8px;
+    background:rgba(255,255,255,0.1);border-radius:10px;font-size:0.9em;}
+.score,.moves{font-weight:bold;}
+.game-board{position:relative;background:linear-gradient(145deg,#2c3e50,#34495e);border-radius:10px;
+    padding:10px;box-shadow:inset 0 4px 8px rgba(0,0,0,0.3);min-height:300px;width:100%;overflow:hidden;}
+.tile{position:absolute;width:60px;height:60px;background:black;border:2px solid white;border-radius:8px;
+    display:flex;align-items:center;justify-content:center;font-size:28px;cursor:pointer;transition:all 0.3s ease;
+    box-shadow:0 4px 8px rgba(0,0,0,0.5);user-select:none;color:white;}
+.tile:hover{transform:translateY(-3px);box-shadow:0 6px 12px rgba(255,255,255,0.3);border-color:#ffd700;}
 .tile.selected{background:linear-gradient(145deg,#ffd700,#ffed4e);border-color:#ff6b6b;
-    transform:translateY(-8px);box-shadow:0 12px 24px rgba(255,107,107,0.6);color:black;}
+    transform:translateY(-5px);box-shadow:0 8px 16px rgba(255,107,107,0.6);color:black;}
 .tile.matched{opacity:0.3;transform:scale(0.8);pointer-events:none;}
 .tile.removing{animation:removeTile 0.5s ease-out forwards;}
 @keyframes removeTile{to{opacity:0;transform:scale(0) rotate(180deg);}}
 .win-message{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
-    background:linear-gradient(145deg,#2ecc71,#27ae60);color:white;padding:40px;border-radius:20px;text-align:center;
-    font-size:1.5em;box-shadow:0 20px 40px rgba(0,0,0,0.5);z-index:1000;display:none;animation:winPulse 2s infinite;}
+    background:linear-gradient(145deg,#2ecc71,#27ae60);color:white;padding:30px;border-radius:15px;text-align:center;
+    font-size:1.2em;box-shadow:0 15px 30px rgba(0,0,0,0.5);z-index:1000;display:none;animation:winPulse 2s infinite;}
 @keyframes winPulse{0%,100%{transform:translate(-50%,-50%) scale(1);}50%{transform:translate(-50%,-50%) scale(1.05);}}
 .video-container{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);
     display:none;align-items:center;justify-content:center;z-index:2000;}
-.video-container video{max-width:90%;max-height:90%;border-radius:10px;box-shadow:0 20px 40px rgba(0,0,0,0.8);}
+.video-container video{max-width:90%;max-height:90%;border-radius:10px;box-shadow:0 15px 30px rgba(0,0,0,0.8);}
 .youtube-popup{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);
     display:flex;align-items:center;justify-content:center;z-index:3000;flex-direction:column;}
-.youtube-popup iframe{width:80%;height:45%;border:none;border-radius:10px;}
-.close-youtube{margin-top:20px;padding:10px 20px;font-size:1.2em;border:none;border-radius:10px;cursor:pointer;}
+.youtube-popup iframe{width:90%;height:40%;border:none;border-radius:10px;}
+.close-youtube{margin-top:15px;padding:8px 16px;font-size:1em;border:none;border-radius:8px;cursor:pointer;}
 .close-youtube:hover{background:rgba(255,255,255,0.2);}
-.instructions{text-align:center;margin-bottom:20px;font-size:1.2em;opacity:0.9;}
+.instructions{text-align:center;margin-bottom:10px;font-size:1em;opacity:0.9;}
+@media(max-width:375px){
+    .tile{width:50px;height:50px;font-size:24px;}
+    .game-title{font-size:1.6em;}
+    .game-info{font-size:0.8em;padding:5px;}
+    .game-board{min-height:250px;padding:5px;}
+}
 </style>
 </head>
 <body>
@@ -102,7 +108,7 @@ class MahjongGame{
     }
     initGame(){this.createBoard();this.updateDisplay();}
     createBoard(){
-        const layout=[];const cols=6, rows=4, startX=50, startY=50, gapX=110, gapY=110;
+        const layout=[];const cols=6, rows=4, startX=20, startY=20, gapX=70, gapY=70;
         for(let r=0;r<rows;r++){for(let c=0;c<cols;c++){layout.push({x:startX+c*gapX,y:startY+r*gapY,z:0});}}
         const tilePairs=[];
         for(let i=0;i<layout.length/2;i++){const tileType=this.tileTypes[i%this.tileTypes.length];tilePairs.push(tileType,tileType);}
