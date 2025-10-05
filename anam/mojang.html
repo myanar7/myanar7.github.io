@@ -56,8 +56,8 @@ body{font-family:'Arial',sans-serif;background:linear-gradient(135deg,#667eea 0%
 </div>
 
 <div class="game-container" id="gameContainer">
-    <h1 class="game-title">🎴 Mahjong Solitaire 🎴</h1>
-    <p class="instructions">Aynı taşları eşleştirerek tüm taşları temizle!</p>
+    <h1 class="game-title">🎴 Anam Doğum Günün Kutlu Olsun 🎴</h1>
+    <p class="instructions">Oyunu bitirince sürpriz var !!</p>
     <div class="game-info">
         <div class="score">Puan: <span id="score">0</span></div>
         <div class="moves">Hamle: <span id="moves">0</span></div>
@@ -108,17 +108,26 @@ class MahjongGame{
     }
     initGame(){this.createBoard();this.updateDisplay();}
     createBoard(){
-        const layout=[];const cols=6, rows=4, startX=20, startY=20, gapX=70, gapY=70;
-        for(let r=0;r<rows;r++){for(let c=0;c<cols;c++){layout.push({x:startX+c*gapX,y:startY+r*gapY,z:0});}}
-        const tilePairs=[];
-        for(let i=0;i<layout.length/2;i++){const tileType=this.tileTypes[i%this.tileTypes.length];tilePairs.push(tileType,tileType);}
-        this.shuffleArray(tilePairs);this.tiles=[];
-        layout.forEach((pos,index)=>{
-            const tile=this.createTile(tilePairs[index],pos,index);
-            this.tiles.push(tile);
-            this.board.appendChild(tile.element);
-        });
-    }
+    const layout = [
+        {x:20,y:20,z:0},{x:90,y:20,z:0},{x:160,y:20,z:0},{x:230,y:20,z:0},{x:300,y:20,z:0},{x:370,y:20,z:0},
+        {x:20,y:90,z:0},{x:90,y:90,z:0},{x:160,y:90,z:0},{x:230,y:90,z:0},{x:300,y:90,z:0},{x:370,y:90,z:0},
+        {x:20,y:160,z:0},{x:90,y:160,z:0},{x:160,y:160,z:0},{x:230,y:160,z:0},{x:300,y:160,z:0},{x:370,y:160,z:0},
+        {x:20,y:230,z:0},{x:90,y:230,z:0},{x:160,y:230,z:0},{x:230,y:230,z:0},{x:300,y:230,z:0},{x:370,y:230,z:0}
+    ];
+
+    const tilePairs = [
+        '🀄','🀄','🀅','🀅','🀆','🀆','🀇','🀇','🀈','🀈','🀉','🀉',
+        '🀊','🀊','🀋','🀋','🀌','🀌','🀍','🀍','🀎','🀎','🀏','🀏'
+    ];
+
+    this.tiles = [];
+    layout.forEach((pos,index)=>{
+        const tile=this.createTile(tilePairs[index],pos,index);
+        this.tiles.push(tile);
+        this.board.appendChild(tile.element);
+    });
+}
+
     createTile(type,pos,id){
         const tileElement=document.createElement('div');
         tileElement.className='tile';tileElement.textContent=type;
