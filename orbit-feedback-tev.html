@@ -256,6 +256,7 @@
   let isOnBall=false; // Topun üstünde mi kontrolü
   let slowActive=false, slowTime=0;
   let levelFailGuard=false;
+  let dragStart=null, dragCurrent=null; // Sürükleme için yeni değişkenler
   const ballRadius=15, baseBallSpeed=8;
 
   let sMulti=5,sBoom=5,sExpl=5,sSlow=3;
@@ -984,11 +985,10 @@
       mainBall.x=x; 
       toolbar.classList.add('hidden');
     }
-    else if(!isOnBall && ammo>0 && canAimNow()){
-      // Topun dışına basıldı - fırlatma modu
-      aiming=true; 
-      angleStart={x:mainBall.x,y:mainBall.y}; 
-      angleCur={x,y}; 
+    else if(ammo>0 && canAimNow()){
+      // Ekranın herhangi bir yerine basıldı - sürükleme modu
+      dragStart={x,y};
+      dragCurrent={x,y};
       toolbar.classList.add('hidden');
     }
   });
@@ -997,6 +997,7 @@
     const {x,y}=canvasPos(e);
     if(drag){ mainBall.x=Math.max(ballRadius,Math.min(W-ballRadius,x)); }
     if(aiming){ angleCur={x,y}; }
+    if(dragStart){ dragCurrent={x,y}; }
   });
   canvas.addEventListener('mouseup',e=>{
     if(paused) return;
@@ -1006,6 +1007,27 @@
     }
     else if(aiming){ 
       shoot(); 
+      toolbar.classList.remove('hidden');
+    }
+    else if(dragStart){
+      // Sürükleme bitti - topu fırlat
+      const dx = dragCurrent.x - dragStart.x;
+      const dy = dragCurrent.y - dragStart.y;
+      const distance = Math.sqrt(dx*dx + dy*dy);
+      
+      if(distance > 20) { // Minimum sürükleme mesafesi
+        // Aynı yön hesapla (ters çevirme)
+        const angle = Math.atan2(dy, dx);
+        angleStart = {x: mainBall.x, y: mainBall.y};
+        angleCur = {
+          x: mainBall.x + Math.cos(angle) * 80,
+          y: mainBall.y + Math.sin(angle) * 80
+        };
+        shoot();
+      }
+      
+      dragStart = null;
+      dragCurrent = null;
       toolbar.classList.remove('hidden');
     }
   });
@@ -1025,11 +1047,10 @@
       mainBall.x=x; 
       toolbar.classList.add('hidden');
     }
-    else if(!isOnBall && ammo>0 && canAimNow()){
-      // Topun dışına basıldı - fırlatma modu
-      aiming=true; 
-      angleStart={x:mainBall.x,y:mainBall.y}; 
-      angleCur={x,y}; 
+    else if(ammo>0 && canAimNow()){
+      // Ekranın herhangi bir yerine basıldı - sürükleme modu
+      dragStart={x,y};
+      dragCurrent={x,y};
       toolbar.classList.add('hidden');
     }
     e.preventDefault();
@@ -1040,6 +1061,7 @@
     const x=t.clientX, y=t.clientY-r.top;
     if(drag){ mainBall.x=Math.max(ballRadius,Math.min(W-ballRadius,x)); }
     if(aiming){ angleCur={x,y}; }
+    if(dragStart){ dragCurrent={x,y}; }
     e.preventDefault();
   },{passive:false});
   canvas.addEventListener('touchend',e=>{
@@ -1050,6 +1072,27 @@
     }
     else if(aiming){ 
       shoot(); 
+      toolbar.classList.remove('hidden');
+    }
+    else if(dragStart){
+      // Sürükleme bitti - topu fırlat
+      const dx = dragCurrent.x - dragStart.x;
+      const dy = dragCurrent.y - dragStart.y;
+      const distance = Math.sqrt(dx*dx + dy*dy);
+      
+      if(distance > 20) { // Minimum sürükleme mesafesi
+        // Aynı yön hesapla (ters çevirme)
+        const angle = Math.atan2(dy, dx);
+        angleStart = {x: mainBall.x, y: mainBall.y};
+        angleCur = {
+          x: mainBall.x + Math.cos(angle) * 80,
+          y: mainBall.y + Math.sin(angle) * 80
+        };
+        shoot();
+      }
+      
+      dragStart = null;
+      dragCurrent = null;
       toolbar.classList.remove('hidden');
     }
     e.preventDefault();
@@ -1287,6 +1330,59 @@
         ctx.moveTo(mainBall.x,mainBall.y); 
         ctx.lineTo(previewX, previewY); 
         ctx.stroke();
+      }
+
+      // Sürükleme görsel efektleri
+      if(dragStart && dragCurrent){
+        const dx = dragCurrent.x - dragStart.x;
+        const dy = dragCurrent.y - dragStart.y;
+        const distance = Math.sqrt(dx*dx + dy*dy);
+        
+        if(distance > 10) {
+          // Sabit dairesel şekil çiz (topun etrafında)
+          ctx.save();
+          ctx.strokeStyle = 'rgba(231, 76, 60, 0.6)';
+          ctx.lineWidth = 3;
+          ctx.setLineDash([5, 5]);
+          ctx.beginPath();
+          ctx.arc(mainBall.x, mainBall.y, 60, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.setLineDash([]);
+          
+          // Ok çiz (topun üstünde, sürükleme yönünde)
+          const angle = Math.atan2(dy, dx);
+          const arrowLength = 40;
+          const arrowX = mainBall.x + Math.cos(angle) * arrowLength;
+          const arrowY = mainBall.y + Math.sin(angle) * arrowLength;
+          
+          // Ok başı
+          const headLength = 20;
+          const headAngle = Math.PI / 8;
+          
+          ctx.strokeStyle = '#e74c3c';
+          ctx.lineWidth = 5;
+          ctx.beginPath();
+          ctx.moveTo(mainBall.x, mainBall.y);
+          ctx.lineTo(arrowX, arrowY);
+          ctx.stroke();
+          
+          // Ok başı çiz (daha güzel)
+          ctx.fillStyle = '#e74c3c';
+          ctx.beginPath();
+          ctx.moveTo(arrowX, arrowY);
+          ctx.lineTo(
+            arrowX + Math.cos(angle + headAngle) * headLength,
+            arrowY + Math.sin(angle + headAngle) * headLength
+          );
+          ctx.lineTo(
+            arrowX + Math.cos(angle - headAngle) * headLength,
+            arrowY + Math.sin(angle - headAngle) * headLength
+          );
+          ctx.closePath();
+          ctx.fill();
+          
+          ctx.restore();
+        }
       }
 
       // Puan sistemi artık updateScoreDisplay() ile yönetiliyor
