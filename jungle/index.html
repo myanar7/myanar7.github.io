@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jungle Log - Tırmanış Rota Takip Sistemi</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #38C871, #E85D44);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="75" cy="75" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="50" cy="10" r="0.5" fill="rgba(255,255,255,0.05)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+            opacity: 0.3;
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            border-radius: 15px;
+            background: white;
+            padding: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease;
+            object-fit: contain;
+        }
+
+        .logo:hover {
+            transform: scale(1.05);
+        }
+
+        .header-text {
+            text-align: left;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin: 0;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .section {
+            margin-bottom: 40px;
+        }
+
+        .section h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #34495e;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #38C871;
+            box-shadow: 0 0 0 3px rgba(56, 200, 113, 0.1);
+        }
+
+        .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+            background: white;
+            cursor: pointer;
+        }
+
+        .form-group select:hover {
+            border-color: #38C871;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #38C871, #2a9d5a);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 15px rgba(56, 200, 113, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(56, 200, 113, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .main-section {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .quick-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #555555, #3a3a3a);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 15px rgba(85, 85, 85, 0.3);
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(85, 85, 85, 0.4);
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: white;
+            margin: 5% auto;
+            padding: 0;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            animation: modalSlideIn 0.3s ease;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #F6C139, #e6b035);
+            color: #555555;
+            padding: 20px;
+            border-radius: 15px 15px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            font-size: 1.3rem;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: #555555;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background-color 0.3s ease;
+        }
+
+        .close-btn:hover {
+            background-color: rgba(85, 85, 85, 0.1);
+        }
+
+        .modal-form {
+            padding: 30px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        .btn-cancel {
+            background: #E85D44;
+            color: white;
+        }
+
+        .btn-cancel:hover {
+            background: #d44a32;
+        }
+
+        .climbers-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .climber-btn {
+            background: #F6C139;
+            color: #555555;
+            border: 2px solid #F6C139;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(246, 193, 57, 0.3);
+        }
+
+        .climber-btn:hover {
+            background: #e6b035;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(246, 193, 57, 0.4);
+        }
+
+        .climber-btn.active {
+            background: linear-gradient(135deg, #38C871, #2a9d5a);
+            color: white;
+            border-color: #38C871;
+            box-shadow: 0 6px 20px rgba(56, 200, 113, 0.4);
+        }
+
+        .routes-list {
+            list-style: none;
+        }
+
+        .route-item {
+            background: linear-gradient(135deg, #f8f9fa, #ffffff);
+            border: 2px solid #F6C139;
+            border-radius: 15px;
+            padding: 15px 20px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(246, 193, 57, 0.1);
+        }
+
+        .route-item:hover {
+            background: linear-gradient(135deg, #F6C139, #e6b035);
+            color: #555555;
+            transform: translateX(5px);
+            box-shadow: 0 6px 20px rgba(246, 193, 57, 0.3);
+        }
+
+        .route-checkbox {
+            margin-right: 15px;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .route-info {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            gap: 20px;
+            align-items: center;
+        }
+        
+        .route-dates {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .route-grade {
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: #E85D44;
+        }
+
+        .route-color {
+            font-weight: 600;
+            color: #555555;
+        }
+
+        .route-sector {
+            color: #555555;
+            font-style: italic;
+            opacity: 0.8;
+        }
+
+        .route-creation {
+            color: #555555;
+            font-size: 0.8rem;
+            font-style: italic;
+            opacity: 0.7;
+        }
+        
+        .route-completion {
+            color: #38C871;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .no-climber-selected {
+            text-align: center;
+            color: #7f8c8d;
+            font-style: italic;
+            padding: 40px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border: 2px dashed #bdc3c7;
+        }
+
+        .loading {
+            text-align: center;
+            color: #7f8c8d;
+            padding: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .route-info {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            
+            .route-completion {
+                font-size: 0.8rem;
+            }
+            
+            .route-creation {
+                font-size: 0.7rem;
+            }
+            
+            .route-dates {
+                gap: 3px;
+            }
+            
+            .climbers-container {
+                justify-content: center;
+            }
+            
+            .quick-actions {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .modal-content {
+                margin: 10% auto;
+                width: 95%;
+            }
+            
+            .modal-actions {
+                flex-direction: column;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .header-text {
+                text-align: center;
+            }
+            
+            .logo {
+                width: 60px;
+                height: 60px;
+                border-radius: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-content">
+                <img src="logo.png" alt="Jungle Log Logo" class="logo">
+                <div class="header-text">
+                    <h1>Boulder Jungle Çetelesi</h1>
+                    <p>Tırmanış Rota Takip Sistemi</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="content">
+            <!-- Ana Tırmanıcı Seçimi -->
+            <div class="section main-section">
+                <h2>🧗‍♂️ Tırmanıcı Seçin</h2>
+                <div id="climbers-list" class="climbers-container">
+                    <div class="loading">Tırmanıcılar yükleniyor...</div>
+                </div>
+                
+                <!-- Hızlı Eylem Butonları -->
+                <div class="quick-actions">
+                    <button id="add-climber-btn" class="btn btn-secondary">+ Tırmanıcı Ekle</button>
+                    <button id="add-route-btn" class="btn btn-secondary">+ Rota Ekle</button>
+                </div>
+            </div>
+
+            <!-- Rotalar Bölümü -->
+            <div class="section">
+                <h2 id="routes-header">Tırmanış Rotaları</h2>
+                <ul id="routes-list" class="routes-list">
+                    <div class="loading">Rotalar yükleniyor...</div>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Gizli Formlar -->
+        <div id="add-climber-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Yeni Tırmanıcı Ekle</h3>
+                    <button class="close-btn">&times;</button>
+                </div>
+                <form id="add-climber-form" class="modal-form">
+                    <div class="form-group">
+                        <label for="climber-name">Tırmanıcı Adı</label>
+                        <input type="text" id="climber-name" name="climberName" placeholder="Örn: Mustafa" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="climber-privacy">Gizlilik</label>
+                        <select id="climber-privacy" name="climberPrivacy" required>
+                            <option value="public">Açık - Herkese görünür</option>
+                            <option value="private">Gizli - Sadece link ile erişilebilir</option>
+                        </select>
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" class="btn btn-cancel">İptal</button>
+                        <button type="submit" class="btn">Tırmanıcı Ekle</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div id="add-route-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Yeni Rota Ekle</h3>
+                    <button class="close-btn">&times;</button>
+                </div>
+                <form id="add-route-form" class="modal-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="grade">Zorluk Seviyesi</label>
+                            <select id="grade" name="grade" required>
+                                <option value="">Zorluk seçin</option>
+                                <option value="1">1 - Çok Kolay</option>
+                                <option value="2">2 - Kolay</option>
+                                <option value="3">3 - Orta</option>
+                                <option value="4">4 - Zor</option>
+                                <option value="5">5 - Çok Zor</option>
+                                <option value="6">6 - Uzman</option>
+                                <option value="7">7 - Profesyonel</option>
+                                <option value="8">8 - Elite</option>
+                                <option value="9">9 - Master</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="color">Renk</label>
+                            <input type="text" id="color" name="color" placeholder="Kırmızı" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="sector">Sektör</label>
+                            <select id="sector" name="sector" required>
+                                <option value="">Sektör seçin</option>
+                                <option value="Mağara">Mağara</option>
+                                <option value="Orta">Orta</option>
+                                <option value="Slab">Slab</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" class="btn btn-cancel">İptal</button>
+                        <button type="submit" class="btn">Rota Ekle</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Uygulama JavaScript -->
+    <script type="module" src="./app.js"></script>
+</body>
+</html>
