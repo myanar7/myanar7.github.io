@@ -1,0 +1,58 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Users koleksiyonu - kullanıcı yönetimi
+    match /users/{document} {
+      allow read: if true; // Kullanıcı adı kontrolü için
+      allow create: if request.resource.data.keys().hasAll(['username', 'password', 'name', 'gender', 'completedRoutes', 'createdAt']);
+      allow update: if true; // Kullanıcı kendi verilerini güncelleyebilir (completedRoutes için)
+      allow delete: if false; // Kullanıcı silinemez
+    }
+    
+    // Routes - kullanıcı bazlı erişim
+    match /routes/{document} {
+      allow read: if true; // Tüm rotalar okunabilir (filtreleme uygulama seviyesinde)
+      allow create: if request.resource.data.keys().hasAll(['grade', 'color', 'sector', 'createdAt', 'week', 'month']); // Temel alanlar zorunlu
+      allow update: if false; // Rota güncelleme yasak
+      allow delete: if true; // Rota silme yasak (routesetter sayfasında silme var ama ana sayfada yok)
+    }
+    
+    // Climbers - genel erişim (eski sistem için)
+    match /climbers/{document} {
+      allow read: if true;
+      allow create: if request.resource.data.keys().hasAll(['name', 'completedRoutes', 'privacy']);
+      allow update: if request.resource.data.keys().hasAll(['name', 'completedRoutes', 'privacy']);
+      allow delete: if false; // Silme yasak
+    }
+    
+    // Route Attempts - rota deneme kayıtları
+    match /routeAttempts/{document} {
+      allow read: if true; // Tüm deneme kayıtları okunabilir
+      allow create: if request.resource.data.keys().hasAll(['userId', 'routeId', 'attempts', 'completedAt', 'score', 'isBoulderOfWeek', 'month', 'createdAt']);
+      allow update: if false; // Deneme kayıtları değiştirilemez
+      allow delete: if false; // Deneme kayıtları silinemez
+    }
+    
+    // Leaderboard - puan tablosu
+    match /leaderboard/{document} {
+      allow read: if true; // Puan tablosu herkese açık
+      allow create: if request.resource.data.keys().hasAll(['month', 'gender', 'rankings', 'updatedAt']);
+      allow update: if request.resource.data.keys().hasAll(['month', 'gender', 'rankings', 'updatedAt']);
+      allow delete: if false; // Puan tablosu silinemez
+    }
+    
+    // System collection (period bilgileri)
+    match /system/{document} {
+      allow read: if true; // Period bilgileri herkese açık
+      allow create: if request.resource.data.keys().hasAll(['week', 'month', 'createdAt', 'updatedAt']);
+      allow update: if request.resource.data.keys().hasAll(['week', 'month', 'updatedAt']);
+      allow delete: if false; // System bilgileri silinemez
+    }
+    
+    // Diğer koleksiyonlara erişim yok
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

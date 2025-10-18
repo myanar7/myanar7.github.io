@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Migration Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            margin: 0;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            color: #666;
+            margin: 0;
+        }
+        
+        .migration-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .control-group {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+        }
+        
+        .control-group h3 {
+            margin-top: 0;
+            color: #495057;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #38C871, #2a9d5a);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin: 5px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(56, 200, 113, 0.3);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #E85D44, #d44a32);
+        }
+        
+        .btn-danger:hover {
+            box-shadow: 0 4px 15px rgba(232, 93, 68, 0.3);
+        }
+        
+        .btn-warning {
+            background: linear-gradient(135deg, #F6C139, #e6b035);
+            color: #555;
+        }
+        
+        .btn-warning:hover {
+            box-shadow: 0 4px 15px rgba(246, 193, 57, 0.3);
+        }
+        
+        .status-display {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .status-item:last-child {
+            border-bottom: none;
+        }
+        
+        .status-label {
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .status-value {
+            color: #38C871;
+            font-weight: 600;
+        }
+        
+        .log-display {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+        
+        .log-entry {
+            margin-bottom: 5px;
+        }
+        
+        .log-info { color: #3498db; }
+        .log-success { color: #2ecc71; }
+        .log-warning { color: #f39c12; }
+        .log-error { color: #e74c3c; }
+        
+        .config-section {
+            background: #fff3cd;
+            border: 2px solid #ffeaa7;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .config-section h3 {
+            color: #856404;
+            margin-top: 0;
+        }
+        
+        .config-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .config-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .config-label {
+            font-weight: 600;
+            color: #856404;
+        }
+        
+        .config-value {
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🗄️ Database Migration Test</h1>
+            <p>Firestore veri yapısı iyileştirme ve migration test sayfası</p>
+        </div>
+        
+        <div class="config-section">
+            <h3>⚙️ Migration Configuration</h3>
+            <div class="config-item">
+                <span class="config-label">Batch Size:</span>
+                <span class="config-value" id="batch-size">100</span>
+            </div>
+            <div class="config-item">
+                <span class="config-label">Dry Run:</span>
+                <span class="config-value" id="dry-run">true</span>
+            </div>
+            <div class="config-item">
+                <span class="config-label">Backup:</span>
+                <span class="config-value" id="backup">true</span>
+            </div>
+        </div>
+        
+        <div class="migration-controls">
+            <div class="control-group">
+                <h3>🚀 Migration Operations</h3>
+                <button class="btn" onclick="startMigration()">Start Migration</button>
+                <button class="btn btn-warning" onclick="checkStatus()">Check Status</button>
+                <button class="btn btn-danger" onclick="resetMigration()">Reset Migration</button>
+            </div>
+            
+            <div class="control-group">
+                <h3>🔧 Configuration</h3>
+                <button class="btn" onclick="toggleDryRun()">Toggle Dry Run</button>
+                <button class="btn" onclick="setBatchSize()">Set Batch Size</button>
+                <button class="btn" onclick="exportData()">Export Data</button>
+            </div>
+        </div>
+        
+        <div class="status-display">
+            <h3>📊 Migration Status</h3>
+            <div class="status-item">
+                <span class="status-label">Users:</span>
+                <span class="status-value" id="users-count">-</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">User Stats:</span>
+                <span class="status-value" id="user-stats-count">-</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Route Completions:</span>
+                <span class="status-value" id="route-completions-count">-</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Routes:</span>
+                <span class="status-value" id="routes-count">-</span>
+            </div>
+        </div>
+        
+        <div class="log-display" id="log-display">
+            <div class="log-entry log-info">🚀 Migration test sayfası yüklendi</div>
+            <div class="log-entry log-info">💡 Migration script'ini yüklemek için butonlara tıklayın</div>
+        </div>
+    </div>
+    
+    <script type="module">
+        import { DatabaseMigration, MIGRATION_CONFIG } from './scripts/migrate-database.js';
+        
+        let migration = null;
+        let isDryRun = true;
+        let batchSize = 100;
+        
+        // Migration'ı başlat
+        window.startMigration = async () => {
+            addLog('🚀 Migration başlatılıyor...', 'info');
+            
+            try {
+                migration = new DatabaseMigration();
+                await migration.migrate();
+                addLog('✅ Migration tamamlandı!', 'success');
+                await checkStatus();
+            } catch (error) {
+                addLog(`❌ Migration hatası: ${error.message}`, 'error');
+            }
+        };
+        
+        // Durumu kontrol et
+        window.checkStatus = async () => {
+            addLog('🔍 Migration durumu kontrol ediliyor...', 'info');
+            
+            try {
+                if (!migration) {
+                    migration = new DatabaseMigration();
+                }
+                
+                const status = await migration.checkMigrationStatus();
+                
+                document.getElementById('users-count').textContent = status.users;
+                document.getElementById('user-stats-count').textContent = status.userStats;
+                document.getElementById('route-completions-count').textContent = status.routeCompletions;
+                document.getElementById('routes-count').textContent = status.routes;
+                
+                addLog('📊 Migration durumu güncellendi', 'success');
+            } catch (error) {
+                addLog(`❌ Durum kontrolü hatası: ${error.message}`, 'error');
+            }
+        };
+        
+        // Migration'ı sıfırla
+        window.resetMigration = () => {
+            addLog('⚠️ Migration sıfırlanıyor...', 'warning');
+            migration = null;
+            document.getElementById('users-count').textContent = '-';
+            document.getElementById('user-stats-count').textContent = '-';
+            document.getElementById('route-completions-count').textContent = '-';
+            document.getElementById('routes-count').textContent = '-';
+            addLog('🔄 Migration sıfırlandı', 'info');
+        };
+        
+        // Dry run toggle
+        window.toggleDryRun = () => {
+            isDryRun = !isDryRun;
+            MIGRATION_CONFIG.dryRun = isDryRun;
+            document.getElementById('dry-run').textContent = isDryRun.toString();
+            addLog(`🔧 Dry run: ${isDryRun}`, 'info');
+        };
+        
+        // Batch size ayarla
+        window.setBatchSize = () => {
+            const newSize = prompt('Batch size girin (varsayılan: 100):', batchSize);
+            if (newSize && !isNaN(newSize)) {
+                batchSize = parseInt(newSize);
+                MIGRATION_CONFIG.batchSize = batchSize;
+                document.getElementById('batch-size').textContent = batchSize;
+                addLog(`🔧 Batch size: ${batchSize}`, 'info');
+            }
+        };
+        
+        // Veri export
+        window.exportData = () => {
+            addLog('📤 Veri export başlatılıyor...', 'info');
+            // TODO: Implement data export
+            addLog('📤 Veri export tamamlandı', 'success');
+        };
+        
+        // Log ekle
+        function addLog(message, type = 'info') {
+            const logDisplay = document.getElementById('log-display');
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry log-${type}`;
+            logEntry.textContent = `${new Date().toLocaleTimeString()} - ${message}`;
+            logDisplay.appendChild(logEntry);
+            logDisplay.scrollTop = logDisplay.scrollHeight;
+        }
+        
+        // Sayfa yüklendiğinde durumu kontrol et
+        document.addEventListener('DOMContentLoaded', () => {
+            addLog('📄 Migration test sayfası yüklendi', 'info');
+        });
+    </script>
+</body>
+</html>

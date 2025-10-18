@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rota Ekle - Boulder Jungle Çetelesi</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #38C871, #2a9d5a);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .logo {
+            width: 60px;
+            height: 60px;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            object-fit: contain;
+        }
+
+        .header h1 {
+            color: #38C871;
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        .admin-controls {
+            margin-top: 20px;
+        }
+
+        .reset-btn {
+            background: linear-gradient(135deg, #E85D44, #d44a32);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(232, 93, 68, 0.3);
+        }
+
+        .reset-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(232, 93, 68, 0.4);
+        }
+
+        .reset-btn:active {
+            transform: translateY(0);
+        }
+
+        /* Hafta ve Ay Bilgisi */
+        .period-info {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin: 30px 0;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .current-week, .current-month {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 20px;
+            border-radius: 12px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .current-week h3, .current-month h3 {
+            color: #38C871;
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .current-week p, .current-month p {
+            color: #555;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .period-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .period-controls input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            text-align: center;
+            background: #f9f9f9;
+        }
+
+        .period-controls input:focus {
+            outline: none;
+            border-color: #38C871;
+            background: white;
+        }
+
+        .edit-btn, .save-btn, .cancel-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .edit-btn {
+            background: #38C871;
+            color: white;
+        }
+
+        .edit-btn:hover {
+            background: #2BA55A;
+        }
+
+        .save-btn {
+            background: #F6C139;
+            color: white;
+        }
+
+        .save-btn:hover {
+            background: #E5B833;
+        }
+
+        .cancel-btn {
+            background: #E85D44;
+            color: white;
+        }
+
+        .cancel-btn:hover {
+            background: #D54B3A;
+        }
+
+        /* Rota Bölümleri */
+        .week-routes-section, .other-routes-section {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            color: #38C871;
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            padding: 10px 0;
+            border-bottom: 2px solid #38C871;
+        }
+
+        .week-routes-section .section-title {
+            color: #E85D44;
+            border-bottom-color: #E85D44;
+        }
+
+        .route-week {
+            color: #666;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+
+
+        .form-container {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .form-title {
+            text-align: center;
+            color: #38C871;
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+            font-size: 16px;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #38C871;
+            box-shadow: 0 0 0 3px rgba(56, 200, 113, 0.1);
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            font-size: 14px;
+            color: #666;
+            user-select: none;
+        }
+
+        .checkbox-label input[type="checkbox"] {
+            display: none;
+        }
+
+        .checkmark {
+            width: 18px;
+            height: 18px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            margin-right: 10px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .checkbox-label input[type="checkbox"]:checked + .checkmark {
+            background: #38C871;
+            border-color: #38C871;
+        }
+
+        .checkbox-label input[type="checkbox"]:checked + .checkmark::after {
+            content: '✓';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .checkbox-label:hover .checkmark {
+            border-color: #38C871;
+        }
+
+        .form-group select {
+            cursor: pointer;
+        }
+
+        .form-group select:hover {
+            border-color: #38C871;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #38C871, #2a9d5a);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 6px 20px rgba(56, 200, 113, 0.3);
+            width: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(56, 200, 113, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .success-message {
+            background: linear-gradient(135deg, #38C871, #2a9d5a);
+            color: white;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 600;
+            display: none;
+        }
+
+        .error-message {
+            background: linear-gradient(135deg, #E85D44, #d44a32);
+            color: white;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 600;
+            display: none;
+        }
+
+        .loading {
+            text-align: center;
+            color: #666;
+            font-style: italic;
+        }
+
+        .routes-container {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            margin-top: 30px;
+        }
+
+        .routes-title {
+            text-align: center;
+            color: #38C871;
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 25px;
+        }
+
+        .routes-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .route-item {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .route-item.boulder-of-week {
+            border: 3px solid #F6C139;
+            box-shadow: 0 6px 20px rgba(246, 193, 57, 0.3);
+            background: linear-gradient(135deg, #fff9e6, #ffffff);
+        }
+
+        .boulder-of-week-badge {
+            position: absolute;
+            top: -8px;
+            right: 15px;
+            background: linear-gradient(135deg, #F6C139, #E85D44);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: bold;
+            box-shadow: 0 3px 10px rgba(246, 193, 57, 0.4);
+            z-index: 1;
+        }
+
+        .route-image {
+            margin-top: 15px;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .route-image img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 8px;
+            transition: transform 0.3s ease;
+        }
+
+        .route-image img:hover {
+            transform: scale(1.05);
+        }
+
+        .route-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            border-color: #38C871;
+        }
+
+        .route-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .route-grade {
+            background: linear-gradient(135deg, #38C871, #2a9d5a);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .delete-btn {
+            background: linear-gradient(135deg, #E85D44, #d44a32);
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .delete-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(232, 93, 68, 0.3);
+        }
+
+        .route-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .route-detail {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .route-detail-icon {
+            font-size: 16px;
+        }
+
+        .route-date {
+            font-size: 12px;
+            color: #999;
+            text-align: center;
+            font-style: italic;
+        }
+
+        .empty-routes {
+            text-align: center;
+            color: #666;
+            font-style: italic;
+            padding: 40px;
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-radius: 15px;
+            border: 2px dashed #ddd;
+        }
+
+        /* Onay Dialog Stilleri */
+        .confirmation-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .confirmation-dialog {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .confirmation-title {
+            color: #E85D44;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        .confirmation-message {
+            color: #666;
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+
+        .confirmation-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .btn-confirm {
+            background: linear-gradient(135deg, #E85D44, #d44a32);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-confirm:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(232, 93, 68, 0.4);
+        }
+
+        .btn-cancel {
+            background: linear-gradient(135deg, #6c757d, #5a6268);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-cancel:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(108, 117, 125, 0.4);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .form-container {
+                padding: 25px;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+
+            .routes-list {
+                grid-template-columns: 1fr;
+            }
+
+            .route-details {
+                grid-template-columns: 1fr;
+            }
+
+            .confirmation-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="logo.png" alt="Jungle Log Logo" class="logo">
+            <h1>🏔️ Rota Ekle</h1>
+            <p>Yeni tırmanış rotası ekleyin</p>
+            <div class="admin-controls">
+                <button id="reset-monthly-scores-btn" class="reset-btn">🔄 Aylık Puanları Sıfırla</button>
+            </div>
+        </div>
+
+        <!-- Hafta ve Ay Bilgisi -->
+        <div class="period-info">
+            <div class="current-week">
+                <h3>📅 Bu Hafta</h3>
+                <div class="period-controls">
+                    <input type="text" id="current-week-input" placeholder="Hafta bilgisi" readonly>
+                    <button id="edit-week-btn" class="edit-btn">✏️ Düzenle</button>
+                    <button id="save-week-btn" class="save-btn" style="display: none;">💾 Kaydet</button>
+                    <button id="cancel-week-btn" class="cancel-btn" style="display: none;">❌ İptal</button>
+                </div>
+            </div>
+            <div class="current-month">
+                <h3>📆 Bu Ay</h3>
+                <div class="period-controls">
+                    <input type="text" id="current-month-input" placeholder="Ay bilgisi" readonly>
+                    <button id="edit-month-btn" class="edit-btn">✏️ Düzenle</button>
+                    <button id="save-month-btn" class="save-btn" style="display: none;">💾 Kaydet</button>
+                    <button id="cancel-month-btn" class="cancel-btn" style="display: none;">❌ İptal</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-container">
+            <h2 class="form-title">Yeni Rota Bilgileri</h2>
+            
+            <div class="success-message" id="success-message">
+                ✅ Rota başarıyla eklendi!
+            </div>
+            
+            <div class="error-message" id="error-message">
+                ❌ Rota eklenirken hata oluştu!
+            </div>
+
+            <form id="add-route-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="grade">Zorluk Seviyesi</label>
+                        <select id="grade" name="grade" required>
+                            <option value="">Zorluk seçin</option>
+                            <option value="1">1 - Çok Kolay</option>
+                            <option value="2">2 - Kolay</option>
+                            <option value="3">3 - Orta</option>
+                            <option value="4">4 - Zor</option>
+                            <option value="5">5 - Çok Zor</option>
+                            <option value="6">6 - Uzman</option>
+                            <option value="7">7 - Profesyonel</option>
+                            <option value="8">8 - Elite</option>
+                            <option value="9">9 - Master</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="color">Renk</label>
+                        <input type="text" id="color" name="color" placeholder="Kırmızı" required>
+                    </div>
+                <div class="form-group">
+                    <label for="sector">Sektör</label>
+                    <select id="sector" name="sector" required>
+                        <option value="">Sektör seçin</option>
+                        <option value="Mağara">Mağara</option>
+                        <option value="Orta">Orta</option>
+                        <option value="Slab">Slab</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="image-url">Resim URL (İsteğe Bağlı)</label>
+                    <input type="url" id="image-url" name="imageUrl" placeholder="https://example.com/image.jpg">
+                </div>
+                
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="boulder-of-week" name="boulderOfWeek">
+                        <span class="checkmark"></span>
+                        Boulder of the Week
+                    </label>
+                </div>
+                </div>
+                
+                <button type="submit" class="btn" id="submit-btn">
+                    🏔️ Rota Ekle
+                </button>
+            </form>
+        </div>
+
+        <!-- Rota Listesi -->
+        <div class="routes-container">
+            <h2 class="routes-title">📋 Mevcut Rotalar</h2>
+            
+            <!-- Bu Haftanın Rotaları -->
+            <div class="week-routes-section">
+                <h3 class="section-title">🔥 Bu Haftanın Rotaları</h3>
+                <div id="current-week-routes" class="routes-list">
+                    <div class="loading">Bu haftanın rotaları yükleniyor...</div>
+                </div>
+            </div>
+
+            <!-- Diğer Rotalar -->
+            <div class="other-routes-section">
+                <h3 class="section-title">📚 Diğer Rotalar</h3>
+                <div id="other-routes" class="routes-list">
+                    <div class="loading">Diğer rotalar yükleniyor...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Onay Dialog -->
+    <div class="confirmation-overlay" id="confirmation-overlay">
+        <div class="confirmation-dialog">
+            <h3 class="confirmation-title">⚠️ Rota Sil</h3>
+            <p class="confirmation-message" id="confirmation-message">
+                Bu rotayı silmek istediğinizden emin misiniz?<br>
+                Bu işlem geri alınamaz.
+            </p>
+            <div class="confirmation-actions">
+                <button class="btn-confirm" id="confirm-delete">
+                    🗑️ Evet, Sil
+                </button>
+                <button class="btn-cancel" id="cancel-delete">
+                    ❌ İptal
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="./routesetter.js"></script>
+</body>
+</html>

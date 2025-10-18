@@ -1,0 +1,82 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Users koleksiyonu - normalized structure
+    match /users/{document} {
+      allow read: if true; // Kullanıcı adı kontrolü için
+      allow create: if request.resource.data.keys().hasAll(['username', 'password', 'name', 'gender', 'createdAt']);
+      allow update: if true; // Kullanıcı kendi verilerini güncelleyebilir
+      allow delete: if false; // Kullanıcı silinemez
+    }
+    
+    // User Statistics - kullanıcı istatistikleri
+    match /userStats/{document} {
+      allow read: if true; // Tüm istatistikler okunabilir
+      allow create: if request.resource.data.keys().hasAll(['userId', 'totalScore', 'monthlyScore', 'totalRoutesCompleted', 'currentWeekCompleted', 'lastUpdated']);
+      allow update: if true; // İstatistikler güncellenebilir
+      allow delete: if false; // İstatistikler silinemez
+    }
+    
+    // Route Completions - rota tamamlama kayıtları
+    match /routeCompletions/{document} {
+      allow read: if true; // Tüm tamamlama kayıtları okunabilir
+      allow create: if request.resource.data.keys().hasAll(['userId', 'routeId', 'completedAt', 'attempts', 'score', 'isCurrentWeek', 'month', 'week', 'isBoulderOfWeek', 'createdAt']);
+      allow update: if false; // Tamamlama kayıtları değiştirilemez
+      allow delete: if true; // Tamamlama kayıtları silinebilir (uncomplete için)
+    }
+    
+    // Routes - optimized structure
+    match /routes/{document} {
+      allow read: if true; // Tüm rotalar okunabilir
+      allow create: if request.resource.data.keys().hasAll(['grade', 'color', 'sector', 'week', 'month', 'isActive', 'createdAt']);
+      allow update: if true; // Rota güncelleme (soft delete için)
+      allow delete: if false; // Hard delete yasak
+    }
+    
+    // Route Attempts - legacy (eski sistem için)
+    match /routeAttempts/{document} {
+      allow read: if true;
+      allow create: if request.resource.data.keys().hasAll(['userId', 'routeId', 'attempts', 'completedAt', 'score', 'isBoulderOfWeek', 'month', 'createdAt']);
+      allow update: if false;
+      allow delete: if false;
+    }
+    
+    // Climbers - legacy (eski sistem için)
+    match /climbers/{document} {
+      allow read: if true;
+      allow create: if request.resource.data.keys().hasAll(['name', 'completedRoutes', 'privacy']);
+      allow update: if request.resource.data.keys().hasAll(['name', 'completedRoutes', 'privacy']);
+      allow delete: if false;
+    }
+    
+    // Leaderboard - puan tablosu
+    match /leaderboard/{document} {
+      allow read: if true;
+      allow create: if request.resource.data.keys().hasAll(['month', 'gender', 'rankings', 'updatedAt']);
+      allow update: if request.resource.data.keys().hasAll(['month', 'gender', 'rankings', 'updatedAt']);
+      allow delete: if false;
+    }
+    
+    // System collection (period bilgileri)
+    match /system/{document} {
+      allow read: if true;
+      allow create: if request.resource.data.keys().hasAll(['week', 'month', 'createdAt', 'updatedAt']);
+      allow update: if request.resource.data.keys().hasAll(['week', 'month', 'updatedAt']);
+      allow delete: if false;
+    }
+
+    // Monthly History collection (geçmiş aylık veriler)
+    match /monthlyHistory/{document} {
+      allow read: if true; // Geçmiş veriler herkese açık
+      allow create: if request.resource.data.keys().hasAll(['month', 'userStats', 'resetAt', 'createdAt']);
+      allow update: if false; // Geçmiş veriler değiştirilemez
+      allow delete: if false; // Geçmiş veriler silinemez
+    }
+    
+    // Diğer koleksiyonlara erişim yok
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

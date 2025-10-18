@@ -1,0 +1,82 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Users koleksiyonu - kullanıcı yönetimi
+    match /users/{document} {
+      allow read: if true; // Kullanıcı adı kontrolü ve login için
+      allow create: if request.resource.data.keys().hasAll(['username', 'password', 'name', 'gender', 'createdAt']);
+      allow update: if true; // Kullanıcı kendi verilerini güncelleyebilir
+      allow delete: if false; // Kullanıcı silinemez
+    }
+    
+    // User Statistics - kullanıcı istatistikleri (normalized structure)
+    match /userStats/{document} {
+      allow read: if true; // Tüm istatistikler okunabilir (leaderboard için)
+      allow create: if request.resource.data.keys().hasAll(['userId', 'totalScore', 'monthlyScore', 'totalRoutesCompleted', 'currentWeekCompleted', 'lastUpdated']);
+      allow update: if true; // İstatistikler güncellenebilir (puan hesaplama için)
+      allow delete: if false; // İstatistikler silinemez
+    }
+    
+    // Route Completions - rota tamamlama kayıtları (optimized structure)
+    match /routeCompletions/{document} {
+      allow read: if true; // Tüm tamamlama kayıtları okunabilir
+      allow create: if request.resource.data.keys().hasAll(['userId', 'routeId', 'completedAt', 'attempts', 'score', 'isCurrentWeek', 'month', 'week', 'isBoulderOfWeek', 'createdAt']);
+      allow update: if false; // Tamamlama kayıtları değiştirilemez (immutable)
+      allow delete: if true; // Tamamlama kayıtları silinebilir (uncomplete için)
+    }
+    
+    // Routes - rota yönetimi
+    match /routes/{document} {
+      allow read: if true; // Tüm rotalar okunabilir
+      allow create: if request.resource.data.keys().hasAll(['grade', 'color', 'sector', 'week', 'month', 'isActive', 'createdAt']);
+      allow update: if true; // Rota güncelleme (soft delete ve boulder of week için)
+      allow delete: if true; // Rota silme (routesetter sayfasında)
+    }
+    
+    // Route Attempts - legacy (eski sistem için backward compatibility)
+    match /routeAttempts/{document} {
+      allow read: if true;
+      allow create: if request.resource.data.keys().hasAll(['userId', 'routeId', 'attempts', 'completedAt', 'score', 'isBoulderOfWeek', 'month', 'createdAt']);
+      allow update: if false;
+      allow delete: if false;
+    }
+    
+    // Climbers - legacy (eski sistem için backward compatibility)
+    match /climbers/{document} {
+      allow read: if true;
+      allow create: if request.resource.data.keys().hasAll(['name', 'completedRoutes', 'privacy']);
+      allow update: if request.resource.data.keys().hasAll(['name', 'completedRoutes', 'privacy']);
+      allow delete: if false;
+    }
+    
+    // Leaderboard - puan tablosu (legacy, artık kullanılmıyor)
+    match /leaderboard/{document} {
+      allow read: if true;
+      allow create: if request.resource.data.keys().hasAll(['month', 'gender', 'rankings', 'updatedAt']);
+      allow update: if request.resource.data.keys().hasAll(['month', 'gender', 'rankings', 'updatedAt']);
+      allow delete: if false;
+    }
+    
+    // System collection - sistem ayarları (period bilgileri)
+    match /system/{document} {
+      allow read: if true; // Sistem bilgileri herkese açık
+      allow create: if request.resource.data.keys().hasAll(['week', 'month', 'createdAt', 'updatedAt']);
+      allow update: if request.resource.data.keys().hasAll(['week', 'month', 'updatedAt']);
+      allow delete: if false; // Sistem ayarları silinemez
+    }
+
+    // Monthly History collection - geçmiş aylık veriler
+    match /monthlyHistory/{document} {
+      allow read: if true; // Geçmiş veriler herkese açık (leaderboard için)
+      allow create: if request.resource.data.keys().hasAll(['month', 'userStats', 'resetAt', 'createdAt']);
+      allow update: if false; // Geçmiş veriler değiştirilemez (immutable)
+      allow delete: if false; // Geçmiş veriler silinemez (immutable)
+    }
+    
+    // Diğer koleksiyonlara erişim yok (security)
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
