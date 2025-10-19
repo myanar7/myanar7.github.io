@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     await fixMissingScores();
     
     setupRealtimeListeners();
-    updateCurrentMonth();
+    await updateCurrentMonth();
     setupHistoryListeners();
 });
 
@@ -234,18 +234,47 @@ function updateStats() {
 }
 
 // Mevcut ayı güncelle
-function updateCurrentMonth() {
-    const now = new Date();
-    const monthNames = [
-        'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
-        'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'
-    ];
-    
-    const currentMonthName = monthNames[now.getMonth()];
-    const currentYear = now.getFullYear();
-    
-    console.log('📅 Mevcut ay güncelleniyor:', `${currentMonthName} ${currentYear}`);
-    currentMonth.textContent = `${currentMonthName} ${currentYear}`;
+async function updateCurrentMonth() {
+    try {
+        console.log('📅 Mevcut ay veritabanından yükleniyor...');
+        
+        // System period dokümanını oku
+        const periodRef = doc(db, 'system', 'period');
+        const periodDoc = await getDoc(periodRef);
+        
+        let monthText;
+        if (periodDoc.exists()) {
+            const periodData = periodDoc.data();
+            monthText = periodData.month || 'Bilinmeyen Ay';
+            console.log('📅 Veritabanından ay bilgisi alındı:', monthText);
+        } else {
+            // Fallback: eğer period dokümanı yoksa mevcut tarihi kullan
+            const now = new Date();
+            const monthNames = [
+                'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
+                'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'
+            ];
+            const currentMonthName = monthNames[now.getMonth()];
+            const currentYear = now.getFullYear();
+            monthText = `${currentMonthName} ${currentYear}`;
+            console.log('📅 Fallback: Mevcut tarih kullanılıyor:', monthText);
+        }
+        
+        currentMonth.textContent = monthText;
+        console.log('✅ Ay bilgisi güncellendi:', monthText);
+        
+    } catch (error) {
+        console.error('❌ Ay bilgisi yüklenirken hata:', error);
+        // Hata durumunda fallback
+        const now = new Date();
+        const monthNames = [
+            'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
+            'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'
+        ];
+        const currentMonthName = monthNames[now.getMonth()];
+        const currentYear = now.getFullYear();
+        currentMonth.textContent = `${currentMonthName} ${currentYear}`;
+    }
 }
 
 // Firebase bağlantı durumu kontrolü

@@ -29,33 +29,9 @@ service cloud.firestore {
     // Routes - rota yönetimi
     match /routes/{document} {
       allow read: if true; // Tüm rotalar okunabilir
-      allow create: if request.resource.data.keys().hasAll(['grade', 'color', 'sector', 'week', 'month', 'isActive', 'createdAt']);
+      allow create: if request.resource.data.keys().hasAll(['grade', 'color', 'sector', 'week', 'month', 'createdAt']);
       allow update: if true; // Rota güncelleme (soft delete ve boulder of week için)
       allow delete: if true; // Rota silme (routesetter sayfasında)
-    }
-    
-    // Route Attempts - legacy (eski sistem için backward compatibility)
-    match /routeAttempts/{document} {
-      allow read: if true;
-      allow create: if request.resource.data.keys().hasAll(['userId', 'routeId', 'attempts', 'completedAt', 'score', 'isBoulderOfWeek', 'month', 'createdAt']);
-      allow update: if false;
-      allow delete: if false;
-    }
-    
-    // Climbers - legacy (eski sistem için backward compatibility)
-    match /climbers/{document} {
-      allow read: if true;
-      allow create: if request.resource.data.keys().hasAll(['name', 'completedRoutes', 'privacy']);
-      allow update: if request.resource.data.keys().hasAll(['name', 'completedRoutes', 'privacy']);
-      allow delete: if false;
-    }
-    
-    // Leaderboard - puan tablosu (legacy, artık kullanılmıyor)
-    match /leaderboard/{document} {
-      allow read: if true;
-      allow create: if request.resource.data.keys().hasAll(['month', 'gender', 'rankings', 'updatedAt']);
-      allow update: if request.resource.data.keys().hasAll(['month', 'gender', 'rankings', 'updatedAt']);
-      allow delete: if false;
     }
     
     // System collection - sistem ayarları (period bilgileri)

@@ -232,7 +232,7 @@ async function resetMonthlyScores() {
         const userIdToNameAndGenderMap = {};
         usersSnapshot.docs.forEach(userDoc => {
             const userData = userDoc.data();
-            userIdToNameAndGenderMap[userDoc.id] = {name: userData.name || 'Bilinmeyen', gender: userData.gender || 'erkek' || 'kadın'};
+            userIdToNameAndGenderMap[userDoc.id] = {'name': userData.name || 'Bilinmeyen', 'gender': userData.gender || 'erkek' || 'kadın'};
         });
         
         console.log('📊 User mapping oluşturuldu:', Object.keys(userIdToNameAndGenderMap).length, 'kullanıcı');
@@ -256,11 +256,17 @@ async function resetMonthlyScores() {
             const userStatsData = userStatsDoc.data();
             const userId = userStatsDoc.id;
             
+            // Güvenli erişim için kontrol
+            const userInfo = userIdToNameAndGenderMap[userId];
+            const userName = userInfo ? userInfo.name : 'Bilinmeyen';
+            const userGender = userInfo ? userInfo.gender : 'erkek';
+            
+            console.log('Denemeler: ', userName, userGender);
             // Geçmiş verileri sakla (name mapping'den al)
             monthlyHistoryData.userStats[userId] = {
                 monthlyScore: userStatsData.monthlyScore || 0,
-                name: userIdToNameAndGenderMap[userId]['name'] || 'Bilinmeyen',
-                gender: userIdToNameAndGenderMap[userId]['gender'] || 'erkek'
+                name: userName,
+                gender: userGender
             };
             
             // Monthly score'u sıfırla

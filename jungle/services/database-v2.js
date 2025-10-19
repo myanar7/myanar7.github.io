@@ -123,17 +123,6 @@ export const userServiceV2 = {
             console.log('📝 User document oluşturuluyor:', userDoc);
             batch.set(userRef, userDoc);
             
-            // User stats document
-            const statsRef = doc(collection(db, 'userStats'));
-            batch.set(statsRef, {
-                userId: userRef.id,
-                totalScore: 0,
-                monthlyScore: 0,
-                totalRoutesCompleted: 0,
-                currentWeekCompleted: 0,
-                lastUpdated: serverTimestamp()
-            });
-            
             await batch.commit();
             console.log('✅ Kullanıcı ve istatistikleri oluşturuldu:', userRef.id);
             return userRef.id;
@@ -212,6 +201,7 @@ export const userStatsService = {
     // Kullanıcı istatistiklerini al
     async getUserStats(userId) {
         try {
+            const batch = writeBatch(db);
             const cached = getCache(`stats_${userId}`);
             if (cached) return cached;
             
@@ -219,8 +209,9 @@ export const userStatsService = {
             const snapshot = await getDocs(q);
             
             if (snapshot.empty) {
+                console.log('❌ Kullanıcı istatistikleri bulunamadı, yeni istatistik oluşturuluyor...');
                 // İlk kez istatistik oluştur
-                const statsRef = doc(collection(db, 'userStats'));
+                const statsRef = doc(db, 'userStats', userId);
                 const statsData = {
                     userId: userId,
                     totalScore: 0,
@@ -229,7 +220,8 @@ export const userStatsService = {
                     currentWeekCompleted: 0,
                     lastUpdated: serverTimestamp()
                 };
-                await addDoc(collection(db, 'userStats'), statsData);
+                batch.set(statsRef, statsData, { merge: true });
+                batch.commit();
                 setCache(`stats_${userId}`, statsData);
                 return statsData;
             }
