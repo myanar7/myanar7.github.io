@@ -116,6 +116,29 @@ function getDefaultMonth() {
     return `${monthNames[now.getMonth()]} ${now.getFullYear()}`;
 }
 
+// Google Drive paylaşım URL'lerini görüntülenebilir direkt linke çevir
+function normalizeImageUrl(url) {
+    if (!url) return null;
+    try {
+        const trimmed = String(url).trim();
+        const patterns = [
+            /https?:\/\/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/,
+            /https?:\/\/drive\.google\.com\/open\?id=([a-zA-Z0-9_-]+)/,
+            /https?:\/\/drive\.google\.com\/uc\?id=([a-zA-Z0-9_-]+)/,
+            /https?:\/\/drive\.google\.com\/uc\?export=download&id=([a-zA-Z0-9_-]+)/
+        ];
+        for (const regex of patterns) {
+            const match = trimmed.match(regex);
+            if (match && match[1]) {
+                return `https://lh3.googleusercontent.com/d/${match[1]}`;
+            }
+        }
+        return trimmed;
+    } catch (e) {
+        return url;
+    }
+}
+
 // Hafta ve ay düzenleme event handler'ları
 function setupPeriodHandlers() {
     // Hafta düzenleme
@@ -352,11 +375,13 @@ async function handleAddRoute(event) {
     try {
         // Get form data
         const formData = new FormData(addRouteForm);
+        const rawImageUrl = formData.get('imageUrl');
+        const imageUrl = normalizeImageUrl(rawImageUrl);
         const routeData = {
             grade: formData.get('grade'),
             color: formData.get('color'),
             sector: formData.get('sector'),
-            imageUrl: formData.get('imageUrl') || null,
+            imageUrl: imageUrl || null,
             boulderOfWeek: formData.get('boulderOfWeek') === 'on',
             week: currentWeek,
             month: currentMonth,
