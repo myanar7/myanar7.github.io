@@ -4,6 +4,40 @@ import { uiService } from './services/ui.js';
 import { EventManager } from './services/eventManager.js';
 import { checkConnection } from './config/firebase.js';
 
+// Şifre hash'leme fonksiyonu
+async function hashPassword(password) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(password);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    return hashHex;
+}
+
+// Hash fonksiyonunu test et (geliştirme amaçlı)
+async function testHashFunction() {
+    try {
+        const testPassword = 'test123';
+        const hash1 = await hashPassword(testPassword);
+        const hash2 = await hashPassword(testPassword);
+        
+        console.log('🔐 Hash test sonuçları:');
+        console.log('Test şifre:', testPassword);
+        console.log('Hash 1:', hash1);
+        console.log('Hash 2:', hash2);
+        console.log('Hash\'ler eşit mi?', hash1 === hash2);
+        
+        // Farklı şifre ile test
+        const differentPassword = 'test124';
+        const hash3 = await hashPassword(differentPassword);
+        console.log('Farklı şifre hash:', hash3);
+        console.log('Farklı hash eşit mi?', hash1 === hash3);
+        
+    } catch (error) {
+        console.error('❌ Hash test hatası:', error);
+    }
+}
+
 // Global state
 const appState = {
     currentUser: null,
@@ -27,6 +61,9 @@ class JungleLogAppOptimized {
     async initializeApp() {
         try {
             console.log('🚀 Jungle Log uygulaması başlatılıyor (Optimized)...');
+            
+            // Hash fonksiyonunu test et
+            await testHashFunction();
             
             // UI elementlerini başlat
             uiService.initializeElements();
@@ -152,8 +189,10 @@ class JungleLogAppOptimized {
                 throw new Error('Kullanıcı adı veya şifre hatalı');
             }
             
-            if (user.password !== password) {
-                console.log('❌ Şifre hatalı. Beklenen:', user.password, 'Girilen:', password);
+            // Şifreyi hash'le ve karşılaştır
+            const hashedPassword = await hashPassword(password);
+            if (user.password !== hashedPassword) {
+                console.log('❌ Şifre hatalı. Beklenen hash:', user.password, 'Girilen hash:', hashedPassword);
                 throw new Error('Kullanıcı adı veya şifre hatalı');
             }
             
@@ -216,6 +255,10 @@ class JungleLogAppOptimized {
             if (existingUser) {
                 throw new Error('Bu kullanıcı adı zaten kullanılıyor');
             }
+            
+            // Şifreyi hash'le
+            const hashedPassword = await hashPassword(userData.password);
+            userData.password = hashedPassword;
             
             // Kullanıcı oluştur - Batch operation
             const userId = await userServiceV2.createUser(userData);
@@ -687,14 +730,18 @@ class JungleLogAppOptimized {
         try {
             const user = await userServiceV2.getUserByUsername(username);
             
-            if (user && user.password === password) {
-                const userStats = await userStatsService.getUserStats(user.id);
-                
-                appState.currentUser = user;
-                appState.userStats = userStats;
-                this.showMainContent();
-                this.setupRealtimeListeners();
-                console.log('✅ Otomatik giriş başarılı');
+            if (user) {
+                // Şifreyi hash'le ve karşılaştır
+                const hashedPassword = await hashPassword(password);
+                if (user.password === hashedPassword) {
+                    const userStats = await userStatsService.getUserStats(user.id);
+                    
+                    appState.currentUser = user;
+                    appState.userStats = userStats;
+                    this.showMainContent();
+                    this.setupRealtimeListeners();
+                    console.log('✅ Otomatik giriş başarılı');
+                }
             }
         } catch (error) {
             console.error('❌ Otomatik giriş hatası:', error);
