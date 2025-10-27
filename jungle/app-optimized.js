@@ -231,22 +231,27 @@ class JungleLogAppOptimized {
             username: formData.get('username'),
             password: formData.get('password'),
             name: formData.get('name'),
-            gender: formData.get('gender')
+            gender: formData.get('gender'),
+            kvkk: formData.get('kvkk')
         };
         
         console.log('📝 Register form data:', userData);
         
         // Validation
         if (!userData.username || !userData.password || !userData.name || !userData.gender) {
-            uiService.showError('Tüm alanlar doldurulmalıdır', uiService.elements.registerForm);
+            this.showRegisterError('Tüm alanlar doldurulmalıdır');
             return;
         }
         
         if (userData.password.length < 4) {
-            uiService.showError('Şifre en az 4 karakter olmalıdır', uiService.elements.registerForm);
+            this.showRegisterError('Şifre en az 4 karakter olmalıdır');
             return;
         }
         
+        if (!userData.kvkk) {
+            this.showRegisterError('KVKK Aydınlatma Metni\'ni kabul etmelisiniz');
+            return;
+        }
         try {
             uiService.showLoading(uiService.elements.registerForm, 'Kullanıcı oluşturuluyor...');
             
@@ -263,12 +268,14 @@ class JungleLogAppOptimized {
             // Kullanıcı oluştur - Batch operation
             const userId = await userServiceV2.createUser(userData);
             
-            uiService.showSuccess('Kullanıcı başarıyla oluşturuldu!');
-            this.hideRegisterPopup();
+            this.showRegisterSuccess('Kullanıcı başarıyla oluşturuldu!');
+            setTimeout(() => {
+                this.hideRegisterPopup();
+            }, 1500);
             
         } catch (error) {
             console.error('❌ Register hatası:', error);
-            uiService.showError(error.message, uiService.elements.registerForm);
+            this.showRegisterError(error.message);
         }
     }
 
@@ -307,12 +314,58 @@ class JungleLogAppOptimized {
     // Register popup'ını göster
     showRegisterPopup() {
         uiService.showModal('register-overlay');
+        this.hideRegisterMessages();
     }
 
     // Register popup'ını gizle
     hideRegisterPopup() {
         uiService.hideModal('register-overlay');
         uiService.clearForm('register-form');
+        this.hideRegisterMessages();
+    }
+
+    // Register error mesajını göster
+    showRegisterError(message) {
+        const errorDiv = document.getElementById('register-error');
+        const successDiv = document.getElementById('register-success');
+        
+        if (errorDiv) {
+            errorDiv.textContent = `❌ ${message}`;
+            errorDiv.style.display = 'block';
+        }
+        
+        if (successDiv) {
+            successDiv.style.display = 'none';
+        }
+    }
+
+    // Register success mesajını göster
+    showRegisterSuccess(message) {
+        const errorDiv = document.getElementById('register-error');
+        const successDiv = document.getElementById('register-success');
+        
+        if (successDiv) {
+            successDiv.textContent = `✅ ${message}`;
+            successDiv.style.display = 'block';
+        }
+        
+        if (errorDiv) {
+            errorDiv.style.display = 'none';
+        }
+    }
+
+    // Register mesajlarını gizle
+    hideRegisterMessages() {
+        const errorDiv = document.getElementById('register-error');
+        const successDiv = document.getElementById('register-success');
+        
+        if (errorDiv) {
+            errorDiv.style.display = 'none';
+        }
+        
+        if (successDiv) {
+            successDiv.style.display = 'none';
+        }
     }
 
     // Attempts popup'ını gizle
