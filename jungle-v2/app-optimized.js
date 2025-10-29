@@ -248,18 +248,15 @@ class JungleLogAppOptimized {
         try {
             uiService.showLoading(uiService.elements.registerForm, 'Kullanıcı oluşturuluyor...');
             
-            // Kullanıcı adı kontrolü
-            const existingUser = await userServiceV2.getUserByUsername(userData.username);
-            if (existingUser) {
-                throw new Error('Bu kullanıcı adı zaten kullanılıyor');
-            }
-            
             // Şifreyi hash'le
             const hashedPassword = await hashPassword(userData.password);
             userData.password = hashedPassword;
             
             // Kullanıcı oluştur - Batch operation
             const userId = await userServiceV2.createUser(userData);
+            if (!userId) {
+                throw new Error('Kullanıcı oluşturulamadı');
+            }
             
             this.showRegisterSuccess('Kullanıcı başarıyla oluşturuldu!');
             setTimeout(() => {
@@ -632,6 +629,7 @@ class JungleLogAppOptimized {
                         userId: saveResult.userStats.user_id || saveResult.userStats.userId,
                         totalScore: Number(saveResult.userStats.total_score || saveResult.userStats.totalScore || 0),
                         monthlyScore: Number(saveResult.userStats.monthly_score || saveResult.userStats.monthlyScore || 0),
+                        weeklyScore: Number(saveResult.userStats.weekly_score || saveResult.userStats.weeklyScore || 0),
                         totalRoutesCompleted: Number(saveResult.userStats.total_routes_completed || saveResult.userStats.totalRoutesCompleted || 0),
                         currentWeekCompleted: Number(saveResult.userStats.current_week_completed || saveResult.userStats.currentWeekCompleted || 0),
                         lastUpdated: saveResult.userStats.last_updated || saveResult.userStats.lastUpdated
@@ -667,7 +665,8 @@ class JungleLogAppOptimized {
                     const latest = await userStatsService.getUserStats(appState.currentUser.id);
                     const prev = appState.userStats || {};
                     const changed = Math.abs((prev.totalScore || 0) - (latest.totalScore || 0)) > 0.01 ||
-                                    Math.abs((prev.monthlyScore || 0) - (latest.monthlyScore || 0)) > 0.01;
+                                    Math.abs((prev.monthlyScore || 0) - (latest.monthlyScore || 0)) > 0.01 ||
+                                    Math.abs((prev.weeklyScore || 0) - (latest.weeklyScore || 0)) > 0.01;
                     if (changed) {
                         appState.userStats = latest;
                         this.updateUserStatsDisplay();
@@ -722,6 +721,13 @@ class JungleLogAppOptimized {
             const monthlyScore = appState.userStats.monthlyScore || 0;
             monthlyScoreElement.textContent = `${monthlyScore.toFixed(1)}`;
         }
+
+        // Weekly score güncelle
+        const weeklyScoreElement = document.getElementById('user-weekly-score');
+        if (weeklyScoreElement) {
+            const weeklyScore = appState.userStats.weeklyScore || 0;
+            weeklyScoreElement.textContent = `${weeklyScore.toFixed(1)}`;
+        }
         
         console.log('✅ User stats display güncellendi');
     }
@@ -764,10 +770,12 @@ class JungleLogAppOptimized {
         if (appState.userStats) {
             const totalScore = appState.userStats.totalScore || 0;
             const monthlyScore = appState.userStats.monthlyScore || 0;
+            const weeklyScore = appState.userStats.weeklyScore || 0;
             
             console.log('📊 Puan detayları:', { 
                 totalScore, 
                 monthlyScore, 
+                weeklyScore,
                 score: appState.userStats.score,
                 isUndefined: appState.userStats.totalScore === undefined 
             });
@@ -779,6 +787,11 @@ class JungleLogAppOptimized {
             if (uiService.elements.userMonthlyScore) {
                 uiService.elements.userMonthlyScore.textContent = monthlyScore.toFixed(1);
                 console.log('✅ Monthly score güncellendi:', monthlyScore.toFixed(1));
+            }
+            const weeklyEl = document.getElementById('user-weekly-score');
+            if (weeklyEl) {
+                weeklyEl.textContent = weeklyScore.toFixed(1);
+                console.log('✅ Weekly score güncellendi:', weeklyScore.toFixed(1));
             }
         } else {
             console.log('❌ appState.userStats yok');

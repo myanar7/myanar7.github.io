@@ -6,8 +6,10 @@ let users = [];
 let routes = [];
 
 // DOM elementleri
-const maleLeaderboard = document.getElementById('male-leaderboard');
-const femaleLeaderboard = document.getElementById('female-leaderboard');
+const weeklyMaleLeaderboard = document.getElementById('weekly-male-leaderboard');
+const weeklyFemaleLeaderboard = document.getElementById('weekly-female-leaderboard');
+const monthlyMaleLeaderboard = document.getElementById('monthly-male-leaderboard');
+const monthlyFemaleLeaderboard = document.getElementById('monthly-female-leaderboard');
 const totalParticipants = document.getElementById('total-participants');
 const totalAttempts = document.getElementById('total-attempts');
 const currentMonth = document.getElementById('current-month');
@@ -80,49 +82,57 @@ async function updateLeaderboard() {
     
     console.log('👥 Zenginleştirilmiş kullanıcılar:', enrichedUsers.length);
     
-    // Erkekleri sırala
-    const maleUsers = enrichedUsers
+    // Haftalık sıralamalar
+    const weeklyMaleUsers = enrichedUsers
+        .filter(user => user.gender === 'erkek')
+        .sort((a, b) => (b.weeklyScore || 0) - (a.weeklyScore || 0));
+    const weeklyFemaleUsers = enrichedUsers
+        .filter(user => user.gender === 'kadın')
+        .sort((a, b) => (b.weeklyScore || 0) - (a.weeklyScore || 0));
+
+    // Aylık sıralamalar
+    const monthlyMaleUsers = enrichedUsers
         .filter(user => user.gender === 'erkek')
         .sort((a, b) => (b.monthlyScore || 0) - (a.monthlyScore || 0));
-    
-    // Kadınları sırala
-    const femaleUsers = enrichedUsers
+    const monthlyFemaleUsers = enrichedUsers
         .filter(user => user.gender === 'kadın')
         .sort((a, b) => (b.monthlyScore || 0) - (a.monthlyScore || 0));
     
     // Debug: Kullanıcı puanlarını kontrol et
     console.log('🔍 Erkek kullanıcı puanları:');
-    maleUsers.forEach(user => {
-        console.log(`👨 ${user.name}: totalScore=${user.totalScore}, monthlyScore=${user.monthlyScore}`);
+    monthlyMaleUsers.forEach(user => {
+        console.log(`👨 ${user.name}: totalScore=${user.totalScore}, monthlyScore=${user.monthlyScore}, weeklyScore=${user.weeklyScore}`);
     });
     
     console.log('🔍 Kadın kullanıcı puanları:');
-    femaleUsers.forEach(user => {
-        console.log(`👩 ${user.name}: totalScore=${user.totalScore}, monthlyScore=${user.monthlyScore}`);
+    monthlyFemaleUsers.forEach(user => {
+        console.log(`👩 ${user.name}: totalScore=${user.totalScore}, monthlyScore=${user.monthlyScore}, weeklyScore=${user.weeklyScore}`);
     });
     
-    console.log('👨 Erkek kullanıcılar:', maleUsers.length);
-    console.log('👩 Kadın kullanıcılar:', femaleUsers.length);
+    console.log('👨 Erkek kullanıcılar (haftalık/aylık):', weeklyMaleUsers.length, monthlyMaleUsers.length);
+    console.log('👩 Kadın kullanıcılar (haftalık/aylık):', weeklyFemaleUsers.length, monthlyFemaleUsers.length);
     
     // Erkek kullanıcıları detaylı log
-    maleUsers.forEach((user, index) => {
+    monthlyMaleUsers.forEach((user, index) => {
         console.log(`👨 ${index + 1}. ${user.name}: ${user.monthlyScore || 0} puan`);
     });
     
     // Kadın kullanıcıları detaylı log
-    femaleUsers.forEach((user, index) => {
+    monthlyFemaleUsers.forEach((user, index) => {
         console.log(`👩 ${index + 1}. ${user.name}: ${user.monthlyScore || 0} puan`);
     });
     
-    // Erkekler tablosunu güncelle
-    updateLeaderboardSection(maleLeaderboard, maleUsers);
-    
-    // Kadınlar tablosunu güncelle
-    updateLeaderboardSection(femaleLeaderboard, femaleUsers);
+    // Haftalık tabloları güncelle
+    updateLeaderboardSection(weeklyMaleLeaderboard, weeklyMaleUsers, 'weekly');
+    updateLeaderboardSection(weeklyFemaleLeaderboard, weeklyFemaleUsers, 'weekly');
+
+    // Aylık tabloları güncelle
+    updateLeaderboardSection(monthlyMaleLeaderboard, monthlyMaleUsers, 'monthly');
+    updateLeaderboardSection(monthlyFemaleLeaderboard, monthlyFemaleUsers, 'monthly');
 }
 
 // Puan tablosu bölümünü güncelle
-function updateLeaderboardSection(container, users) {
+function updateLeaderboardSection(container, users, period = 'monthly') {
     console.log('📊 Leaderboard bölümü güncelleniyor:', users.length, 'kullanıcı');
     
     if (users.length === 0) {
@@ -148,7 +158,7 @@ function updateLeaderboardSection(container, users) {
     
     container.innerHTML = users.map((user, index) => {
         const rank = index + 1;
-        const score = user.monthlyScore || 0;
+        const score = period === 'weekly' ? (user.weeklyScore || 0) : (user.monthlyScore || 0);
         
         let rankClass = '';
         if (rank === 1) rankClass = 'first';
@@ -159,9 +169,10 @@ function updateLeaderboardSection(container, users) {
         console.log(`🏆 ${rank}. ${user.name}: ${score.toFixed(1)} puan (formatlanmış)`);
         console.log(`🔍 ${user.name} puan detayları:`, {
             monthlyScore: user.monthlyScore,
+            weeklyScore: user.weeklyScore,
             totalScore: user.totalScore,
             score: score,
-            isUndefined: user.monthlyScore === undefined
+            isUndefined: (period === 'weekly' ? user.weeklyScore : user.monthlyScore) === undefined
         });
         
         return `
@@ -169,7 +180,7 @@ function updateLeaderboardSection(container, users) {
                 <div class="rank ${rankClass}">${rank}</div>
                 <div class="user-info">
                     <div class="user-name">${user.name}</div>
-                    <div class="user-score">Bu ay: ${score.toFixed(1)} puan</div>
+                    <div class="user-score">${period === 'weekly' ? 'Bu hafta' : 'Bu ay'}: ${score.toFixed(1)} puan</div>
                 </div>
                 <div class="score-badge">${score.toFixed(1)}</div>
             </li>

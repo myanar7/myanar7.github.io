@@ -397,18 +397,42 @@
         </div>
 
         <div class="leaderboard-container">
+            <!-- Haftalık Sıralama -->
             <div class="leaderboard-section">
-                <h2 class="section-title male">👨 Erkekler</h2>
-                <ul class="leaderboard-list" id="male-leaderboard">
-                    <li class="loading">📊 Yükleniyor...</li>
-                </ul>
+                <h2 class="section-title" style="color:#2c3e50">🗓️ Bu Haftanın Sıralaması</h2>
+                <div class="leaderboard-container" style="grid-template-columns:1fr 1fr; gap:20px; margin-top:10px;">
+                    <div>
+                        <h3 class="section-title male">👨 Erkekler</h3>
+                        <ul class="leaderboard-list" id="weekly-male-leaderboard">
+                            <li class="loading">📊 Yükleniyor...</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="section-title female">👩 Kadınlar</h3>
+                        <ul class="leaderboard-list" id="weekly-female-leaderboard">
+                            <li class="loading">📊 Yükleniyor...</li>
+                        </ul>
+                    </div>
+                </div>
             </div>
 
+            <!-- Aylık Sıralama -->
             <div class="leaderboard-section">
-                <h2 class="section-title female">👩 Kadınlar</h2>
-                <ul class="leaderboard-list" id="female-leaderboard">
-                    <li class="loading">📊 Yükleniyor...</li>
-                </ul>
+                <h2 class="section-title" style="color:#2c3e50">📅 Bu Ayın Sıralaması</h2>
+                <div class="leaderboard-container" style="grid-template-columns:1fr 1fr; gap:20px; margin-top:10px;">
+                    <div>
+                        <h3 class="section-title male">👨 Erkekler</h3>
+                        <ul class="leaderboard-list" id="monthly-male-leaderboard">
+                            <li class="loading">📊 Yükleniyor...</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="section-title female">👩 Kadınlar</h3>
+                        <ul class="leaderboard-list" id="monthly-female-leaderboard">
+                            <li class="loading">📊 Yükleniyor...</li>
+                        </ul>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

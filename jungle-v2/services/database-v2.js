@@ -129,7 +129,12 @@ export const userServiceV2 = {
             });
             
             console.log('✅ Kullanıcı oluşturuldu:', response.data);
-            return response.data.user_id || response.data.id;
+            // Register endpointi LoginResponse döndürür: { user, token }
+            if (response.data && response.data.token) {
+                setAuthToken(response.data.token);
+            }
+            const createdUserId = response.data?.user?.id || response.data?.user_id || response.data?.id;
+            return createdUserId;
         } catch (error) {
             handleAPIError('createUser', error);
         }
@@ -250,6 +255,7 @@ export const userStatsService = {
                 gender: s.gender,
                 totalScore: s.total_score || 0,
                 monthlyScore: s.monthly_score || 0,
+                weeklyScore: s.weekly_score || 0,
                 totalRoutesCompleted: s.total_routes_completed || 0,
                 currentWeekCompleted: s.current_week_completed || 0,
                 lastUpdated: s.last_updated
@@ -273,6 +279,7 @@ export const userStatsService = {
                 userId: backendStats.user_id,
                 totalScore: backendStats.total_score || 0,
                 monthlyScore: backendStats.monthly_score || 0,
+                weeklyScore: backendStats.weekly_score || 0,
                 totalRoutesCompleted: backendStats.total_routes_completed || 0,
                 currentWeekCompleted: backendStats.current_week_completed || 0,
                 lastUpdated: backendStats.last_updated
