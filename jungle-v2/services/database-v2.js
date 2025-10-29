@@ -1,6 +1,6 @@
 // Database Service v2 - Backend API Integration
 // Backend API base URL
-const API_BASE_URL = 'http://localhost:8080/api/v1';
+const API_BASE_URL = 'https://boulder-championship-api.onrender.com/api/v1';
 
 // Authentication token management
 let authToken = null;
