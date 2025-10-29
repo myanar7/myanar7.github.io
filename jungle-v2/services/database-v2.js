@@ -479,7 +479,7 @@ export const routeServiceV2 = {
             
             const response = await apiRequest('/routes', {
                 method: 'POST',
-                headers: { 'X-Admin-Key': adminKey || 'd0d94039-a7c0-4786-866e-4c4945ae701c' },
+                headers: { 'X-Admin-Key': adminKey },
                 body: JSON.stringify({
                     grade: Number(routeData.grade),
                     color: routeData.color,
@@ -582,7 +582,7 @@ export const routeServiceV2 = {
             
             const response = await apiRequest(`/routes/${routeId}`, {
                 method: 'DELETE',
-                headers: { 'X-Admin-Key': adminKey || 'd0d94039-a7c0-4786-866e-4c4945ae701c' }
+                headers: { 'X-Admin-Key': adminKey }
             });
             
             console.log('✅ Rota başarıyla silindi');
@@ -618,7 +618,7 @@ export const systemServiceV2 = {
         try {
             const response = await apiRequest('/system', {
                 method: 'PUT',
-                headers: { 'X-Admin-Key': adminKey || 'd0d94039-a7c0-4786-866e-4c4945ae701c' },
+                headers: { 'X-Admin-Key': adminKey },
                 body: JSON.stringify(updateData)
             });
             
@@ -649,7 +649,7 @@ export const systemServiceV2 = {
             
             const response = await apiRequest('/system/reset-monthly', {
                 method: 'POST',
-                headers: { 'X-Admin-Key': adminKey || 'd0d94039-a7c0-4786-866e-4c4945ae701c' }
+                headers: { 'X-Admin-Key': adminKey }
             });
             
             console.log('✅ Aylık puanlar sıfırlandı');
