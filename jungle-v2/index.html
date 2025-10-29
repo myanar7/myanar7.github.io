@@ -1,0 +1,1635 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jungle Log - Tırmanış Rota Takip Sistemi</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #38C871, #E85D44);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="75" cy="75" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="50" cy="10" r="0.5" fill="rgba(255,255,255,0.05)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+            opacity: 0.3;
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            border-radius: 15px;
+            background: white;
+            padding: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease;
+            object-fit: contain;
+        }
+
+        .logo:hover {
+            transform: scale(1.05);
+        }
+
+        .header-text {
+            text-align: left;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin: 0;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .section {
+            margin-bottom: 40px;
+        }
+
+        .section h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #34495e;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #38C871;
+            box-shadow: 0 0 0 3px rgba(56, 200, 113, 0.1);
+        }
+
+        .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+            background: white;
+            cursor: pointer;
+        }
+
+        .form-group select:hover {
+            border-color: #38C871;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #38C871, #2a9d5a);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 15px rgba(56, 200, 113, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(56, 200, 113, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .main-section {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+
+        .quick-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn-action {
+            background: linear-gradient(135deg, #F6C139, #e6b035);
+            color: #555555;
+            border: none;
+            padding: 16px 24px;
+            border-radius: 20px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 6px 20px rgba(246, 193, 57, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-action::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn-action:hover::before {
+            left: 100%;
+        }
+
+        .btn-action:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(246, 193, 57, 0.4);
+        }
+
+        .btn-climber {
+            background: linear-gradient(135deg, #38C871, #2a9d5a);
+            color: white;
+            box-shadow: 0 6px 20px rgba(56, 200, 113, 0.3);
+        }
+
+        .btn-climber:hover {
+            box-shadow: 0 10px 25px rgba(56, 200, 113, 0.4);
+        }
+
+        .btn-route {
+            background: linear-gradient(135deg, #E85D44, #d44a32);
+            color: white;
+            box-shadow: 0 6px 20px rgba(232, 93, 68, 0.3);
+        }
+
+        .btn-route:hover {
+            box-shadow: 0 10px 25px rgba(232, 93, 68, 0.4);
+        }
+
+        .btn-emoji {
+            font-size: 20px;
+            display: inline-block;
+            animation: bounce 2s infinite;
+        }
+
+        .btn-text {
+            font-weight: 700;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-3px);
+            }
+            60% {
+                transform: translateY(-2px);
+            }
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: white;
+            margin: 5% auto;
+            padding: 0;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            animation: modalSlideIn 0.3s ease;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #F6C139, #e6b035);
+            color: #555555;
+            padding: 20px;
+            border-radius: 15px 15px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            font-size: 1.3rem;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: #555555;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background-color 0.3s ease;
+        }
+
+        .close-btn:hover {
+            background-color: rgba(85, 85, 85, 0.1);
+        }
+
+        .modal-form {
+            padding: 30px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        .btn-cancel {
+            background: #E85D44;
+            color: white;
+        }
+
+        .btn-cancel:hover {
+            background: #d44a32;
+        }
+
+        .climbers-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .climber-btn {
+            background: #F6C139;
+            color: #555555;
+            border: 2px solid #F6C139;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(246, 193, 57, 0.3);
+        }
+
+        .climber-btn:hover {
+            background: #e6b035;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(246, 193, 57, 0.4);
+        }
+
+        .climber-btn.active {
+            background: linear-gradient(135deg, #38C871, #2a9d5a);
+            color: white;
+            border-color: #38C871;
+            box-shadow: 0 6px 20px rgba(56, 200, 113, 0.4);
+        }
+
+        .routes-list {
+            list-style: none;
+        }
+
+        .route-item {
+            background: linear-gradient(135deg, #f8f9fa, #ffffff);
+            border: 2px solid #F6C139;
+            border-radius: 15px;
+            padding: 15px 20px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(246, 193, 57, 0.1);
+            position: relative;
+        }
+
+        .route-item.boulder-of-week {
+            border: 3px solid #F6C139;
+            box-shadow: 0 6px 20px rgba(246, 193, 57, 0.3);
+            background: linear-gradient(135deg, #fff9e6, #ffffff);
+        }
+
+        .boulder-of-week-badge {
+            position: absolute;
+            top: -8px;
+            right: 15px;
+            background: linear-gradient(135deg, #F6C139, #E85D44);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: bold;
+            box-shadow: 0 3px 10px rgba(246, 193, 57, 0.4);
+            z-index: 1;
+        }
+
+        .route-image {
+            margin-top: 15px;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .route-image img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 8px;
+            transition: transform 0.3s ease;
+        }
+
+        .route-image img:hover {
+            transform: scale(1.05);
+        }
+
+        .route-item:hover {
+            background: linear-gradient(135deg, #F6C139, #e6b035);
+            color: #555555;
+            transform: translateX(5px);
+            box-shadow: 0 6px 20px rgba(246, 193, 57, 0.3);
+        }
+
+        .route-checkbox {
+            margin-right: 15px;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .route-info {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            gap: 20px;
+            align-items: center;
+        }
+        
+        .route-dates {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .route-grade {
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: #E85D44;
+        }
+
+        .route-color {
+            font-weight: 600;
+            color: #555555;
+        }
+
+        .route-sector {
+            color: #555555;
+            font-style: italic;
+            opacity: 0.8;
+        }
+
+        .route-creation {
+            color: #555555;
+            font-size: 0.8rem;
+            font-style: italic;
+            opacity: 0.7;
+        }
+        
+        .route-completion {
+            color: #38C871;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .no-climber-selected {
+            text-align: center;
+            color: #7f8c8d;
+            font-style: italic;
+            padding: 40px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border: 2px dashed #bdc3c7;
+        }
+
+        .loading {
+            text-align: center;
+            color: #7f8c8d;
+            padding: 20px;
+        }
+
+        /* Login Ekranı Stilleri */
+        .login-screen {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 80vh;
+            padding: 20px;
+        }
+
+        .login-container {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .login-header {
+            margin-bottom: 30px;
+        }
+
+        .login-logo {
+            width: 80px;
+            height: 80px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            object-fit: contain;
+        }
+
+        .login-header h2 {
+            color: #38C871;
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .login-header p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .login-form {
+            margin-bottom: 25px;
+        }
+
+        .login-form .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .login-form .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .login-form .form-group input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .login-form .form-group input:focus {
+            outline: none;
+            border-color: #38C871;
+            box-shadow: 0 0 0 3px rgba(56, 200, 113, 0.1);
+        }
+
+        .remember-me {
+            margin-bottom: 20px;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            font-size: 14px;
+            color: #666;
+            user-select: none;
+            padding: 10px 0;
+            line-height: 1.4;
+        }
+
+        .checkbox-label input[type="checkbox"] {
+            display: none;
+        }
+
+        .checkmark {
+            width: 22px;
+            height: 22px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            margin-right: 15px;
+            position: relative;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .checkbox-label:hover .checkmark {
+            border-color: #38C871;
+            box-shadow: 0 0 0 3px rgba(56, 200, 113, 0.15);
+            transform: scale(1.05);
+        }
+
+        .checkbox-label input[type="checkbox"]:checked + .checkmark {
+            background: linear-gradient(135deg, #38C871, #2a9d5a);
+            border-color: #38C871;
+            box-shadow: 0 2px 8px rgba(56, 200, 113, 0.3);
+        }
+
+        .checkbox-label input[type="checkbox"]:checked + .checkmark::after {
+            content: '✓';
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            line-height: 1;
+        }
+
+        .checkbox-label:active .checkmark {
+            transform: scale(0.95);
+        }
+
+        .btn-login {
+            background: linear-gradient(135deg, #38C871, #2a9d5a);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            box-shadow: 0 6px 20px rgba(56, 200, 113, 0.3);
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(56, 200, 113, 0.4);
+        }
+
+        .btn-create {
+            background: linear-gradient(135deg, #F6C139, #e6b035);
+            color: #555555;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            box-shadow: 0 6px 20px rgba(246, 193, 57, 0.3);
+        }
+
+        .btn-create:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(246, 193, 57, 0.4);
+        }
+
+        .login-divider {
+            margin: 25px 0;
+            position: relative;
+            text-align: center;
+            color: #999;
+        }
+
+        .login-divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: #e0e0e0;
+        }
+
+        .login-divider span {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 0 15px;
+            position: relative;
+        }
+
+        .login-messages {
+            margin-top: 20px;
+        }
+
+        .error-message {
+            background: linear-gradient(135deg, #E85D44, #d44a32);
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .success-message {
+            background: linear-gradient(135deg, #38C871, #2a9d5a);
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        /* Ana İçerik Stilleri */
+        .main-content {
+            padding: 20px;
+        }
+
+        .user-info {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+        }
+
+        .user-welcome {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .user-actions {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .btn-leaderboard {
+            background: linear-gradient(135deg, #F6C139, #E85D44);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-leaderboard:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(246, 193, 57, 0.4);
+        }
+
+        .user-score-info {
+            display: flex;
+            gap: 20px;
+            margin: 15px 0;
+            padding: 15px;
+            background: rgba(56, 200, 113, 0.1);
+            border-radius: 10px;
+            border: 2px solid rgba(56, 200, 113, 0.2);
+        }
+
+        .score-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .score-label {
+            font-size: 14px;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .score-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #38C871;
+            background: rgba(56, 200, 113, 0.1);
+            padding: 5px 12px;
+            border-radius: 15px;
+            border: 2px solid rgba(56, 200, 113, 0.3);
+        }
+
+        .user-welcome h2 {
+            color: #38C871;
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .btn-logout {
+            background: linear-gradient(135deg, #E85D44, #d44a32);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(232, 93, 68, 0.3);
+        }
+
+        .btn-logout:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(232, 93, 68, 0.4);
+        }
+
+        /* Kullanıcı Kayıt Popup Stilleri */
+        .register-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .register-dialog {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            max-width: 400px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .register-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .register-title {
+            color: #38C871;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .close-register-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #999;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .close-register-btn:hover {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .register-form {
+            margin-bottom: 20px;
+        }
+
+        .register-form .form-group {
+            margin-bottom: 20px;
+        }
+
+        .register-form .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .register-form .form-group input,
+        .register-form .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .register-form .form-group input:focus,
+        .register-form .form-group select:focus {
+            outline: none;
+            border-color: #38C871;
+            box-shadow: 0 0 0 3px rgba(56, 200, 113, 0.1);
+        }
+
+        /* KVKK Checkbox Stilleri */
+        .checkbox-group {
+            margin-bottom: 20px;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: flex-start;
+            cursor: pointer;
+            font-size: 14px;
+            line-height: 1.4;
+            color: #555;
+        }
+
+        .checkbox-label input[type="checkbox"] {
+            opacity: 0;
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            margin: 0;
+            cursor: pointer;
+        }
+
+        .checkmark {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 4px;
+            margin-right: 10px;
+            margin-top: 2px;
+            flex-shrink: 0;
+            position: relative;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .checkbox-label input[type="checkbox"]:checked + .checkmark {
+            background: #38C871;
+            border-color: #38C871;
+        }
+
+        .checkbox-label input[type="checkbox"]:checked + .checkmark::after {
+            content: "✓";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .checkbox-text {
+            flex: 1;
+        }
+
+        .kvkk-link {
+            color: #38C871;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+
+        .kvkk-link:hover {
+            color: #2ea85a;
+            text-decoration: underline;
+        }
+
+        .register-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 25px;
+        }
+
+        .register-actions .btn-cancel,
+        .register-actions .btn-confirm {
+            background: linear-gradient(135deg, #E85D44, #d44a32);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(232, 93, 68, 0.3);
+            min-width: 120px;
+        }
+
+        .register-actions .btn-confirm {
+            background: linear-gradient(135deg, #38C871, #2a9d5a);
+            box-shadow: 0 4px 15px rgba(56, 200, 113, 0.3);
+        }
+
+        .register-actions .btn-cancel:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(232, 93, 68, 0.4);
+        }
+
+        .register-actions .btn-confirm:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(56, 200, 113, 0.4);
+        }
+
+        .register-actions .btn-cancel:active,
+        .register-actions .btn-confirm:active {
+            transform: translateY(0);
+        }
+
+        .register-messages {
+            margin-top: 15px;
+        }
+
+        .register-messages .error-message,
+        .register-messages .success-message {
+            font-size: 14px;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        /* Deneme Sayısı Popup Stilleri */
+        .attempts-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .attempts-dialog {
+            background: white;
+            border-radius: 20px;
+            padding: 0;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            animation: slideInUp 0.3s ease-out;
+        }
+
+        .attempts-header {
+            background: linear-gradient(135deg, #38C871, #2BA55A);
+            color: white;
+            padding: 20px;
+            border-radius: 20px 20px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .attempts-title {
+            margin: 0;
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+
+        .close-attempts-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 50%;
+            width: 35px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s ease;
+        }
+
+        .close-attempts-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .attempts-content {
+            padding: 30px;
+        }
+
+        .attempts-description {
+            text-align: center;
+            color: #666;
+            margin-bottom: 25px;
+            font-size: 1.1rem;
+        }
+
+        .attempts-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .attempt-btn {
+            background: linear-gradient(135deg, #F6C139, #E85D44);
+            color: white;
+            border: none;
+            padding: 15px 20px;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(246, 193, 57, 0.3);
+        }
+
+        .attempt-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(246, 193, 57, 0.4);
+        }
+
+        .attempt-btn:active {
+            transform: translateY(0);
+        }
+
+        .attempts-actions {
+            text-align: center;
+        }
+
+        .attempts-actions .btn-cancel {
+            background: #E85D44;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .attempts-actions .btn-cancel:hover {
+            background: #D54B3A;
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .route-info {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            
+            .route-completion {
+                font-size: 0.8rem;
+            }
+            
+            .route-creation {
+                font-size: 0.7rem;
+            }
+            
+            .route-dates {
+                gap: 3px;
+            }
+            
+            .climbers-container {
+                justify-content: center;
+            }
+            
+            
+            .quick-actions {
+                flex-direction: column;
+                align-items: center;
+                gap: 10px;
+            }
+            
+            .btn-action {
+                width: 100%;
+                justify-content: center;
+                padding: 14px 20px;
+            }
+            
+            .btn-emoji {
+                font-size: 18px;
+            }
+            
+            .modal-content {
+                margin: 10% auto;
+                width: 95%;
+            }
+            
+            .modal-actions {
+                flex-direction: column;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .header-text {
+                text-align: center;
+            }
+            
+            .logo {
+                width: 60px;
+                height: 60px;
+                border-radius: 10px;
+            }
+        }
+
+        /* Route Status Styles */
+        .route-status {
+            font-weight: 600;
+            padding: 8px 12px;
+            border-radius: 20px;
+            text-align: center;
+            margin: 10px 0;
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, #E85D44, #d44a32);
+            color: white;
+            box-shadow: 0 4px 15px rgba(232, 93, 68, 0.3);
+        }
+
+        .route-status.completed {
+            background: linear-gradient(135deg, #38C871, #2a9d5a);
+            color: white;
+            box-shadow: 0 4px 15px rgba(56, 200, 113, 0.3);
+        }
+
+        .route-status:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Route Section Styles */
+        .route-section {
+            margin-bottom: 40px;
+        }
+
+        .route-section-title {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.4rem;
+            border-bottom: 3px solid #38C871;
+            padding-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .route-section-title::before {
+            content: '📅';
+            font-size: 1.2rem;
+        }
+
+        .routes-container {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .routes-container .route-item {
+            margin-bottom: 20px;
+        }
+
+        /* Notification Styles */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            z-index: 10000;
+            animation: slideIn 0.3s ease;
+        }
+
+        .notification-success {
+            background: linear-gradient(135deg, #38C871, #2a9d5a);
+        }
+
+        .notification-error {
+            background: linear-gradient(135deg, #E85D44, #d44a32);
+        }
+
+        .notification-info {
+            background: linear-gradient(135deg, #F6C139, #e6b800);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Loading Styles */
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+
+        .error {
+            text-align: center;
+            padding: 20px;
+            color: #E85D44;
+            background: #ffe6e6;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+
+        .success {
+            text-align: center;
+            padding: 20px;
+            color: #38C871;
+            background: #e6f7e6;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-content">
+                <img src="logo.png" alt="Jungle Log Logo" class="logo">
+                <div class="header-text">
+                    <h1>Boulder Jungle Çetelesi</h1>
+                    <p>Tırmanış Rota Takip Sistemi</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Login Ekranı -->
+        <div id="login-screen" class="login-screen">
+            <div class="login-container">
+                <div class="login-header">
+                    <img src="logo.png" alt="Jungle Log Logo" class="login-logo">
+                    <h2>🔐 Giriş Yap</h2>
+                    <p>Hesabınıza giriş yapın</p>
+                </div>
+                
+                <form id="login-form" class="login-form">
+                    <div class="form-group">
+                        <label for="username">Kullanıcı Adı</label>
+                        <input type="text" id="username" name="username" placeholder="Kullanıcı adınızı girin" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="password">Şifre</label>
+                        <input type="password" id="password" name="password" placeholder="Şifrenizi girin" required>
+                    </div>
+                    
+                    <div class="form-group remember-me">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="remember-me" name="remember-me">
+                            <span class="checkmark"></span>
+                            Beni Hatırla
+                        </label>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-login">
+                        🚀 Giriş Yap
+                    </button>
+                </form>
+                
+                <div class="login-divider">
+                    <span>veya</span>
+                </div>
+                
+                <button id="create-user-btn" class="btn btn-create">
+                    👤 Yeni Tırmanıcı Oluştur
+                </button>
+                
+                <div class="login-messages">
+                    <div id="login-error" class="error-message" style="display: none;">
+                        ❌ Kullanıcı adı veya şifre hatalı!
+                    </div>
+                    <div id="login-success" class="success-message" style="display: none;">
+                        ✅ Giriş başarılı!
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ana İçerik (Giriş yapıldıktan sonra görünür) -->
+        <div id="main-content" class="main-content" style="display: none;">
+            <div class="user-info">
+                <div class="user-welcome">
+                    <h2>👋 Hoş geldin, <span id="current-username"></span>!</h2>
+                    <div class="user-score-info">
+                        <div class="score-item">
+                            <span class="score-label">🏆 Toplam Puan:</span>
+                            <span class="score-value" id="user-total-score">0.0</span>
+                        </div>
+                        <div class="score-item">
+                            <span class="score-label">📅 Bu Ay:</span>
+                            <span class="score-value" id="user-monthly-score">0.0</span>
+                        </div>
+                    </div>
+                    <div class="user-actions">
+                        <a href="leaderboard.html" class="btn btn-leaderboard">
+                            🏆 Puan Tablosu
+                        </a>
+                        <button id="logout-btn" class="btn btn-logout">🚪 Çıkış Yap</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rotalar Bölümü -->
+            <div class="section">
+                <h2 id="routes-header">🏔️ Senin Rotaların</h2>
+                <ul id="routes-list" class="routes-list">
+                    <div class="loading">Rotalar yükleniyor...</div>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Gizli Formlar -->
+        <div id="add-climber-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Yeni Tırmanıcı Ekle</h3>
+                    <button class="close-btn">&times;</button>
+                </div>
+                <form id="add-climber-form" class="modal-form">
+                    <div class="form-group">
+                        <label for="climber-name">Tırmanıcı Adı</label>
+                        <input type="text" id="climber-name" name="climberName" placeholder="Örn: Mustafa" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="climber-privacy">Gizlilik</label>
+                        <select id="climber-privacy" name="climberPrivacy" required>
+                            <option value="public">Açık - Herkese görünür</option>
+                            <option value="private">Gizli - Sadece link ile erişilebilir</option>
+                        </select>
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" class="btn btn-cancel">İptal</button>
+                        <button type="submit" class="btn">Tırmanıcı Ekle</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div id="add-route-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Yeni Rota Ekle</h3>
+                    <button class="close-btn">&times;</button>
+                </div>
+                <form id="add-route-form" class="modal-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="grade">Zorluk Seviyesi</label>
+                            <select id="grade" name="grade" required>
+                                <option value="">Zorluk seçin</option>
+                                <option value="1">1 - Çok Kolay</option>
+                                <option value="2">2 - Kolay</option>
+                                <option value="3">3 - Orta</option>
+                                <option value="4">4 - Zor</option>
+                                <option value="5">5 - Çok Zor</option>
+                                <option value="6">6 - Uzman</option>
+                                <option value="7">7 - Profesyonel</option>
+                                <option value="8">8 - Elite</option>
+                                <option value="9">9 - Master</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="color">Renk</label>
+                            <input type="text" id="color" name="color" placeholder="Kırmızı" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="sector">Sektör</label>
+                            <select id="sector" name="sector" required>
+                                <option value="">Sektör seçin</option>
+                                <option value="Logo">Logo</option>
+                                <option value="V2">V2</option>
+                                <option value="V-II">V-II</option>
+                                <option value="Ufo">Ufo</option>
+                                <option value="Left Cave">Left Cave</option>
+                                <option value="Right Cave">Right Cave</option>
+                                <option value="Olympos">Olympos</option>
+                                <option value="Slab">Slab</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" class="btn btn-cancel">İptal</button>
+                        <button type="submit" class="btn">Rota Ekle</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Kullanıcı Kayıt Popup -->
+    <div class="register-overlay" id="register-overlay">
+        <div class="register-dialog">
+            <div class="register-header">
+                <h3 class="register-title">👤 Yeni Tırmanıcı Oluştur</h3>
+                <button class="close-register-btn" id="close-register-btn">×</button>
+            </div>
+            
+            <form id="register-form" class="register-form" novalidate>
+                <div class="form-group">
+                    <label for="reg-username">Kullanıcı Adı</label>
+                    <input type="text" id="reg-username" name="username" placeholder="Kullanıcı adınızı girin" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="reg-password">Şifre</label>
+                    <input type="password" id="reg-password" name="password" placeholder="Şifrenizi girin" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="reg-name">İsim Soyisim</label>
+                    <input type="text" id="reg-name" name="name" placeholder="İsim Soyisim girin" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="reg-gender">Cinsiyet</label>
+                    <select id="reg-gender" name="gender" required>
+                        <option value="">Cinsiyet seçin</option>
+                        <option value="erkek">Erkek</option>
+                        <option value="kadın">Kadın</option>
+                    </select>
+                </div>
+                
+                <div class="form-group checkbox-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="reg-kvkk" name="kvkk" required>
+                        <span class="checkmark"></span>
+                        <span class="checkbox-text">
+                            <a href="./kvkk.html" target="_blank" class="kvkk-link">KVKK Aydınlatma Metni</a>'ni okudum ve kabul ediyorum.
+                        </span>
+                    </label>
+                </div>
+                
+                <div class="register-actions">
+                    <button type="button" class="btn-cancel" id="cancel-register">
+                        ❌ İptal
+                    </button>
+                    <button type="submit" class="btn-confirm">
+                        ✅ Oluştur
+                    </button>
+                </div>
+            </form>
+            
+            <div class="register-messages">
+                <div id="register-error" class="error-message" style="display: none;">
+                    ❌ Kullanıcı oluşturulurken hata oluştu!
+                </div>
+                <div id="register-success" class="success-message" style="display: none;">
+                    ✅ Kullanıcı başarıyla oluşturuldu!
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Deneme Sayısı Popup -->
+    <div class="attempts-overlay" id="attempts-overlay" style="display: none;">
+        <div class="attempts-dialog">
+            <div class="attempts-header">
+                <h3 class="attempts-title">🎯 Kaç Denemede Çıktın?</h3>
+                <button class="close-attempts-btn" id="close-attempts-btn">×</button>
+            </div>
+            
+            <div class="attempts-content">
+                <p class="attempts-description">Bu rotayı kaç denemede çıkardın?</p>
+                <div class="attempts-options">
+                    <button class="attempt-btn" data-attempts="1">1. Deneme</button>
+                    <button class="attempt-btn" data-attempts="2">2. Deneme</button>
+                    <button class="attempt-btn" data-attempts="3">3. Deneme</button>
+                    <button class="attempt-btn" data-attempts="4">4+ Deneme</button>
+                </div>
+                <div class="attempts-actions">
+                    <button class="btn-cancel" id="cancel-attempts">
+                        ❌ İptal
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Uygulama JavaScript -->
+    <script type="module" src="./app-optimized.js"></script>
+</body>
+</html>
