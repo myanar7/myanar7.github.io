@@ -33,6 +33,7 @@ window.addEventListener('scroll', () => {
 
 // Gallery Images
 const galleryImages = [
+    '2.jpeg',
     '3.jpeg',
     '4.jpeg',
     '5.jpeg',
@@ -41,7 +42,8 @@ const galleryImages = [
     '8.jpeg',
     '9.jpeg',
     '10.jpeg',
-    '11.jpeg'
+    '11.jpeg',
+    '12.jpeg'
 ];
 
 // Load gallery images
