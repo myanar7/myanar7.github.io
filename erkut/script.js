@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const calendarGrid = document.getElementById('calendar-grid');
     const prevMonthButton = document.getElementById('prev-month');
     const nextMonthButton = document.getElementById('next-month');
+    const safakCounterElement = document.getElementById('safak-counter');
 
     let currentDate = new Date();
 
@@ -68,6 +69,28 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function updateSafakCounter() {
+        const targetDate = new Date(2026, 7, 25);
+        const today = new Date();
+
+        const utcTarget = Date.UTC(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate());
+        const utcToday = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate());
+
+        const diffDays = Math.floor((utcTarget - utcToday) / (1000 * 60 * 60 * 24));
+
+        if (diffDays > 0) {
+            safakCounterElement.textContent = `${diffDays} gün kaldı`;
+            return;
+        }
+
+        if (diffDays === 0) {
+            safakCounterElement.textContent = 'Bugün son gün!';
+            return;
+        }
+
+        safakCounterElement.textContent = 'Tarih geçti, şafak bitti 🎉';
+    }
+
     prevMonthButton.addEventListener('click', () => {
         currentDate.setMonth(currentDate.getMonth() - 1);
         renderCalendar();
@@ -79,4 +102,5 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     renderCalendar();
+    updateSafakCounter();
 });

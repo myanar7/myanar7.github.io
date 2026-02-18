@@ -116,3 +116,28 @@ h1 {
     height: 20px;
     border-radius: 4px;
 }
+
+.safak-container {
+    background: #ffffff;
+    margin-top: 16px;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.safak-container h2 {
+    margin: 0 0 10px;
+    color: #333;
+    font-size: 1.3em;
+}
+
+.safak-container p {
+    margin: 6px 0;
+    color: #555;
+}
+
+#safak-counter {
+    font-size: 1.4em;
+    font-weight: 700;
+    color: #007bff;
+}
