@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Döşemealtı Hakkında Son Dakika — Haber</title>
+  <style>
+    :root{
+      --bg:#0b3b2e;
+      --panel:#072a22;
+      --accent:#0fbf70;
+      --white:#ffffff;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;background:linear-gradient(180deg,#03281f 0%, #063d2c 100%);color:var(--white);height:100vh;display:flex;align-items:center;justify-content:center}
+    .card{width:min(920px,95%);background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));border-radius:14px;padding:28px;box-shadow:0 10px 30px rgba(2,8,6,0.6);position:relative;overflow:hidden}
+
+    .top-row{display:flex;align-items:center;gap:18px}
+    .badge{background:#ffdb5c;color:#0b2a21;padding:8px 12px;border-radius:999px;font-weight:700}
+    h1{font-size:20px;margin:0}
+    .subtitle{opacity:0.9;font-size:13px}
+
+    .content{display:flex;gap:24px;margin-top:16px;align-items:center}
+    .left{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:18px}
+    .nar-wrap{width:280px;height:280px;display:flex;align-items:center;justify-content:center;position:relative}
+    .nar{width:220px;height:220px;cursor:pointer;transition:transform 600ms cubic-bezier(.2,.9,.3,1),opacity 400ms}
+
+    .fake-headline{background:linear-gradient(90deg,#102d21,#08301f);padding:12px;border-radius:8px;width:100%;text-align:center;margin-top:8px}
+    .fake-headline strong{color:#fff;font-size:18px}
+
+    .btn{margin-top:18px;padding:12px 20px;border-radius:10px;border:0;background:linear-gradient(90deg,var(--accent),#08a55a);color:#042217;font-weight:700;cursor:pointer;box-shadow:0 8px 20px rgba(11,59,46,0.3);}
+
+    .right{flex:1;padding:18px}
+    .meta{font-size:13px;opacity:0.9}
+
+    /* celebration state */
+    .celebrate-overlay{position:absolute;inset:0;background:rgba(0,0,0,0.55);backdrop-filter:blur(3px);display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;opacity:0;transition:opacity 500ms}
+    .celebrate-overlay.show{opacity:1;pointer-events:auto}
+
+    .message{font-size:36px;font-weight:800;text-align:center;margin-bottom:12px;text-shadow:0 2px 6px rgba(0,0,0,0.8);}
+    .sub{font-size:18px;opacity:0.95;margin-bottom:18px;text-shadow:0 1px 4px rgba(0,0,0,0.7);}
+
+    iframe{width:min(720px,100%);height:360px;border-radius:12px;border:0;display:block;box-shadow:0 0 20px rgba(0,0,0,0.5)}
+
+    #confetti{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none}
+
+    @media (max-width:720px){
+      .content{flex-direction:column}
+      .nar-wrap{width:220px;height:220px}
+      .nar{width:180px;height:180px}
+      .message{font-size:26px}
+    }
+  </style>
+</head>
+<body>
+  <div class="card" role="dialog" aria-label="Haber önizlemesi">
+    <div class="top-row">
+      <div class="badge">SON DAKİKA</div>
+      <div>
+        <h1>Döşemealtı'da Şaşırtan Gelişme — İlçe Halkı Şokta</h1>
+        <div class="subtitle">Görünüşe göre önemli bir duyuru geliyor. "Haberi Göster" tuşuna basın.</div>
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="left">
+        <div class="nar-wrap">
+          <svg class="nar" id="nar" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="nar">
+            <defs>
+              <radialGradient id="rgrad" cx="35%" cy="30%">
+                <stop offset="0%" stop-color="#ff6b6b" />
+                <stop offset="60%" stop-color="#c8202a" />
+                <stop offset="100%" stop-color="#8f1218" />
+              </radialGradient>
+            </defs>
+            <g>
+              <ellipse cx="100" cy="110" rx="56" ry="64" fill="url(#rgrad)" />
+              <path d="M44 90 C40 60, 64 38, 92 40 C110 34, 130 40, 146 52 C170 70, 170 110, 150 134 C124 168, 76 170, 50 134 C36 116, 44 100, 44 90 Z" fill="url(#rgrad)" opacity="0.98"/>
+              <path d="M70 32 C80 18, 95 18, 104 32 C112 18, 130 18, 136 34 C140 46, 118 46, 104 40 C90 46, 68 46, 70 32 Z" fill="#2b6a3f" />
+              <g transform="translate(78,90) rotate(-8)">
+                <circle cx="0" cy="0" r="3" fill="#ffdede" opacity="0.85"/>
+                <circle cx="12" cy="-6" r="3" fill="#ffdede" opacity="0.9"/>
+                <circle cx="-10" cy="4" r="3" fill="#ffdede" opacity="0.9"/>
+              </g>
+            </g>
+          </svg>
+        </div>
+
+        <div class="fake-headline"><strong>Döşemealtı'nda gizemli nar bulundu — İçinden ne çıktı?</strong></div>
+        <button class="btn" id="reveal">Haberi Göster</button>
+      </div>
+
+      <div class="right">
+        <div class="meta">Editör: Yerel Haberler • 6 Ekim 2025</div>
+        <p style="margin-top:12px;line-height:1.6">Dün akşam <strong>Döşemealtı Otel</strong> civarlarında 2 araç birbiri ile çarpıştı. Kazaya karışan <strong>Porche Taycan</strong>'ın jantları çarpışmanın etkisi ile <strong>Gırtlak Dolusu Mavi Volkswagen Polo 1.0</strong>'ın jantları ile yer değiştirdi. Kazanın Ardından araç sürücüsü usta pilot <strong>E.Y</strong> yaptığı açıklamada jantların kaplamasını kendisinin yaptırması gerektiğini üzülerek ifade etti.</p>
+        <p style="opacity:0.9">Detaylar için haberi göster butonuna basın.</p>
+      </div>
+    </div>
+
+    <div class="celebrate-overlay" id="celebrate">
+      <canvas id="confetti"></canvas>
+      <div class="message" id="message">Erkut — Doğum Günün Kutlu Olsun!</div>
+      <div class="sub">Sürpriz! 🎉 Aşağıdaki videoyu izle:</div>
+      <iframe id="yt" src="https://www.youtube.com/embed/Ekq2Nc4UduU?autoplay=1&rel=0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+    </div>
+  </div>
+
+  <script>
+    const nar = document.getElementById('nar');
+    const revealBtn = document.getElementById('reveal');
+    const celebrate = document.getElementById('celebrate');
+    const confettiCanvas = document.getElementById('confetti');
+    const message = document.getElementById('message');
+
+    const ctx = confettiCanvas.getContext('2d');
+    let W, H, particles = [], animId;
+
+    function resize(){
+      W = confettiCanvas.width = celebrate.clientWidth || window.innerWidth;
+      H = confettiCanvas.height = celebrate.clientHeight || window.innerHeight;
+    }
+    window.addEventListener('resize', resize);
+
+    function rand(min,max){return Math.random()*(max-min)+min}
+
+    function createParticles(count){
+      particles = [];
+      const colors = ['#ffdd57','#ff6b6b','#7ae582','#8be0ff','#ffd6ff'];
+      for(let i=0;i<count;i++){
+        particles.push({x: rand(0,W),y: rand(-H,0),vx: rand(-1.5,1.5),vy: rand(2,6),size: Math.round(rand(6,14)),color: colors[Math.floor(rand(0,colors.length))],rot: rand(0,Math.PI*2),rotSpeed: rand(-0.1,0.1)});
+      }
+    }
+
+    function step(){
+      ctx.clearRect(0,0,W,H);
+      for(let p of particles){
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.03;
+        p.rot += p.rotSpeed;
+        ctx.save();
+        ctx.translate(p.x,p.y);
+        ctx.rotate(p.rot);
+        ctx.fillStyle = p.color;
+        ctx.fillRect(-p.size/2,-p.size/2,p.size,p.size*0.6);
+        ctx.restore();
+      }
+      particles = particles.filter(p=>p.y < H+50);
+      if(particles.length === 0){ cancelAnimationFrame(animId); animId = null; }
+      else animId = requestAnimationFrame(step);
+    }
+
+    function burstConfetti(){
+      resize();
+      createParticles(200);
+      if(!animId) animId = requestAnimationFrame(step);
+    }
+
+    revealBtn.addEventListener('click', ()=>{
+      nar.style.transform = 'scale(2.6) rotate(-10deg)';
+      nar.style.opacity = '0';
+      setTimeout(()=>{
+        celebrate.classList.add('show');
+        message.style.transform = 'translateY(-8px)';
+        burstConfetti();
+        let t=0; setInterval(()=>{message.style.transform = `translateY(${Math.sin(t)*6-6}px)`; t+=0.2;}, 180);
+      }, 450);
+    });
+
+    nar.addEventListener('click', ()=>{ revealBtn.click(); });
+    revealBtn.addEventListener('keydown',(e)=>{ if(e.key==='Enter') revealBtn.click(); });
+    resize();
+  </script>
+</body>
+</html>
