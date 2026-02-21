@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Erkut'un Çalışma Takvimi</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="main-container">
+        <h1>Erkut'un Çalışma Takvimi</h1>
+        <div class="calendar-container">
+            <div class="calendar-header">
+                <button id="prev-month">&lt;</button>
+                <h2 id="month-year"></h2>
+                <button id="next-month">&gt;</button>
+            </div>
+            <div class="days-of-week">
+                <div>Pzt</div>
+                <div>Sal</div>
+                <div>Çar</div>
+                <div>Per</div>
+                <div>Cum</div>
+                <div>Cmt</div>
+                <div>Paz</div>
+            </div>
+            <div class="calendar-grid" id="calendar-grid">
+                </div>
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="color-box work-day"></div>
+                    <span>Çalışma Günü</span>
+                </div>
+                <div class="legend-item">
+                    <div class="color-box off-day"></div>
+                    <span>İzin Günü (Off)</span>
+                </div>
+            </div>
+        </div>
+        <div class="safak-container">
+            <h2>Şafak Sayacı</h2>
+            <p>25 Ağustos 2026 tarihine kalan süre:</p>
+            <p id="safak-counter">Hesaplanıyor...</p>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
