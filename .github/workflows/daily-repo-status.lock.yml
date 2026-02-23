@@ -31,7 +31,7 @@
 # gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"aa4341324d37f49169a2e00fd3c8da02638052f84506f31b2d6448541366c6bb","compiler_version":"v0.48.2"}
 
 name: "Daily Repo Status"
-"on":
+"off":
   schedule:
   - cron: "51 18 * * *"
     # Friendly format: daily (scattered)
