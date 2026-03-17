@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>2FOUR2 | Nitelikli Kahve</title>
+    <meta
+      name="description"
+      content="2FOUR2; nitelikli kahveyi sade ama iddialı bir yorumla sunar. Minimal tasarım, maksimum karakter."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header class="hero" id="top">
+      <nav class="nav container">
+        <a href="#top" class="brand" aria-label="2FOUR2 ana sayfa">
+          <img src="logo.png" alt="2FOUR2 logo" class="logo" />
+        </a>
+        <button id="menuBtn" class="menu-btn" aria-label="Menüyü aç/kapat">☰</button>
+        <ul id="navLinks" class="nav-links">
+          <li><a href="#hikaye">Hikaye</a></li>
+          <li><a href="#yaklasim">Yaklaşım</a></li>
+          <li><a href="#imza">İmza</a></li>
+        </ul>
+      </nav>
+
+      <div class="hero-content container">
+        <p class="eyebrow">Nitelikli Kahve / Zamansız Standart</p>
+        <h1>Minimal tasarım.<br />Maksimum karakter.</h1>
+        <p class="lead">
+          2FOUR2, nitelikli kahveyi sade ama iddialı bir yorumla sunmak için kuruldu.
+          Trendleri takip etmek için değil, kendi standardını koymak için.
+        </p>
+        <a href="#imza" class="btn">Daha Fazla</a>
+      </div>
+    </header>
+
+    <main>
+      <section id="hikaye" class="section container">
+        <h2>Kahve burada bir içecek değil, bir imza.</h2>
+        <p>
+          Kahve bizim için bir ürün değil, bir disiplindir. Her çekirdek; kökeni,
+          yoğunluğu ve potansiyeliyle ayrı değerlendirilir. 2FOUR2’de kavurma bir
+          rutin değil, bir hesap işidir.
+        </p>
+      </section>
+
+      <section id="yaklasim" class="section section-dark">
+        <div class="container grid">
+          <article class="card">
+            <h3>Hassas Kavurma</h3>
+            <p>Saniye, derece ve profil; her partide net şekilde kontrol edilir.</p>
+          </article>
+          <article class="card">
+            <h3>Net Sonuç</h3>
+            <p>Net aroma, dengeli gövde ve temiz bitiş bizim temel standardımızdır.</p>
+          </article>
+          <article class="card">
+            <h3>Doğru Kahve</h3>
+            <p>
+              Biz kahveyi “sert” yapmayız. Yanık değil, bastırılmış değil, yapay
+              değil. Karakteri olduğu gibi ortaya çıkarırız.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section id="imza" class="section container quote-wrap">
+        <blockquote>
+          “Gerçek kalite bağırmaz.<br />
+          Hissedilir.”
+        </blockquote>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="container footer-inner">
+        <p>© <span id="year"></span> 2FOUR2 Coffee</p>
+        <a href="#top">Yukarı Dön</a>
+      </div>
+    </footer>
+
+    <script src="script.js"></script>
+  </body>
+</html>
