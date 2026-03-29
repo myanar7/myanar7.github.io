@@ -1,0 +1,544 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Tuğçe'ye Minik Sürpriz</title>
+  <style>
+    :root {
+      --bg-a: #151824;
+      --bg-b: #0e111a;
+      --card: #171c2a;
+      --text: #f6f8ff;
+      --muted: #cad2ea;
+      --accent: #ff7b54;
+      --accent-2: #f4c95d;
+      --ok: #1faa59;
+      --bad: #e63946;
+      --shadow: 0 12px 35px rgba(0, 0, 0, 0.35);
+      --radius: 24px;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      font-family: "Avenir Next", "Nunito", "Trebuchet MS", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(1200px 500px at 10% 10%, #26324f 0%, transparent 55%),
+        radial-gradient(900px 460px at 95% 5%, #2f2447 0%, transparent 60%),
+        linear-gradient(170deg, var(--bg-a) 0%, var(--bg-b) 100%);
+      overflow: hidden;
+    }
+
+    .app {
+      position: relative;
+      width: 100%;
+      height: 100dvh;
+      padding: max(14px, env(safe-area-inset-top)) 14px max(14px, env(safe-area-inset-bottom));
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .top {
+      background: rgba(21, 27, 41, 0.84);
+      border: 1px solid rgba(179, 197, 255, 0.22);
+      backdrop-filter: blur(6px);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      padding: 12px;
+    }
+
+    .progress {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 700;
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    .bar {
+      width: 100%;
+      height: 8px;
+      background: rgba(175, 190, 236, 0.22);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent) 0%, var(--accent-2) 100%);
+      border-radius: inherit;
+      transition: width 300ms ease;
+    }
+
+    .question {
+      margin: 10px 0 0;
+      font-size: clamp(22px, 5.6vw, 32px);
+      line-height: 1.18;
+      letter-spacing: 0.2px;
+      text-align: center;
+    }
+
+    .choices {
+      flex: 0 0 auto;
+      min-height: 0;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 2px;
+      height: min(56dvh, 520px);
+    }
+
+    .choice {
+      position: relative;
+      border: none;
+      border-radius: var(--radius);
+      overflow: hidden;
+      background: var(--card);
+      box-shadow: var(--shadow);
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      cursor: pointer;
+      padding: 0;
+      isolation: isolate;
+      transform: translateY(0);
+      transition: transform 180ms ease, box-shadow 180ms ease;
+      max-height: 100%;
+    }
+
+    .choice:active {
+      transform: translateY(2px) scale(0.995);
+    }
+
+    .choice img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -2;
+    }
+
+    .choice::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      background: linear-gradient(to top, rgba(0, 0, 0, 0.65) 15%, rgba(0, 0, 0, 0.1) 60%, rgba(0, 0, 0, 0.06) 100%);
+    }
+
+    .choice-label {
+      width: 100%;
+      text-align: center;
+      color: #fff;
+      font-size: clamp(18px, 4.6vw, 28px);
+      font-weight: 800;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.45);
+      padding: 14px 8px 16px;
+      line-height: 1.1;
+    }
+
+    .choice.locked {
+      pointer-events: none;
+      opacity: 0.45;
+      filter: grayscale(0.08);
+    }
+
+    .choice.selected {
+      outline: 4px solid rgba(255, 255, 255, 0.9);
+      outline-offset: -4px;
+      opacity: 1;
+      filter: none;
+      transform: scale(1.01);
+    }
+
+    .overlay,
+    .toast {
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 30;
+      width: min(92vw, 520px);
+      text-align: center;
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      color: #fff;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 220ms ease, transform 220ms ease;
+    }
+
+    .overlay {
+      top: 50%;
+      transform: translate(-50%, -45%);
+      background: rgba(16, 16, 16, 0.88);
+      padding: 18px 16px;
+      font-size: clamp(16px, 4.3vw, 22px);
+      font-weight: 700;
+      line-height: 1.3;
+    }
+
+    .overlay.show {
+      opacity: 1;
+      transform: translate(-50%, -50%);
+    }
+
+    .toast {
+      bottom: calc(14px + env(safe-area-inset-bottom));
+      background: linear-gradient(120deg, #212121, #3b3b3b);
+      padding: 12px 14px;
+      font-size: clamp(15px, 4vw, 18px);
+      font-weight: 700;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(-6px);
+    }
+
+    .final {
+      display: none;
+      width: 100%;
+      height: 100dvh;
+      padding: max(16px, env(safe-area-inset-top)) 14px max(16px, env(safe-area-inset-bottom));
+      overflow-y: auto;
+      background:
+        radial-gradient(1400px 600px at -10% 0%, rgba(72, 92, 148, 0.55), transparent 60%),
+        radial-gradient(1000px 500px at 110% 10%, rgba(113, 76, 143, 0.48), transparent 60%),
+        linear-gradient(180deg, #0f1320, #111728 55%, #0b101d);
+    }
+
+    .final.show {
+      display: block;
+      animation: reveal 420ms ease;
+    }
+
+    .final-card {
+      max-width: 760px;
+      margin: 0 auto;
+      background: rgba(18, 25, 39, 0.9);
+      border: 1px solid rgba(181, 199, 255, 0.22);
+      border-radius: 26px;
+      box-shadow: var(--shadow);
+      padding: 18px;
+    }
+
+    .final h1 {
+      margin: 2px 0 10px;
+      text-align: center;
+      font-size: clamp(28px, 7.6vw, 48px);
+      line-height: 1.1;
+      letter-spacing: 0.4px;
+    }
+
+    .final p {
+      margin: 0 0 14px;
+      text-align: center;
+      color: #dbe3ff;
+      font-size: clamp(16px, 4.4vw, 20px);
+      font-weight: 600;
+    }
+
+    .video-wrap {
+      position: relative;
+      width: 100%;
+      padding-top: 56.25%;
+      border-radius: 18px;
+      overflow: hidden;
+      background: #000;
+    }
+
+    .video-wrap iframe {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+
+    .restart {
+      display: block;
+      width: 100%;
+      max-width: 260px;
+      margin: 16px auto 2px;
+      border: none;
+      border-radius: 14px;
+      background: linear-gradient(90deg, #ff7b54, #ff9f45);
+      color: #fff;
+      font-size: 16px;
+      font-weight: 800;
+      padding: 12px 14px;
+      cursor: pointer;
+      box-shadow: 0 8px 22px rgba(209, 95, 50, 0.35);
+    }
+
+    @keyframes reveal {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 420px) {
+      .choice-label {
+        font-size: 17px;
+      }
+
+      .question {
+        font-size: 24px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main id="quizApp" class="app">
+    <section class="top">
+      <div class="progress">
+        <span id="stepText">Soru 1 / 5</span>
+        <span id="scoreText">Doğru: 0</span>
+      </div>
+      <div class="bar" aria-hidden="true">
+        <div id="progressFill" class="bar-fill"></div>
+      </div>
+      <h1 id="questionText" class="question"></h1>
+    </section>
+
+    <section class="choices">
+      <button id="leftChoice" class="choice" aria-label="Sol seçenek">
+        <img id="leftImg" src="" alt="Sol seçenek görseli" />
+        <span id="leftLabel" class="choice-label"></span>
+      </button>
+
+      <button id="rightChoice" class="choice" aria-label="Sağ seçenek">
+        <img id="rightImg" src="" alt="Sağ seçenek görseli" />
+        <span id="rightLabel" class="choice-label"></span>
+      </button>
+    </section>
+  </main>
+
+  <div id="choicePopup" class="overlay" role="status" aria-live="polite"></div>
+  <div id="scoreToast" class="toast" role="status" aria-live="polite"></div>
+
+  <section id="finalScreen" class="final" aria-hidden="true">
+    <div class="final-card">
+      <h1>Tebrikler Tuğçe olarak Doğdunuz!</h1>
+      <p>Nice senelere. İyi ki varsın.</p>
+
+      <div class="video-wrap">
+        <iframe width="560" height="315" src="https://www.youtube.com/embed/wwlhGSzlaO0?si=8WMUGg1Bo2wziIrL" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+      </div>
+
+      <button id="restartBtn" class="restart" type="button">Baştan Oyna</button>
+    </div>
+  </section>
+
+  <script>
+    const questions = [
+      {
+        question: "Hangisi Daha İyi?",
+        left: {
+          text: "Yaban Mersinli San Sebastian",
+          image: "q1-1.jpg",
+          message: "E hiç yemedin ki onu o gün ???"
+        },
+        right: {
+          text: "2(rile)ce",
+          image: "q1-2.jpg",
+          message: "E zaaaten"
+        },
+        correct: "right"
+      },
+      {
+        question: "Hangisini tercih edersin?",
+        left: {
+          text: "Çay",
+          image: "q2-1.jpg",
+          message: "Knorr karton bardakta!"
+        },
+        right: {
+          text: "Kahve",
+          image: "q2-2.jpg",
+          message: "Bi de sütle falan içiyosundur -1"
+        },
+        correct: "left"
+      },
+      {
+        question: "Ordu'ya gitsen ilk yapacağın şey ne olur?",
+        left: {
+          text: "Meşhur Pide'ye gitmek",
+          image: "q3-1.jpg",
+          message: "Smokey daha iyidir de neyse"
+        },
+        right: {
+          text: "Eve gitmek",
+          image: "q3-2.jpg",
+          message: "Hata"
+        },
+        correct: "left"
+      },
+      {
+        question: "Hangisi seni daha iyi tanımlar?",
+        left: {
+          text: "Cücük",
+          image: "q4-1.jpg",
+          message: "Tabiiiki de cükcücük"
+        },
+        right: {
+          text: "Normal Biri",
+          image: "q4-2.jpg",
+          message: "Hayır Cücüksün !"
+        },
+        correct: "left"
+      },
+      {
+        question: "Şu anda nerdesin?",
+        left: {
+          text: "Kitap Kulübünde",
+          image: "q5-1.jpg",
+          message: "Yalan !!!!"
+        },
+        right: {
+          text: "Evde",
+          image: "q5-2.jpg",
+          message: "Büyük hata !!!!!!"
+        },
+        correct: "right"
+      }
+    ];
+
+    const app = document.getElementById("quizApp");
+    const questionText = document.getElementById("questionText");
+    const stepText = document.getElementById("stepText");
+    const scoreText = document.getElementById("scoreText");
+    const progressFill = document.getElementById("progressFill");
+
+    const leftChoice = document.getElementById("leftChoice");
+    const rightChoice = document.getElementById("rightChoice");
+    const leftLabel = document.getElementById("leftLabel");
+    const rightLabel = document.getElementById("rightLabel");
+    const leftImg = document.getElementById("leftImg");
+    const rightImg = document.getElementById("rightImg");
+
+    const choicePopup = document.getElementById("choicePopup");
+    const scoreToast = document.getElementById("scoreToast");
+
+    const finalScreen = document.getElementById("finalScreen");
+    const restartBtn = document.getElementById("restartBtn");
+
+    let currentIndex = 0;
+    let correctCount = 0;
+    let lock = false;
+
+    function showQuestion() {
+      const item = questions[currentIndex];
+      const total = questions.length;
+
+      questionText.textContent = item.question;
+      stepText.textContent = `Soru ${currentIndex + 1} / ${total}`;
+      scoreText.textContent = `Doğru: ${correctCount}`;
+      progressFill.style.width = `${(currentIndex / total) * 100}%`;
+
+      leftLabel.textContent = item.left.text;
+      rightLabel.textContent = item.right.text;
+      leftImg.src = item.left.image;
+      rightImg.src = item.right.image;
+
+      leftChoice.classList.remove("locked", "selected");
+      rightChoice.classList.remove("locked", "selected");
+      lock = false;
+    }
+
+    function showOverlay(message, duration = 1050) {
+      choicePopup.textContent = message;
+      choicePopup.classList.add("show");
+
+      window.setTimeout(() => {
+        choicePopup.classList.remove("show");
+      }, duration);
+    }
+
+    function showToast(message, duration = 1800) {
+      scoreToast.textContent = message;
+      scoreToast.classList.add("show");
+
+      window.setTimeout(() => {
+        scoreToast.classList.remove("show");
+      }, duration);
+    }
+
+    function handleChoice(side) {
+      if (lock) return;
+      lock = true;
+
+      const item = questions[currentIndex];
+      const selectedBtn = side === "left" ? leftChoice : rightChoice;
+      const otherBtn = side === "left" ? rightChoice : leftChoice;
+      const selectedInfo = side === "left" ? item.left : item.right;
+
+      selectedBtn.classList.add("selected");
+      otherBtn.classList.add("locked");
+      selectedBtn.classList.add("locked");
+
+      showOverlay(selectedInfo.message);
+
+      if (side === item.correct) {
+        correctCount += 1;
+      }
+
+      scoreText.textContent = `Doğru: ${correctCount}`;
+
+      window.setTimeout(() => {
+        currentIndex += 1;
+
+        if (currentIndex < questions.length) {
+          showQuestion();
+          return;
+        }
+
+        progressFill.style.width = "100%";
+        showToast(`${correctCount}/${questions.length} Tuğçe oldunuz!`);
+
+        window.setTimeout(() => {
+          app.style.display = "none";
+          finalScreen.classList.add("show");
+          finalScreen.setAttribute("aria-hidden", "false");
+        }, 920);
+      }, 1150);
+    }
+
+    function restartQuiz() {
+      currentIndex = 0;
+      correctCount = 0;
+      lock = false;
+      finalScreen.classList.remove("show");
+      finalScreen.setAttribute("aria-hidden", "true");
+      app.style.display = "flex";
+      showQuestion();
+    }
+
+    leftChoice.addEventListener("click", () => handleChoice("left"));
+    rightChoice.addEventListener("click", () => handleChoice("right"));
+    restartBtn.addEventListener("click", restartQuiz);
+
+    showQuestion();
+  </script>
+</body>
+</html>
