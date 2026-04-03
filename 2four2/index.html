@@ -19,14 +19,23 @@
   <body>
     <header class="hero" id="top">
       <nav class="nav container">
-        <a href="#top" class="brand" aria-label="2FOUR2 ana sayfa">
-          <img src="logo.png" alt="2FOUR2 logo" class="logo" />
-        </a>
+        <ul class="nav-links nav-left">
+          <li><a href="#hikaye">Hikaye</a></li>
+          <li><a href="#yaklasim">Yaklaşım</a></li>
+        </ul>
+
+        <ul class="nav-links nav-right">
+          <li><a href="#imza">İmza</a></li>
+          <li><a href="#iletisim">İletişim</a></li>
+        </ul>
+
         <button id="menuBtn" class="menu-btn" aria-label="Menüyü aç/kapat">☰</button>
-        <ul id="navLinks" class="nav-links">
+
+        <ul id="navLinks" class="nav-links nav-links-mobile">
           <li><a href="#hikaye">Hikaye</a></li>
           <li><a href="#yaklasim">Yaklaşım</a></li>
           <li><a href="#imza">İmza</a></li>
+          <li><a href="#iletisim">İletişim</a></li>
         </ul>
       </nav>
 
@@ -76,6 +85,62 @@
           “Gerçek kalite bağırmaz.<br />
           Hissedilir.”
         </blockquote>
+      </section>
+
+      <section id="konum" class="section section-dark">
+        <div class="container location-wrap">
+          <h2>Bize Ulaşın</h2>
+          <div class="location-list">
+            <div class="location-item">
+              <span class="item-icon" aria-hidden="true">📍</span>
+              <div>
+                <h3>Konum</h3>
+                <p class="location-text">
+                  Bahçeyaka, Şht. Mustafa Gürcan Cd. No:8/A, 07170 Döşemealtı/Antalya
+                </p>
+                <a
+                  href="https://maps.app.goo.gl/7CiF1RVfDSatEDmU9"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="location-link"
+                >
+                  Haritada Aç
+                </a>
+              </div>
+            </div>
+
+            <div class="location-item">
+              <span class="item-icon" aria-hidden="true">☎</span>
+              <div>
+                <h3>Telefon</h3>
+                <a href="tel:05347838045" class="location-link">0534 783 80 45</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="iletisim" class="section container contact-wrap">
+        <h2>İletişim</h2>
+        <p>Mesajınızı bırakın, en kısa sürede size geri dönüş yapalım.</p>
+
+        <form
+          class="contact-form"
+          action="https://formsubmit.co/erkutyanar@gmail.com"
+          method="POST"
+        >
+          <input type="hidden" name="_subject" value="2FOUR2 İletişim Formu" />
+          <input type="hidden" name="_captcha" value="false" />
+          <input type="text" name="name" placeholder="Ad Soyad" required />
+          <input type="email" name="email" placeholder="E-posta" required />
+          <textarea
+            name="message"
+            rows="5"
+            placeholder="Mesajınız"
+            required
+          ></textarea>
+          <button type="submit" class="btn">Gönder</button>
+        </form>
       </section>
     </main>
 
