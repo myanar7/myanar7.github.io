@@ -5,81 +5,11 @@ const messageDiv = document.getElementById('message');
 const retryBtn = document.getElementById('retry-btn');
 const finalScreen = document.getElementById('final-screen');
 
-// Responsive canvas
-function resizeCanvas() {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-}
-window.addEventListener('resize', resizeCanvas);
-resizeCanvas();
 
-// Oyun durumu
-let stage = 0; // 0-3: yol ayrımları, 4: final
-let isWrong = false;
-let plane = { x: canvas.width/2, y: canvas.height-120, size: 100 };
-const planeImg = new Image();
-planeImg.src = 'assets/plane.png';
-let animating = false;
-
-// Yol ayrımı verisi: Soru, şıklar ve doğru yön
-const pathData = [
-  {
-    question: "Yüzüklerin Efendisi serisinde Tek Yüzük'ü yok etmekle görevlendirilen ana karakter kimdir?",
-    left: "Frodo Baggins",
-    right: "Aragorn",
-    correct: 'left'
-  },
-  {
-    question: 'Buz ve Ateşin Şarkısı (Game of Thrones) serisinde "Kış Geliyor" (Winter is Coming) sözü hangi hanedana aittir?',
-    left: 'Lannister Hanedanı',
-    right: 'Stark Hanedanı',
-    correct: 'right'
-  },
-  {
-    question: 'Yüzüklerin Efendisi\'nde, Moria Madenleri\'ndeki savaştan sonra "Ak Büyücü" olarak geri dönen karakter hangisidir?',
-    left: 'Gandalf',
-    right: 'Saruman',
-    correct: 'left'
-  },
-  {
-    question: 'Buz ve Ateşin Şarkısı evreninde üç ejderhası olduğu için "Ejderhaların Annesi" unvanıyla bilinen karakter kimdir?',
-    left: 'Cersei Lannister',
-    right: 'Daenerys Targaryen',
-    correct: 'right'
-  }
-];
-
-function drawPlane(x, y, direction = 'up') {
-  ctx.save();
-  ctx.translate(x, y);
-  // Uçağı yönüne göre döndür
-  let angle = 0;
-  if (direction === 'left') angle = -Math.PI/6;
-  if (direction === 'right') angle = Math.PI/6;
-  ctx.rotate(angle);
-  ctx.drawImage(planeImg, -plane.size/2, -plane.size/2, plane.size, plane.size);
-  ctx.restore();
-}
-
-function drawFork(stage) {
-  // Responsive oranlar
-  const isMobile = window.innerWidth < 700;
-  const forkY = isMobile ? canvas.height * 0.48 : canvas.height/2;
-  const forkLeftX = isMobile ? canvas.width/2 - canvas.width*0.32 : canvas.width/2-250;
-  const forkRightX = isMobile ? canvas.width/2 + canvas.width*0.32 : canvas.width/2+250;
-  const forkBranchY = isMobile ? forkY - canvas.height*0.18 : canvas.height/2-150;
-  // Arka plan
-  ctx.fillStyle = '#e0e0e0';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  // Yol gövdesi
-  ctx.save();
-  ctx.strokeStyle = '#4d4d4d';
-  ctx.lineWidth = isMobile ? 44 : 80;
-  ctx.lineJoin = 'miter';
-  ctx.beginPath();
-  ctx.moveTo(canvas.width/2, canvas.height-80);
-  ctx.lineTo(canvas.width/2, forkY);
-  ctx.lineTo(forkLeftX, forkBranchY);
+// Site açılır açılır konfeti başlat
+window.addEventListener('DOMContentLoaded', () => {
+  if (typeof startConfetti === 'function') startConfetti();
+});
   ctx.moveTo(canvas.width/2, forkY);
   ctx.lineTo(forkRightX, forkBranchY);
   ctx.stroke();
