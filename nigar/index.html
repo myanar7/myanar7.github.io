@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Doğum Günü Sürprizi</title>
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+  <div id="game-container">
+    <canvas id="game-canvas"></canvas>
+    <div id="message"></div>
+    <button id="retry-btn" style="display:none;">Tekrar Dene</button>
+    <div id="final-screen" style="display:none; flex-direction:column; align-items:center; justify-content:center;">
+      <canvas id="confetti-canvas" style="position:absolute;top:0;left:0;width:100vw;height:100vh;z-index:4;pointer-events:none;"></canvas>
+      <h1 class="final-title">Doğum günün kutlu olsun, Nigar !!!!</h1>
+      <div class="final-stars">✨🎉🎂🎈✨</div>
+      <div style="margin-top:24px;z-index:5;">
+        <iframe width="560" height="315" src="https://www.youtube.com/embed/GSLmQLzgfis?si=e3VjOGDVVAg9pSYJ" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+      </div>
+    </div>
+  </div>
+  <script src="assets/game.js"></script>
+</body>
+</html>
