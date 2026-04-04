@@ -1,3 +1,73 @@
+/* Mobilde canvas ve içeriklerin sığması için ek düzenlemeler */
+@media (max-width: 700px) {
+  html, body {
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+  }
+  #game-container {
+    width: 100vw;
+    height: 100vh;
+    min-width: 100vw;
+    min-height: 100vh;
+    overflow: hidden;
+    position: relative;
+  }
+  #game-canvas {
+    width: 100vw !important;
+    height: 100vh !important;
+    max-width: 100vw !important;
+    max-height: 100vh !important;
+    display: block;
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    touch-action: none;
+  }
+  #final-screen {
+    padding: 0;
+    width: 100vw;
+    height: 100vh;
+    min-width: 100vw;
+    min-height: 100vh;
+    box-sizing: border-box;
+  }
+  .final-title {
+    font-size: 1.1rem;
+    margin-bottom: 0.5em;
+    padding: 0 8vw;
+    word-break: break-word;
+    text-align: center;
+  }
+  .final-stars {
+    font-size: 1.1rem;
+    margin-bottom: 0.7em;
+  }
+  #final-screen iframe {
+    width: 96vw !important;
+    height: 54vw !important;
+    min-height: 120px;
+    max-width: 98vw;
+    border-radius: 12px;
+  }
+  #message {
+    font-size: 0.95rem;
+    padding: 8px 8px;
+    max-width: 92vw;
+    word-break: break-word;
+    left: 50%;
+    transform: translateX(-50%);
+    box-sizing: border-box;
+  }
+  #retry-btn {
+    font-size: 0.9rem;
+    padding: 8px 16px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+}
 body {
   margin: 0;
   padding: 0;

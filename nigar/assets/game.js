@@ -62,87 +62,97 @@ function drawPlane(x, y, direction = 'up') {
 }
 
 function drawFork(stage) {
+  // Responsive oranlar
+  const isMobile = window.innerWidth < 700;
+  const forkY = isMobile ? canvas.height * 0.48 : canvas.height/2;
+  const forkLeftX = isMobile ? canvas.width/2 - canvas.width*0.32 : canvas.width/2-250;
+  const forkRightX = isMobile ? canvas.width/2 + canvas.width*0.32 : canvas.width/2+250;
+  const forkBranchY = isMobile ? forkY - canvas.height*0.18 : canvas.height/2-150;
   // Arka plan
   ctx.fillStyle = '#e0e0e0';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   // Yol gövdesi
   ctx.save();
   ctx.strokeStyle = '#4d4d4d';
-  ctx.lineWidth = 80;
+  ctx.lineWidth = isMobile ? 44 : 80;
   ctx.lineJoin = 'miter';
   ctx.beginPath();
   ctx.moveTo(canvas.width/2, canvas.height-80);
-  ctx.lineTo(canvas.width/2, canvas.height/2);
-  ctx.lineTo(canvas.width/2-250, canvas.height/2-150);
-  ctx.moveTo(canvas.width/2, canvas.height/2);
-  ctx.lineTo(canvas.width/2+250, canvas.height/2-150);
+  ctx.lineTo(canvas.width/2, forkY);
+  ctx.lineTo(forkLeftX, forkBranchY);
+  ctx.moveTo(canvas.width/2, forkY);
+  ctx.lineTo(forkRightX, forkBranchY);
   ctx.stroke();
   ctx.restore();
   // Kenar çizgileri
   ctx.save();
   ctx.strokeStyle = '#222';
-  ctx.lineWidth = 6;
-  ctx.setLineDash([30, 20]);
+  ctx.lineWidth = isMobile ? 3 : 6;
+  ctx.setLineDash([isMobile ? 16 : 30, isMobile ? 10 : 20]);
   ctx.beginPath();
   ctx.moveTo(canvas.width/2, canvas.height-80);
-  ctx.lineTo(canvas.width/2, canvas.height/2);
-  ctx.lineTo(canvas.width/2-250, canvas.height/2-150);
-  ctx.moveTo(canvas.width/2, canvas.height/2);
-  ctx.lineTo(canvas.width/2+250, canvas.height/2-150);
+  ctx.lineTo(canvas.width/2, forkY);
+  ctx.lineTo(forkLeftX, forkBranchY);
+  ctx.moveTo(canvas.width/2, forkY);
+  ctx.lineTo(forkRightX, forkBranchY);
   ctx.stroke();
   ctx.restore();
 
   // Soru
   const q = pathData[stage];
   ctx.save();
-  ctx.font = 'bold 22px Segoe UI';
+  ctx.font = isMobile ? 'bold 15px Segoe UI' : 'bold 22px Segoe UI';
   ctx.fillStyle = '#222';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'top';
   // Soru kutusu
-  const qBoxW = Math.min(canvas.width * 0.8, 700);
-  const qBoxH = 80;
+  const qBoxW = isMobile ? Math.min(canvas.width * 0.92, 340) : Math.min(canvas.width * 0.8, 700);
+  const qBoxH = isMobile ? 54 : 80;
   const qBoxX = canvas.width/2 - qBoxW/2;
-  const qBoxY = 40;
+  const qBoxY = isMobile ? 12 : 40;
   ctx.beginPath();
-  ctx.roundRect(qBoxX, qBoxY, qBoxW, qBoxH, 18);
+  ctx.roundRect(qBoxX, qBoxY, qBoxW, qBoxH, isMobile ? 10 : 18);
   ctx.fillStyle = '#fff';
   ctx.fill();
   ctx.strokeStyle = '#1976d2';
   ctx.lineWidth = 2;
   ctx.stroke();
   ctx.fillStyle = '#1976d2';
-  ctx.font = 'bold 20px Segoe UI';
-  ctx.fillText(q.question, canvas.width/2, qBoxY + 20, qBoxW-24);
+  ctx.font = isMobile ? 'bold 13px Segoe UI' : 'bold 20px Segoe UI';
+  ctx.fillText(q.question, canvas.width/2, qBoxY + (isMobile ? 10 : 20), qBoxW-16);
   ctx.restore();
 
   // Şık kutuları
+  const optY = isMobile ? forkY - canvas.height*0.23 : canvas.height/2-170;
+  const optPadX = isMobile ? 10 : 28;
+  const optPadY = isMobile ? 7 : 16;
+  const optFont = isMobile ? 'bold 12px Segoe UI' : 'bold 20px Segoe UI';
+  const optBoxH = isMobile ? 32 : 54;
   const options = [
-    { label: q.left, x: canvas.width/2-270, y: canvas.height/2-170 },
-    { label: q.right, x: canvas.width/2+200, y: canvas.height/2-170 }
+    { label: q.left, x: forkLeftX - (isMobile ? 30 : 10), y: optY },
+    { label: q.right, x: forkRightX - (isMobile ? 30 : 10), y: optY }
   ];
-  ctx.font = 'bold 20px Segoe UI';
+  ctx.font = optFont;
   options.forEach(opt => {
     // Kutu boyutları
-    const paddingX = 28, paddingY = 16;
     const text = opt.label;
     const textWidth = ctx.measureText(text).width;
-    const boxW = textWidth + paddingX;
-    const boxH = 54;
+    const boxW = textWidth + optPadX*2;
     // Kutu
     ctx.save();
     ctx.fillStyle = '#fff';
     ctx.strokeStyle = '#1976d2';
-    ctx.lineWidth = 3;
+    ctx.lineWidth = isMobile ? 2 : 3;
     ctx.beginPath();
-    ctx.roundRect(opt.x-10, opt.y-34, boxW, boxH, 12);
+    ctx.roundRect(opt.x, opt.y, boxW, optBoxH, isMobile ? 8 : 12);
     ctx.fill();
     ctx.stroke();
     // Yazı
     ctx.fillStyle = '#1976d2';
-    ctx.textBaseline = 'top';
-    ctx.textAlign = 'left';
-    ctx.fillText(text, opt.x+paddingX/2-10, opt.y-28);
+    ctx.textBaseline = 'middle';
+    ctx.textAlign = 'center';
+    ctx.font = optFont;
+    ctx.fillText(text, opt.x + boxW/2, opt.y + optBoxH/2);
     ctx.restore();
   });
 }
@@ -215,22 +225,42 @@ function draw(direction = 'up') {
 
 
 
+
 canvas.addEventListener('click', function(e) {
   if (animating || stage >= 4) return;
   const rect = canvas.getBoundingClientRect();
-  const mx = e.clientX - rect.left;
-  const my = e.clientY - rect.top;
-  // Sol yol
-  const leftPath = {
-    x: canvas.width/2-200, y: canvas.height/2-200, r: 90
-  };
-  // Sağ yol
-  const rightPath = {
-    x: canvas.width/2+200, y: canvas.height/2-200, r: 90
-  };
+  const mx = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+  const my = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
+
+  // Responsive oranlar
+  const isMobile = window.innerWidth < 700;
+  const forkY = isMobile ? canvas.height * 0.48 : canvas.height/2;
+  const forkLeftX = isMobile ? canvas.width/2 - canvas.width*0.32 : canvas.width/2-250;
+  const forkRightX = isMobile ? canvas.width/2 + canvas.width*0.32 : canvas.width/2+250;
+  const forkBranchY = isMobile ? forkY - canvas.height*0.18 : canvas.height/2-150;
+  // Şık kutuları
+  const optY = isMobile ? forkY - canvas.height*0.23 : canvas.height/2-170;
+  const optPadX = isMobile ? 10 : 28;
+  const optPadY = isMobile ? 7 : 16;
+  const optFont = isMobile ? 'bold 12px Segoe UI' : 'bold 20px Segoe UI';
+  const optBoxH = isMobile ? 32 : 54;
+  const q = pathData[stage];
+  const options = [
+    { key: 'left', label: q.left, x: forkLeftX - (isMobile ? 30 : 10), y: optY },
+    { key: 'right', label: q.right, x: forkRightX - (isMobile ? 30 : 10), y: optY }
+  ];
+  // Şık kutularının gerçek genişliğini ölç
+  const ctxFontPrev = ctx.font;
+  ctx.font = optFont;
   let chosen = null;
-  if (Math.hypot(mx-leftPath.x, my-leftPath.y) < leftPath.r) chosen = 'left';
-  if (Math.hypot(mx-rightPath.x, my-rightPath.y) < rightPath.r) chosen = 'right';
+  options.forEach(opt => {
+    const textWidth = ctx.measureText(opt.label).width;
+    const boxW = textWidth + optPadX*2;
+    if (mx >= opt.x && mx <= opt.x + boxW && my >= opt.y && my <= opt.y + optBoxH) {
+      chosen = opt.key;
+    }
+  });
+  ctx.font = ctxFontPrev;
   if (!chosen) return;
   if (chosen === pathData[stage].correct) {
     animateTo(chosen);
@@ -240,9 +270,9 @@ canvas.addEventListener('click', function(e) {
     // Yanlış seçimde de animasyonla yanlış yola gitsin
     animating = true;
     const start = { x: plane.x, y: plane.y };
-    const fork = { x: canvas.width/2, y: canvas.height/2 };
-    const leftTarget = { x: canvas.width/2-250, y: canvas.height/2-150 };
-    const rightTarget = { x: canvas.width/2+250, y: canvas.height/2-150 };
+    const fork = { x: canvas.width/2, y: forkY };
+    const leftTarget = { x: forkLeftX, y: forkBranchY };
+    const rightTarget = { x: forkRightX, y: forkBranchY };
     const target = chosen === 'left' ? leftTarget : rightTarget;
     const midSteps = 40;
     const endSteps = 30;
@@ -279,6 +309,20 @@ canvas.addEventListener('click', function(e) {
     step();
   }
 });
+
+// Mobilde dokunma desteği
+canvas.addEventListener('touchstart', function(e) {
+  e.preventDefault();
+  const fakeEvent = {
+    touches: e.touches,
+    clientX: e.touches[0].clientX,
+    clientY: e.touches[0].clientY
+  };
+  canvas.dispatchEvent(new MouseEvent('click', {
+    clientX: fakeEvent.clientX,
+    clientY: fakeEvent.clientY
+  }));
+}, { passive: false });
 
 retryBtn.addEventListener('click', function() {
   messageDiv.style.display = 'none';
