@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zeliş'e Duyuru!</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000; /* Siyah arka plan */
+            overflow: hidden; /* Kaydırma çubuğunu gizle */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: 'Arial Black', sans-serif;
+            position: relative;
+        }
+
+        /* Arka plandaki emojiler için katman */
+        .emoji-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            align-content: space-around;
+            opacity: 0.15; /* Düşük opaklık */
+            z-index: 1;
+            user-select: none;
+        }
+
+        .emoji-background span {
+            font-size: 50px;
+            margin: 10px;
+        }
+
+        /* Öndeki yazı */
+        .message {
+            position: relative;
+            z-index: 2;
+            color: #ff4d4d; /* Dikkat çekici kırmızı tonu */
+            text-align: center;
+            font-size: 4rem;
+            text-transform: uppercase;
+            text-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="emoji-background">
+        <!-- Burayı emojilerle dolduruyoruz -->
+        <span>😡</span><span>😠</span><span>💢</span><span>😡</span><span>😠</span>
+        <span>😠</span><span>😡</span><span>💢</span><span>😠</span><span>😡</span>
+        <span>😡</span><span>💢</span><span>😠</span><span>😡</span><span>😠</span>
+        <span>😠</span><span>😡</span><span>😡</span><span>💢</span><span>😠</span>
+        <span>😡</span><span>😠</span><span>💢</span><span>😡</span><span>😠</span>
+        <span>😠</span><span>😡</span><span>💢</span><span>😠</span><span>😡</span>
+        <span>😡</span><span>💢</span><span>😠</span><span>😡</span><span>😠</span>
+        <span>😠</span><span>😡</span><span>😡</span><span>💢</span><span>😠</span>
+    </div>
+
+    <div class="message">
+        DENEME ÇÖZÜLECEK DUYRULUR
+    </div>
+
+</body>
+</html>
