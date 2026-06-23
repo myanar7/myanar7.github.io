@@ -1,0 +1,247 @@
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   Boulder League — Custom Styles
+   Tailwind handles 95% of styling.
+   This file covers:
+   - Spinner animation
+   - Reusable component classes
+   - Scrollbar customization
+   - Leaderboard row hover
+   - Toast animation
+   - Grade badge colors
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+/* ── Base ── */
+:root {
+  --brand:     #f97316;
+  --brand-dim: #ea580c;
+  --surface-800: #141418;
+  --surface-700: #1c1c22;
+  --surface-600: #242430;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+/* Smooth scrolling */
+html { scroll-behavior: smooth; }
+
+/* Selection color */
+::selection {
+  background-color: rgba(249, 115, 22, 0.3);
+  color: #fff;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: #3a3a48;
+  border-radius: 99px;
+}
+::-webkit-scrollbar-thumb:hover { background: #f97316; }
+
+/* ── Glass Card ── */
+.card-glass {
+  background: rgba(20, 20, 24, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* ── Input Field ── */
+.input-field {
+  width: 100%;
+  padding: 0.6rem 0.875rem;
+  border-radius: 0.75rem;
+  background: rgba(28, 28, 34, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #f0f0f5;
+  font-size: 0.875rem;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+  font-family: inherit;
+}
+.input-field:focus {
+  border-color: rgba(249, 115, 22, 0.6);
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.15);
+  background: rgba(36, 36, 46, 0.95);
+}
+.input-field::placeholder { color: rgba(160, 160, 180, 0.5); }
+.input-field[type="number"]::-webkit-inner-spin-button,
+.input-field[type="number"]::-webkit-outer-spin-button { opacity: 0.4; }
+
+/* ── Buttons ── */
+.btn-primary {
+  padding: 0.6rem 1.25rem;
+  border-radius: 0.75rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: #fff;
+  background: linear-gradient(135deg, #ea580c, #f97316);
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+  font-family: inherit;
+  white-space: nowrap;
+}
+.btn-primary:hover:not(:disabled) {
+  opacity: 0.9;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 20px rgba(249, 115, 22, 0.35);
+}
+.btn-primary:active:not(:disabled) { transform: scale(0.97); }
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.btn-success {
+  background: linear-gradient(135deg, #15803d, #22c55e) !important;
+}
+.btn-success:hover:not(:disabled) {
+  box-shadow: 0 4px 20px rgba(34, 197, 94, 0.35) !important;
+}
+
+/* ── Spinner ── */
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid rgba(249, 115, 22, 0.2);
+  border-top-color: #f97316;
+  border-radius: 50%;
+  animation: spin 0.75s linear infinite;
+}
+.spinner-sm {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255,255,255,0.25);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.75s linear infinite;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Leaderboard Row Hover ── */
+.leaderboard-row {
+  transition: background 0.15s ease;
+}
+.leaderboard-row:hover {
+  background: rgba(249, 115, 22, 0.06);
+}
+
+/* ── List Item Hover ── */
+.list-item {
+  transition: border-color 0.2s, background 0.2s, transform 0.15s;
+}
+.list-item:hover {
+  border-color: rgba(249, 115, 22, 0.3);
+  background: rgba(249, 115, 22, 0.04);
+}
+
+/* ── Attempt Route Card ── */
+.attempt-route-card {
+  animation: slideUp 0.4s ease-out both;
+  transition: border-color 0.2s, background 0.2s;
+}
+.attempt-route-card:hover {
+  border-color: rgba(249, 115, 22, 0.3);
+}
+
+/* ── Grade Badge ── */
+.grade-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.15rem 0.5rem;
+  border-radius: 0.4rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  background: rgba(249, 115, 22, 0.15);
+  color: #fb923c;
+  border: 1px solid rgba(249, 115, 22, 0.25);
+}
+
+/* ── Gender Badges ── */
+.badge-blue {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.4rem;
+  height: 1.4rem;
+  border-radius: 0.35rem;
+  font-size: 0.65rem;
+  font-weight: 700;
+  background: rgba(59, 130, 246, 0.2);
+  color: #60a5fa;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  flex-shrink: 0;
+}
+.badge-pink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.4rem;
+  height: 1.4rem;
+  border-radius: 0.35rem;
+  font-size: 0.65rem;
+  font-weight: 700;
+  background: rgba(236, 72, 153, 0.2);
+  color: #f472b6;
+  border: 1px solid rgba(236, 72, 153, 0.3);
+  flex-shrink: 0;
+}
+
+/* ── Tab Active Indicator ── */
+.tab-btn {
+  position: relative;
+}
+.tab-btn::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: transparent;
+  border-radius: 2px 2px 0 0;
+  transition: background 0.25s, opacity 0.25s;
+}
+.tab-btn[aria-selected="true"]::after {
+  background: #f97316;
+}
+
+/* ── Toast Transition ── */
+.toast-item {
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+/* ── Panel Animation ── */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Scrollbar Utilities ── */
+.scrollbar-thin::-webkit-scrollbar { width: 4px; }
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ── Responsive tweaks ── */
+@media (max-width: 640px) {
+  .attempt-route-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .attempt-route-card > div:last-child {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}
