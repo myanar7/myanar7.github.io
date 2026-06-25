@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Liderlik Tablosu | Boulder League</title>
   <meta name="description"
-    content="Boulder League Tırmanış Salonu Ligi — Güncel erkekler ve kadınlar liderlik tablosu." />
+    content="Boulder League Tırmanış Salonu Ligi — Haftalık ve genel erkekler / kadınlar liderlik tablosu." />
 
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -52,7 +52,7 @@
 <body class="bg-surface-900 text-gray-100 font-sans min-h-screen antialiased">
 
   <!-- ──────────────────── HEADER ──────────────────── -->
-  <header class="border-b border-surface-600 bg-surface-900/90 backdrop-blur-md">
+  <header class="border-b border-surface-600 bg-surface-900/90 backdrop-blur-md sticky top-0 z-40">
     <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex items-center justify-between h-16">
         <!-- Logo / Brand -->
@@ -88,10 +88,10 @@
   </header>
 
   <!-- ──────────────────── PAGE TITLE ──────────────────── -->
-  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-6">
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-4">
     <div class="flex items-end gap-4">
       <div>
-        <p class="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-1">Genel Sıralama</p>
+        <p class="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-1">Sıralama</p>
         <h2 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">Liderlik Tablosu</h2>
       </div>
       <div class="mb-1 flex items-center gap-2 px-3 py-1.5 rounded-full bg-brand-500/10 border border-brand-500/30">
@@ -101,100 +101,202 @@
     </div>
   </div>
 
-  <!-- ──────────────────── TABLES ──────────────────── -->
+  <!-- ──────────────────── MAIN ──────────────────── -->
   <main class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
 
     <!-- Error Banner -->
-    <div id="error-banner"
+    <div id="lb-error"
       class="hidden mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/30 flex items-center gap-3">
       <svg class="w-5 h-5 text-red-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
           d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>
-      <span id="error-message" class="text-sm text-red-300"></span>
+      <span id="lb-error-msg" class="text-sm text-red-300"></span>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
-      <!-- ── Men's Table ── -->
-      <div class="card-glass rounded-2xl overflow-hidden">
-        <div class="px-6 py-4 border-b border-surface-600 flex items-center gap-3">
-          <div class="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center text-lg">🧗</div>
-          <div>
-            <h3 class="font-bold text-white">Erkekler</h3>
-            <p id="men-count" class="text-xs text-gray-500">Yükleniyor...</p>
-          </div>
-        </div>
-        <div class="overflow-x-auto">
-          <!-- Loading -->
-          <div id="men-loading" class="flex items-center justify-center py-16">
-            <div class="spinner"></div>
-          </div>
-          <!-- Table -->
-          <table id="men-table" class="w-full hidden">
-            <thead>
-              <tr class="text-xs font-semibold text-gray-500 uppercase tracking-wider border-b border-surface-600">
-                <th class="px-6 py-3 text-left w-12">#</th>
-                <th class="px-6 py-3 text-left">Sporcu</th>
-                <th class="px-6 py-3 text-right">Puan</th>
-              </tr>
-            </thead>
-            <tbody id="men-tbody" class="divide-y divide-surface-700"></tbody>
-          </table>
-          <!-- Empty -->
-          <div id="men-empty" class="hidden text-center py-16 text-gray-600">
-            <svg class="w-10 h-10 mx-auto mb-3 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
-            </svg>
-            <p class="text-sm">Henüz sporcu yok</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- ── Women's Table ── -->
-      <div class="card-glass rounded-2xl overflow-hidden">
-        <div class="px-6 py-4 border-b border-surface-600 flex items-center gap-3">
-          <div class="w-8 h-8 rounded-lg bg-pink-500/20 flex items-center justify-center text-lg">🧗‍♀️</div>
-          <div>
-            <h3 class="font-bold text-white">Kadınlar</h3>
-            <p id="women-count" class="text-xs text-gray-500">Yükleniyor...</p>
-          </div>
-        </div>
-        <div class="overflow-x-auto">
-          <!-- Loading -->
-          <div id="women-loading" class="flex items-center justify-center py-16">
-            <div class="spinner"></div>
-          </div>
-          <!-- Table -->
-          <table id="women-table" class="w-full hidden">
-            <thead>
-              <tr class="text-xs font-semibold text-gray-500 uppercase tracking-wider border-b border-surface-600">
-                <th class="px-6 py-3 text-left w-12">#</th>
-                <th class="px-6 py-3 text-left">Sporcu</th>
-                <th class="px-6 py-3 text-right">Puan</th>
-              </tr>
-            </thead>
-            <tbody id="women-tbody" class="divide-y divide-surface-700"></tbody>
-          </table>
-          <!-- Empty -->
-          <div id="women-empty" class="hidden text-center py-16 text-gray-600">
-            <svg class="w-10 h-10 mx-auto mb-3 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
-            </svg>
-            <p class="text-sm">Henüz sporcu yok</p>
-          </div>
-        </div>
-      </div>
-
+    <!-- View Switcher -->
+    <div class="lb-view-switcher mb-6" id="lb-view-switcher">
+      <button id="lb-view-overall" class="lb-pill lb-pill-active" data-view="overall">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+        </svg>
+        Genel Sıralama
+        <span class="lb-pill-badge">En İyi 4 Hafta</span>
+      </button>
+      <!-- Weekly pills injected by JS -->
+      <div id="lb-week-pills" class="flex flex-wrap gap-2"></div>
     </div>
+
+    <!-- Global Loading -->
+    <div id="lb-global-loading" class="flex items-center justify-center py-20">
+      <div class="spinner"></div>
+    </div>
+
+    <!-- ── OVERALL VIEW ── -->
+    <div id="lb-overall-view" class="hidden">
+      <!-- Info bar -->
+      <div class="mb-4 flex items-center gap-2 px-4 py-2.5 rounded-xl bg-brand-500/10 border border-brand-500/20 w-fit">
+        <svg class="w-4 h-4 text-brand-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <span class="text-xs text-brand-300">Her sporcunun en iyi 4 haftasının puanı toplanır</span>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+        <!-- Overall Men -->
+        <div class="card-glass rounded-2xl overflow-hidden">
+          <div class="px-6 py-4 border-b border-surface-600 flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center text-lg">🧗</div>
+            <div>
+              <h3 class="font-bold text-white">Erkekler</h3>
+              <p id="men-count" class="text-xs text-gray-500">— sporcu</p>
+            </div>
+          </div>
+          <div class="overflow-x-auto">
+            <div id="men-loading" class="flex items-center justify-center py-16">
+              <div class="spinner"></div>
+            </div>
+            <table id="men-table" class="w-full hidden">
+              <thead>
+                <tr class="text-xs font-semibold text-gray-500 uppercase tracking-wider border-b border-surface-600">
+                  <th class="px-5 py-3 text-left w-10">#</th>
+                  <th class="px-5 py-3 text-left">Sporcu</th>
+                  <th class="px-5 py-3 text-right whitespace-nowrap">En İyi 4</th>
+                  <th class="px-5 py-3 text-right whitespace-nowrap">Toplam</th>
+                </tr>
+              </thead>
+              <tbody id="men-tbody" class="divide-y divide-surface-700"></tbody>
+            </table>
+            <div id="men-empty" class="hidden text-center py-16 text-gray-600">
+              <svg class="w-10 h-10 mx-auto mb-3 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                  d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+              </svg>
+              <p class="text-sm">Henüz veri yok</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Overall Women -->
+        <div class="card-glass rounded-2xl overflow-hidden">
+          <div class="px-6 py-4 border-b border-surface-600 flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-pink-500/20 flex items-center justify-center text-lg">🧗‍♀️</div>
+            <div>
+              <h3 class="font-bold text-white">Kadınlar</h3>
+              <p id="women-count" class="text-xs text-gray-500">— sporcu</p>
+            </div>
+          </div>
+          <div class="overflow-x-auto">
+            <div id="women-loading" class="flex items-center justify-center py-16">
+              <div class="spinner"></div>
+            </div>
+            <table id="women-table" class="w-full hidden">
+              <thead>
+                <tr class="text-xs font-semibold text-gray-500 uppercase tracking-wider border-b border-surface-600">
+                  <th class="px-5 py-3 text-left w-10">#</th>
+                  <th class="px-5 py-3 text-left">Sporcu</th>
+                  <th class="px-5 py-3 text-right whitespace-nowrap">En İyi 4</th>
+                  <th class="px-5 py-3 text-right whitespace-nowrap">Toplam</th>
+                </tr>
+              </thead>
+              <tbody id="women-tbody" class="divide-y divide-surface-700"></tbody>
+            </table>
+            <div id="women-empty" class="hidden text-center py-16 text-gray-600">
+              <svg class="w-10 h-10 mx-auto mb-3 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                  d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+              </svg>
+              <p class="text-sm">Henüz veri yok</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── WEEKLY VIEW ── -->
+    <div id="lb-weekly-view" class="hidden">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+        <!-- Weekly Men -->
+        <div class="card-glass rounded-2xl overflow-hidden">
+          <div class="px-6 py-4 border-b border-surface-600 flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center text-lg">🧗</div>
+            <div>
+              <h3 class="font-bold text-white">Erkekler</h3>
+              <p id="wk-men-count" class="text-xs text-gray-500">— sporcu</p>
+            </div>
+          </div>
+          <div class="overflow-x-auto">
+            <div id="wk-men-loading" class="flex items-center justify-center py-16">
+              <div class="spinner"></div>
+            </div>
+            <table id="wk-men-table" class="w-full hidden">
+              <thead>
+                <tr class="text-xs font-semibold text-gray-500 uppercase tracking-wider border-b border-surface-600">
+                  <th class="px-5 py-3 text-left w-10">#</th>
+                  <th class="px-5 py-3 text-left">Sporcu</th>
+                  <th class="px-5 py-3 text-right">Puan</th>
+                </tr>
+              </thead>
+              <tbody id="wk-men-tbody" class="divide-y divide-surface-700"></tbody>
+            </table>
+            <div id="wk-men-empty" class="hidden text-center py-16 text-gray-600">
+              <svg class="w-10 h-10 mx-auto mb-3 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                  d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+              </svg>
+              <p class="text-sm">Bu hafta için veri yok</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Weekly Women -->
+        <div class="card-glass rounded-2xl overflow-hidden">
+          <div class="px-6 py-4 border-b border-surface-600 flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-pink-500/20 flex items-center justify-center text-lg">🧗‍♀️</div>
+            <div>
+              <h3 class="font-bold text-white">Kadınlar</h3>
+              <p id="wk-women-count" class="text-xs text-gray-500">— sporcu</p>
+            </div>
+          </div>
+          <div class="overflow-x-auto">
+            <div id="wk-women-loading" class="flex items-center justify-center py-16">
+              <div class="spinner"></div>
+            </div>
+            <table id="wk-women-table" class="w-full hidden">
+              <thead>
+                <tr class="text-xs font-semibold text-gray-500 uppercase tracking-wider border-b border-surface-600">
+                  <th class="px-5 py-3 text-left w-10">#</th>
+                  <th class="px-5 py-3 text-left">Sporcu</th>
+                  <th class="px-5 py-3 text-right">Puan</th>
+                </tr>
+              </thead>
+              <tbody id="wk-women-tbody" class="divide-y divide-surface-700"></tbody>
+            </table>
+            <div id="wk-women-empty" class="hidden text-center py-16 text-gray-600">
+              <svg class="w-10 h-10 mx-auto mb-3 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                  d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+              </svg>
+              <p class="text-sm">Bu hafta için veri yok</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
   </main>
 
   <!-- ──────────────────── SCRIPT ──────────────────── -->
   <script>
     /* ══════════════════════════════════════════
        Standalone Leaderboard — Self-contained JS
+       Uses GET /api/v2/leaderboard/full
     ══════════════════════════════════════════ */
     const API_BASE = 'https://boulder-championship-api.onrender.com/api/v2';
 
@@ -215,79 +317,193 @@
     // ── XSS escape ──
     function escHtml(str) {
       const d = document.createElement('div');
-      d.appendChild(document.createTextNode(String(str)));
+      d.appendChild(document.createTextNode(String(str ?? '')));
       return d.innerHTML;
     }
 
-    // ── Render one leaderboard table ──
-    function renderTable(climbers, tbodyId, tableId, emptyId, loadingId, countId) {
-      document.getElementById(loadingId).classList.add('hidden');
+    // ── State ──
+    let lbData = null;
+    let lbActiveView = 'overall';
+
+    // ── Table state helper ──
+    function lbSetTableState(loadingId, tableId, emptyId, state) {
+      document.getElementById(loadingId)?.classList.toggle('hidden', state !== 'loading');
+      document.getElementById(tableId)?.classList.toggle('hidden', state !== 'data');
+      document.getElementById(emptyId)?.classList.toggle('hidden', state !== 'empty');
+    }
+
+    // ── Render OVERALL table (ClimberWeeklyDetail) ──
+    function renderOverallTable(climbers, tbodyId, tableId, emptyId, loadingId, countId) {
       document.getElementById(countId).textContent = `${climbers?.length ?? 0} sporcu`;
 
       if (!climbers || climbers.length === 0) {
-        document.getElementById(emptyId).classList.remove('hidden');
+        lbSetTableState(loadingId, tableId, emptyId, 'empty');
         return;
       }
+      lbSetTableState(loadingId, tableId, emptyId, 'data');
 
-      const tbody = document.getElementById(tbodyId);
-      const table = document.getElementById(tableId);
-      table.classList.remove('hidden');
-
-      tbody.innerHTML = climbers.map((c, i) => {
+      document.getElementById(tbodyId).innerHTML = climbers.map((c, i) => {
         const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : null;
         const rankCell = medal
-          ? `<td class="px-6 py-4 text-lg">${medal}</td>`
-          : `<td class="px-6 py-4 text-gray-500 text-sm font-mono">${i + 1}</td>`;
-        const score = (c.totalPoints ?? c.totalScore ?? c.total_score ?? 0).toFixed(2);
+          ? `<td class="px-5 py-4 text-lg">${medal}</td>`
+          : `<td class="px-5 py-4 text-gray-500 text-sm font-mono">${i + 1}</td>`;
+
+        const rowBg = i === 0 ? 'bg-amber-500/5' : '';
+        const scoreColor = i === 0 ? 'text-amber-400' : 'text-brand-400';
+        const best4 = (c.bestFourPoints ?? 0).toFixed(2);
+        const total = (c.totalPoints ?? 0).toFixed(2);
+
+        const weeks = c.weeklyPoints
+          ? Object.keys(c.weeklyPoints).sort((a, b) => Number(a) - Number(b))
+          : [];
+        const weekBadges = weeks.map(w =>
+          `<span class="lb-week-chip" title="Hafta ${w}">${(c.weeklyPoints[w]).toFixed(1)}</span>`
+        ).join('');
+
+        return `
+          <tr class="leaderboard-row ${rowBg}">
+            ${rankCell}
+            <td class="px-5 py-3">
+              <div class="font-semibold text-white leading-snug">
+                ${escHtml(c.firstName)} ${escHtml(c.lastName)}
+              </div>
+              ${weekBadges ? `<div class="flex flex-wrap gap-1 mt-1">${weekBadges}</div>` : ''}
+            </td>
+            <td class="px-5 py-3 text-right">
+              <span class="font-bold text-base ${scoreColor}">${best4}</span>
+            </td>
+            <td class="px-5 py-3 text-right">
+              <span class="text-sm text-gray-500">${total}</span>
+            </td>
+          </tr>`;
+      }).join('');
+    }
+
+    // ── Render WEEKLY table (ClimberWeekEntry) ──
+    function renderWeeklyTable(climbers, tbodyId, tableId, emptyId, loadingId, countId) {
+      document.getElementById(countId).textContent = `${climbers?.length ?? 0} sporcu`;
+
+      if (!climbers || climbers.length === 0) {
+        lbSetTableState(loadingId, tableId, emptyId, 'empty');
+        return;
+      }
+      lbSetTableState(loadingId, tableId, emptyId, 'data');
+
+      document.getElementById(tbodyId).innerHTML = climbers.map((c, i) => {
+        const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : null;
+        const rankCell = medal
+          ? `<td class="px-5 py-4 text-lg">${medal}</td>`
+          : `<td class="px-5 py-4 text-gray-500 text-sm font-mono">${i + 1}</td>`;
+
         const rowBg = i === 0 ? 'bg-amber-500/5' : '';
         const scoreColor = i === 0 ? 'text-amber-400' : 'text-brand-400';
 
         return `
           <tr class="leaderboard-row ${rowBg}">
             ${rankCell}
-            <td class="px-6 py-4">
+            <td class="px-5 py-4">
               <span class="font-semibold text-white">
-                ${escHtml(c.firstName || c.first_name || '')} ${escHtml(c.lastName || c.last_name || '')}
+                ${escHtml(c.firstName)} ${escHtml(c.lastName)}
               </span>
             </td>
-            <td class="px-6 py-4 text-right">
-              <span class="font-bold text-lg ${scoreColor}">${score}</span>
+            <td class="px-5 py-4 text-right">
+              <span class="font-bold text-base ${scoreColor}">${(c.points ?? 0).toFixed(2)}</span>
             </td>
           </tr>`;
       }).join('');
     }
 
+    // ── View switcher ──
+    function setActivePill(viewKey) {
+      lbActiveView = viewKey;
+
+      document.querySelectorAll('.lb-pill').forEach(btn => {
+        btn.classList.toggle('lb-pill-active', btn.dataset.view === viewKey);
+      });
+
+      const overallEl = document.getElementById('lb-overall-view');
+      const weeklyEl = document.getElementById('lb-weekly-view');
+
+      if (viewKey === 'overall') {
+        overallEl.classList.remove('hidden');
+        weeklyEl.classList.add('hidden');
+      } else {
+        overallEl.classList.add('hidden');
+        weeklyEl.classList.remove('hidden');
+        renderWeekView(viewKey);
+      }
+    }
+
+    function renderWeekView(weekKey) {
+      if (!lbData) return;
+      const weekData = lbData.weekly?.[weekKey];
+      if (!weekData) {
+        lbSetTableState('wk-men-loading', 'wk-men-table', 'wk-men-empty', 'empty');
+        lbSetTableState('wk-women-loading', 'wk-women-table', 'wk-women-empty', 'empty');
+        document.getElementById('wk-men-count').textContent = '0 sporcu';
+        document.getElementById('wk-women-count').textContent = '0 sporcu';
+        return;
+      }
+      renderWeeklyTable(
+        weekData.men,
+        'wk-men-tbody', 'wk-men-table', 'wk-men-empty', 'wk-men-loading', 'wk-men-count'
+      );
+      renderWeeklyTable(
+        weekData.women,
+        'wk-women-tbody', 'wk-women-table', 'wk-women-empty', 'wk-women-loading', 'wk-women-count'
+      );
+    }
+
+    // ── Build week pills ──
+    function buildWeekPills(weeklyData) {
+      const container = document.getElementById('lb-week-pills');
+      container.innerHTML = '';
+      Object.keys(weeklyData || {})
+        .sort((a, b) => Number(a) - Number(b))
+        .forEach(wk => {
+          const btn = document.createElement('button');
+          btn.className = 'lb-pill';
+          btn.dataset.view = wk;
+          btn.textContent = `${wk}. Hafta`;
+          btn.addEventListener('click', () => setActivePill(wk));
+          container.appendChild(btn);
+        });
+    }
+
     // ── Load leaderboard ──
     async function loadLeaderboard() {
-      // Reset state
-      ['men', 'women'].forEach(g => {
-        document.getElementById(`${g}-loading`).classList.remove('hidden');
-        document.getElementById(`${g}-table`).classList.add('hidden');
-        document.getElementById(`${g}-empty`).classList.add('hidden');
-        document.getElementById(`${g}-count`).textContent = 'Yükleniyor...';
-      });
-      document.getElementById('error-banner').classList.add('hidden');
+      document.getElementById('lb-global-loading').classList.remove('hidden');
+      document.getElementById('lb-overall-view').classList.add('hidden');
+      document.getElementById('lb-weekly-view').classList.add('hidden');
+      document.getElementById('lb-error').classList.add('hidden');
 
       try {
-        const data = await apiFetch('/leaderboard');
-        renderTable(data.men, 'men-tbody', 'men-table', 'men-empty', 'men-loading', 'men-count');
-        renderTable(data.women, 'women-tbody', 'women-table', 'women-empty', 'women-loading', 'women-count');
+        lbData = await apiFetch('/leaderboard/full');
 
-        // Update timestamp
+        buildWeekPills(lbData.weekly);
+
+        const overall = lbData.overall ?? {};
+        renderOverallTable(overall.men, 'men-tbody', 'men-table', 'men-empty', 'men-loading', 'men-count');
+        renderOverallTable(overall.women, 'women-tbody', 'women-table', 'women-empty', 'women-loading', 'women-count');
+
+        document.getElementById('lb-global-loading').classList.add('hidden');
+        setActivePill(lbActiveView);
+
+        // Timestamp
         const ts = document.getElementById('last-updated');
         ts.textContent = `Son güncelleme: ${new Date().toLocaleTimeString('tr-TR')}`;
         ts.classList.remove('hidden');
+
       } catch (err) {
         console.error('[Leaderboard] Yüklenemedi:', err);
-        ['men', 'women'].forEach(g => {
-          document.getElementById(`${g}-loading`).classList.add('hidden');
-          document.getElementById(`${g}-count`).textContent = 'Hata';
-        });
-        const banner = document.getElementById('error-banner');
-        document.getElementById('error-message').textContent = `Liderlik tablosu yüklenemedi: ${err.message}`;
-        banner.classList.remove('hidden');
+        document.getElementById('lb-global-loading').classList.add('hidden');
+        document.getElementById('lb-error-msg').textContent = `Liderlik tablosu yüklenemedi: ${err.message}`;
+        document.getElementById('lb-error').classList.remove('hidden');
       }
     }
+
+    // ── Overall pill click ──
+    document.getElementById('lb-view-overall').addEventListener('click', () => setActivePill('overall'));
 
     // ── Refresh button ──
     document.getElementById('btn-refresh').addEventListener('click', loadLeaderboard);

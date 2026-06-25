@@ -52,24 +52,26 @@ async function apiFetch(path, options = {}) {
 
 const api = {
   // Leaderboard
-  getLeaderboard:      ()         => apiFetch('/leaderboard'),
+  getLeaderboard: () => apiFetch('/leaderboard'),
+  getFullLeaderboard: () => apiFetch('/leaderboard/full'),
+
 
   // Climbers
-  getClimbers:         ()         => apiFetch('/climbers'),
-  addClimber:          (body)     => apiFetch('/climbers', { method: 'POST', body: JSON.stringify(body) }),
-  deleteClimber:       (id)       => apiFetch(`/climbers/${id}`, { method: 'DELETE' }),
+  getClimbers: () => apiFetch('/climbers'),
+  addClimber: (body) => apiFetch('/climbers', { method: 'POST', body: JSON.stringify(body) }),
+  deleteClimber: (id) => apiFetch(`/climbers/${id}`, { method: 'DELETE' }),
 
   // Routes
-  getRoutes:           (week)     => apiFetch(`/routes?week=${week}`),
-  addRoute:            (body)     => apiFetch('/routes', { method: 'POST', body: JSON.stringify(body) }),
-  deleteRoute:         (id)       => apiFetch(`/routes/${id}`, { method: 'DELETE' }),
+  getRoutes: (week) => apiFetch(`/routes?week=${week}`),
+  addRoute: (body) => apiFetch('/routes', { method: 'POST', body: JSON.stringify(body) }),
+  deleteRoute: (id) => apiFetch(`/routes/${id}`, { method: 'DELETE' }),
 
   // Attempts
-  getAttempts:         (id, week) => apiFetch(`/climbers/${id}/attempts?week=${week}`),
-  addAttempt:          (body)     => apiFetch('/attempts', { method: 'POST', body: JSON.stringify(body) }),
+  getAttempts: (id, week) => apiFetch(`/climbers/${id}/attempts?week=${week}`),
+  addAttempt: (body) => apiFetch('/attempts', { method: 'POST', body: JSON.stringify(body) }),
 
   // Actions
-  calculateWeekPoints: (week)     => apiFetch('/actions/calculate-weekly-points', {
+  calculateWeekPoints: (week) => apiFetch('/actions/calculate-weekly-points', {
     method: 'POST',
     body: JSON.stringify({ week: Number(week) }),
   }),
@@ -87,13 +89,13 @@ function showToast(message, type = 'info') {
 
   const colors = {
     success: 'border-green-500/40 bg-green-500/10 text-green-300',
-    error:   'border-red-500/40   bg-red-500/10   text-red-300',
-    info:    'border-brand-500/40 bg-brand-500/10 text-brand-300',
+    error: 'border-red-500/40   bg-red-500/10   text-red-300',
+    info: 'border-brand-500/40 bg-brand-500/10 text-brand-300',
   };
   const icons = {
     success: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />`,
-    error:   `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />`,
-    info:    `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />`,
+    error: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />`,
+    info: `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />`,
   };
 
   const toast = document.createElement('div');
@@ -136,7 +138,7 @@ const TAB_IDS = ['leaderboard', 'admin', 'attempts'];
 
 function activateTab(tabId) {
   TAB_IDS.forEach((id) => {
-    const btn   = document.getElementById(`tab-${id}`);
+    const btn = document.getElementById(`tab-${id}`);
     const panel = document.getElementById(`panel-${id}`);
 
     if (id === tabId) {
@@ -175,8 +177,8 @@ function initTabs() {
 ═══════════════════════════════════════════════════════════ */
 function setLoading(loadingId, listId, emptyId, isLoading) {
   const loading = document.getElementById(loadingId);
-  const list    = document.getElementById(listId);
-  const empty   = emptyId ? document.getElementById(emptyId) : null;
+  const list = document.getElementById(listId);
+  const empty = emptyId ? document.getElementById(emptyId) : null;
 
   if (isLoading) {
     loading?.classList.remove('hidden');
@@ -200,77 +202,217 @@ function setButtonLoading(btn, isLoading, originalText) {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   TAB 1: LEADERBOARD
+   TAB 1: LEADERBOARD  (Full — overall + weekly)
 ═══════════════════════════════════════════════════════════ */
-/**
- * @param {Array} climbers
- * @param {string} tbodyId
- * @param {string} tableId
- * @param {string} emptyId
- * @param {string} countId
- */
-function renderLeaderboardTable(climbers, tbodyId, tableId, emptyId, countId) {
-  const tbody = document.getElementById(tbodyId);
+
+/** Cached full leaderboard data from /leaderboard/full */
+let lbData = null;
+/** Currently active view: 'overall' | 'week_N' */
+let lbActiveView = 'overall';
+
+// ── helpers ──
+
+function lbSetTableState(loadingId, tableId, emptyId, state /* 'loading'|'data'|'empty' */) {
+  const loading = document.getElementById(loadingId);
   const table = document.getElementById(tableId);
   const empty = document.getElementById(emptyId);
-  const count = document.getElementById(countId);
+  loading?.classList.toggle('hidden', state !== 'loading');
+  table?.classList.toggle('hidden', state !== 'data');
+  empty?.classList.toggle('hidden', state !== 'empty');
+}
 
-  count.textContent = `${climbers?.length ?? 0} sporcu`;
+/**
+ * Render the OVERALL (best-4) table.
+ * Climber shape: ClimberWeeklyDetail { id, firstName, lastName, bestFourPoints, totalPoints, weeklyPoints }
+ */
+function renderOverallTable(climbers, tbodyId, tableId, emptyId, loadingId, countId) {
+  document.getElementById(countId).textContent = `${climbers?.length ?? 0} sporcu`;
 
   if (!climbers || climbers.length === 0) {
-    table.classList.add('hidden');
-    empty.classList.remove('hidden');
+    lbSetTableState(loadingId, tableId, emptyId, 'empty');
     return;
   }
+  lbSetTableState(loadingId, tableId, emptyId, 'data');
 
-  table.classList.remove('hidden');
-  empty.classList.add('hidden');
-
+  const tbody = document.getElementById(tbodyId);
   tbody.innerHTML = climbers.map((c, i) => {
     const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : null;
     const rankCell = medal
-      ? `<td class="px-6 py-4 text-lg">${medal}</td>`
-      : `<td class="px-6 py-4 text-gray-500 text-sm font-mono">${i + 1}</td>`;
+      ? `<td class="px-5 py-4 text-lg">${medal}</td>`
+      : `<td class="px-5 py-4 text-gray-500 text-sm font-mono">${i + 1}</td>`;
 
-    const rowClass = i === 0 ? 'bg-amber-500/5' : '';
+    const rowBg = i === 0 ? 'bg-amber-500/5' : '';
+    const scoreColor = i === 0 ? 'text-amber-400' : 'text-brand-400';
+    const best4 = (c.bestFourPoints ?? 0).toFixed(2);
+    const total = (c.totalPoints ?? 0).toFixed(2);
+
+    // Build week breakdown mini-badges
+    const weeks = c.weeklyPoints ? Object.keys(c.weeklyPoints).sort((a, b) => Number(a) - Number(b)) : [];
+    const weekBadges = weeks.map(w =>
+      `<span class="lb-week-chip" title="Hafta ${w}">${(c.weeklyPoints[w]).toFixed(1)}</span>`
+    ).join('');
 
     return `
-      <tr class="leaderboard-row ${rowClass}">
+      <tr class="leaderboard-row ${rowBg}">
         ${rankCell}
-        <td class="px-6 py-4">
-          <div class="font-semibold text-white">${escHtml(c.firstName || c.first_name || '')} ${escHtml(c.lastName || c.last_name || '')}</div>
+        <td class="px-5 py-3">
+          <div class="font-semibold text-white leading-snug">
+            ${escHtml(c.firstName || '')} ${escHtml(c.lastName || '')}
+          </div>
+          ${weekBadges ? `<div class="flex flex-wrap gap-1 mt-1">${weekBadges}</div>` : ''}
         </td>
-        <td class="px-6 py-4 text-right">
-          <span class="font-bold text-lg ${i === 0 ? 'text-amber-400' : 'text-brand-400'}">${(c.totalPoints ?? c.totalScore ?? c.total_score ?? 0).toFixed(2)}</span>
+        <td class="px-5 py-3 text-right">
+          <span class="font-bold text-base ${scoreColor}">${best4}</span>
+        </td>
+        <td class="px-5 py-3 text-right">
+          <span class="text-sm text-gray-500">${total}</span>
         </td>
       </tr>`;
   }).join('');
 }
 
+/**
+ * Render a WEEKLY table.
+ * Climber shape: ClimberWeekEntry { id, firstName, lastName, points }
+ */
+function renderWeeklyTable(climbers, tbodyId, tableId, emptyId, loadingId, countId) {
+  document.getElementById(countId).textContent = `${climbers?.length ?? 0} sporcu`;
+
+  if (!climbers || climbers.length === 0) {
+    lbSetTableState(loadingId, tableId, emptyId, 'empty');
+    return;
+  }
+  lbSetTableState(loadingId, tableId, emptyId, 'data');
+
+  const tbody = document.getElementById(tbodyId);
+  tbody.innerHTML = climbers.map((c, i) => {
+    const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : null;
+    const rankCell = medal
+      ? `<td class="px-5 py-4 text-lg">${medal}</td>`
+      : `<td class="px-5 py-4 text-gray-500 text-sm font-mono">${i + 1}</td>`;
+    const rowBg = i === 0 ? 'bg-amber-500/5' : '';
+    const scoreColor = i === 0 ? 'text-amber-400' : 'text-brand-400';
+    return `
+      <tr class="leaderboard-row ${rowBg}">
+        ${rankCell}
+        <td class="px-5 py-4">
+          <span class="font-semibold text-white">
+            ${escHtml(c.firstName || '')} ${escHtml(c.lastName || '')}
+          </span>
+        </td>
+        <td class="px-5 py-4 text-right">
+          <span class="font-bold text-base ${scoreColor}">${(c.points ?? 0).toFixed(2)}</span>
+        </td>
+      </tr>`;
+  }).join('');
+}
+
+// ── View switcher ──
+
+function setActivePill(viewKey) {
+  lbActiveView = viewKey;
+
+  // Update pill styles
+  document.querySelectorAll('.lb-pill').forEach(btn => {
+    const isActive = btn.dataset.view === viewKey;
+    btn.classList.toggle('lb-pill-active', isActive);
+  });
+
+  // Show / hide views
+  const overallEl = document.getElementById('lb-overall-view');
+  const weeklyEl = document.getElementById('lb-weekly-view');
+
+  if (viewKey === 'overall') {
+    overallEl.classList.remove('hidden');
+    weeklyEl.classList.add('hidden');
+  } else {
+    overallEl.classList.add('hidden');
+    weeklyEl.classList.remove('hidden');
+    if (lbData) renderWeekView(viewKey);
+  }
+}
+
+function renderWeekView(weekKey) {
+  if (!lbData) return;
+  const weekData = lbData.weekly?.[weekKey];
+  if (!weekData) {
+    // No data for this week yet
+    lbSetTableState('wk-men-loading', 'wk-men-table', 'wk-men-empty', 'empty');
+    lbSetTableState('wk-women-loading', 'wk-women-table', 'wk-women-empty', 'empty');
+    document.getElementById('wk-men-count').textContent = '0 sporcu';
+    document.getElementById('wk-women-count').textContent = '0 sporcu';
+    return;
+  }
+  renderWeeklyTable(
+    weekData.men,
+    'wk-men-tbody', 'wk-men-table', 'wk-men-empty', 'wk-men-loading', 'wk-men-count'
+  );
+  renderWeeklyTable(
+    weekData.women,
+    'wk-women-tbody', 'wk-women-table', 'wk-women-empty', 'wk-women-loading', 'wk-women-count'
+  );
+}
+
+// ── Build week pills from data ──
+
+function buildWeekPills(weeklyData) {
+  const container = document.getElementById('lb-week-pills');
+  container.innerHTML = '';
+
+  const weekKeys = Object.keys(weeklyData || {}).sort((a, b) => Number(a) - Number(b));
+  weekKeys.forEach(wk => {
+    const btn = document.createElement('button');
+    btn.className = 'lb-pill';
+    btn.dataset.view = wk;
+    btn.textContent = `${wk}. Hafta`;
+    btn.addEventListener('click', () => setActivePill(wk));
+    container.appendChild(btn);
+  });
+}
+
+// ── Main load ──
+
 async function loadLeaderboard() {
-  document.getElementById('men-loading').classList.remove('hidden');
-  document.getElementById('women-loading').classList.remove('hidden');
-  document.getElementById('men-table').classList.add('hidden');
-  document.getElementById('women-table').classList.add('hidden');
+  // Reset UI
+  document.getElementById('lb-global-loading').classList.remove('hidden');
+  document.getElementById('lb-overall-view').classList.add('hidden');
+  document.getElementById('lb-weekly-view').classList.add('hidden');
+  document.getElementById('lb-error').classList.add('hidden');
 
   try {
-    const data = await api.getLeaderboard();
-    // Hide spinners before rendering
-    document.getElementById('men-loading').classList.add('hidden');
-    document.getElementById('women-loading').classList.add('hidden');
-    renderLeaderboardTable(data.men,   'men-tbody',   'men-table',   'men-empty',   'men-count');
-    renderLeaderboardTable(data.women, 'women-tbody', 'women-table', 'women-empty', 'women-count');
+    lbData = await apiFetch('/leaderboard/full');
+
+    // Build week pills from received data
+    buildWeekPills(lbData.weekly);
+
+    // Render overall tables
+    const overall = lbData.overall ?? {};
+    renderOverallTable(
+      overall.men,
+      'men-tbody', 'men-table', 'men-empty', 'men-loading', 'men-count'
+    );
+    renderOverallTable(
+      overall.women,
+      'women-tbody', 'women-table', 'women-empty', 'women-loading', 'women-count'
+    );
+
+    // Switch to the currently active view
+    document.getElementById('lb-global-loading').classList.add('hidden');
+    setActivePill(lbActiveView);
+
   } catch (err) {
     console.error('[Leaderboard] Yüklenemedi:', err);
-    showToast(`Liderlik tablosu yüklenemedi: ${err.message}`, 'error');
-    document.getElementById('men-loading').classList.add('hidden');
-    document.getElementById('women-loading').classList.add('hidden');
-    document.getElementById('men-count').textContent = 'Hata';
-    document.getElementById('women-count').textContent = 'Hata';
+    document.getElementById('lb-global-loading').classList.add('hidden');
+    const errEl = document.getElementById('lb-error');
+    document.getElementById('lb-error-msg').textContent = `Liderlik tablosu yüklenemedi: ${err.message}`;
+    errEl.classList.remove('hidden');
   }
 }
 
 function initLeaderboard() {
+  // Overall pill click
+  document.getElementById('lb-view-overall').addEventListener('click', () => setActivePill('overall'));
+
   document.getElementById('btn-refresh-leaderboard').addEventListener('click', loadLeaderboard);
   loadLeaderboard();
 }
@@ -354,14 +496,14 @@ async function deleteClimber(id, listItem) {
 }
 
 function initClimberForm() {
-  const form   = document.getElementById('form-add-climber');
-  const btn    = document.getElementById('btn-add-climber');
+  const form = document.getElementById('form-add-climber');
+  const btn = document.getElementById('btn-add-climber');
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const firstName = document.getElementById('climber-firstname').value.trim();
-    const lastName  = document.getElementById('climber-lastname').value.trim();
-    const gender    = document.getElementById('climber-gender').value;
+    const lastName = document.getElementById('climber-lastname').value.trim();
+    const gender = document.getElementById('climber-gender').value;
 
     if (!firstName || !lastName || !gender) return;
 
@@ -372,7 +514,7 @@ function initClimberForm() {
       form.reset();
 
       // Prepend to list
-      const list  = document.getElementById('climbers-list');
+      const list = document.getElementById('climbers-list');
       const empty = document.getElementById('climbers-empty');
       list.classList.remove('hidden');
       empty.classList.add('hidden');
@@ -424,8 +566,8 @@ function renderRouteItem(route) {
 
 async function loadRoutes(week) {
   const loading = document.getElementById('routes-loading');
-  const list    = document.getElementById('routes-list');
-  const empty   = document.getElementById('routes-empty');
+  const list = document.getElementById('routes-list');
+  const empty = document.getElementById('routes-empty');
 
   loading.classList.remove('hidden');
   list.innerHTML = '';
@@ -464,12 +606,12 @@ async function deleteRoute(id, listItem) {
 
 function initRouteForm() {
   const form = document.getElementById('form-add-route');
-  const btn  = document.getElementById('btn-add-route');
+  const btn = document.getElementById('btn-add-route');
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const week       = Number(document.getElementById('route-week').value);
-    const grade      = document.getElementById('route-grade').value.trim();
+    const week = Number(document.getElementById('route-week').value);
+    const grade = document.getElementById('route-grade').value.trim();
     const gradeValue = parseFloat(document.getElementById('route-grade-value').value);
 
     if (!week || !grade || isNaN(gradeValue)) return;
@@ -483,7 +625,7 @@ function initRouteForm() {
       // If route list is showing the same week, prepend
       const filterWeek = document.getElementById('routes-filter-week').value;
       if (filterWeek && Number(filterWeek) === week) {
-        const list  = document.getElementById('routes-list');
+        const list = document.getElementById('routes-list');
         const empty = document.getElementById('routes-empty');
         empty.classList.add('hidden');
         const li = renderRouteItem(newRoute);
@@ -693,12 +835,12 @@ function initAttempts() {
   attemptsInitialized = true;
   refreshAttemptsClimberSelect();
 
-  const select  = document.getElementById('attempt-climber-select');
-  const weekIn  = document.getElementById('attempt-week');
+  const select = document.getElementById('attempt-climber-select');
+  const weekIn = document.getElementById('attempt-week');
   const fetchBtn = document.getElementById('btn-fetch-routes-attempt');
   const summary = document.getElementById('attempt-summary');
-  const nameEl  = document.getElementById('attempt-climber-name');
-  const weekEl  = document.getElementById('attempt-week-label');
+  const nameEl = document.getElementById('attempt-climber-name');
+  const weekEl = document.getElementById('attempt-week-label');
 
   const updateSummary = () => {
     const climberId = select.value;
