@@ -7,7 +7,7 @@
 /* ═══════════════════════════════════════════════════════════
    API
 ═══════════════════════════════════════════════════════════ */
-const API_BASE = 'https://boulder-championship-api.onrender.com/api/v2';
+const API_BASE = 'https://boulderchamphionship-810252893028.europe-west1.run.app/api/v2';
 
 /**
  * Generic fetch wrapper with error handling.
