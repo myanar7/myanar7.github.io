@@ -47,13 +47,63 @@ async function apiFetch(path, options = {}) {
 }
 
 /* ═══════════════════════════════════════════════════════════
+   CLIENT-SIDE TTL CACHE  (Leaderboard — 1 saat)
+═══════════════════════════════════════════════════════════ */
+const CACHE_TTL_MS = 60 * 60 * 1000; // 1 saat
+const CACHE_PREFIX = 'jsl_cache_';
+
+/**
+ * localStorage tabanlı TTL cache.
+ * Sadece GET istekleri için kullanılmalıdır.
+ *
+ * @param {string} path       - API endpoint path
+ * @param {boolean} [force]   - true ise cache'i atla, sunucudan çek
+ * @returns {Promise<{ data: any, fromCache: boolean, cachedAt: Date|null }>}
+ */
+async function cachedApiFetch(path, force = false) {
+  const key = CACHE_PREFIX + path;
+
+  // Cache'den oku
+  if (!force) {
+    try {
+      const raw = localStorage.getItem(key);
+      if (raw) {
+        const entry = JSON.parse(raw);
+        const age = Date.now() - entry.ts;
+        if (age < CACHE_TTL_MS) {
+          return { data: entry.data, fromCache: true, cachedAt: new Date(entry.ts) };
+        }
+      }
+    } catch (_) { /* bozuk cache — yoksay */ }
+  }
+
+  // Sunucudan çek
+  const data = await apiFetch(path);
+
+  // Cache'e yaz
+  try {
+    localStorage.setItem(key, JSON.stringify({ ts: Date.now(), data }));
+  } catch (_) { /* localStorage dolu olabilir — yoksay */ }
+
+  return { data, fromCache: false, cachedAt: new Date() };
+}
+
+/**
+ * Belirli bir endpoint'in cache'ini temizler.
+ * @param {string} path
+ */
+function invalidateCache(path) {
+  try { localStorage.removeItem(CACHE_PREFIX + path); } catch (_) { }
+}
+
+/* ═══════════════════════════════════════════════════════════
    API CALLS
 ═══════════════════════════════════════════════════════════ */
 
 const api = {
-  // Leaderboard
-  getLeaderboard: () => apiFetch('/leaderboard'),
-  getFullLeaderboard: () => apiFetch('/leaderboard/full'),
+  // Leaderboard  (cache destekli — force=true ile cache atlanır)
+  getLeaderboard: (force = false) => cachedApiFetch('/leaderboard', force),
+  getFullLeaderboard: (force = false) => cachedApiFetch('/leaderboard/full', force),
 
 
   // Climbers
@@ -372,7 +422,10 @@ function buildWeekPills(weeklyData) {
 
 // ── Main load ──
 
-async function loadLeaderboard() {
+/**
+ * @param {boolean} [force] - true ise cache'i atlayarak sunucudan çeker
+ */
+async function loadLeaderboard(force = false) {
   // Reset UI
   document.getElementById('lb-global-loading').classList.remove('hidden');
   document.getElementById('lb-overall-view').classList.add('hidden');
@@ -380,7 +433,8 @@ async function loadLeaderboard() {
   document.getElementById('lb-error').classList.add('hidden');
 
   try {
-    lbData = await apiFetch('/leaderboard/full');
+    const { data, fromCache, cachedAt } = await api.getFullLeaderboard(force);
+    lbData = data;
 
     // Build week pills from received data
     buildWeekPills(lbData.weekly);
@@ -400,6 +454,9 @@ async function loadLeaderboard() {
     document.getElementById('lb-global-loading').classList.add('hidden');
     setActivePill(lbActiveView);
 
+    // Cache durumu badge'ini güncelle
+    _lbUpdateCacheBadge(fromCache, cachedAt);
+
   } catch (err) {
     console.error('[Leaderboard] Yüklenemedi:', err);
     document.getElementById('lb-global-loading').classList.add('hidden');
@@ -409,11 +466,35 @@ async function loadLeaderboard() {
   }
 }
 
+/**
+ * Leaderboard panelindeki cache durum badge'ini günceller.
+ * @param {boolean} fromCache
+ * @param {Date|null} cachedAt
+ */
+function _lbUpdateCacheBadge(fromCache, cachedAt) {
+  const badge = document.getElementById('lb-cache-badge');
+  if (!badge) return;
+
+  if (fromCache && cachedAt) {
+    const timeStr = cachedAt.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+    badge.textContent = `⚡ Önbellekten · ${timeStr}`;
+    badge.title = `Veri ${cachedAt.toLocaleString('tr-TR')} tarihinde önbelleğe alındı. 1 saat geçerlidir.`;
+    badge.className = 'lb-cache-badge lb-cache-badge--cached';
+  } else if (cachedAt) {
+    const timeStr = cachedAt.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+    badge.textContent = `🔄 Canlı · ${timeStr}`;
+    badge.title = `Veri sunucudan yeni çekildi ve önbelleğe alındı.`;
+    badge.className = 'lb-cache-badge lb-cache-badge--live';
+  }
+}
+
 function initLeaderboard() {
   // Overall pill click
   document.getElementById('lb-view-overall').addEventListener('click', () => setActivePill('overall'));
 
-  document.getElementById('btn-refresh-leaderboard').addEventListener('click', loadLeaderboard);
+  // Refresh butonu cache'i atlayarak zorla yeniler
+  document.getElementById('btn-refresh-leaderboard').addEventListener('click', () => loadLeaderboard(true));
+
   loadLeaderboard();
 }
 
