@@ -4,8 +4,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Liderlik Tablosu | Boulder League</title>
-  <meta name="description"
+  <title data-i18n-title="pageTitle">Liderlik Tablosu | Boulder Jungle</title>
+  <meta name="description" data-i18n-meta="metaDesc"
     content="Boulder League Tırmanış Salonu Ligi — Haftalık ve genel erkekler / kadınlar liderlik tablosu." />
 
   <!-- Tailwind CSS CDN -->
@@ -16,25 +16,11 @@
       theme: {
         extend: {
           colors: {
-            brand: {
-              400: '#fb923c',
-              500: '#f97316',
-              600: '#ea580c',
-            },
-            surface: {
-              900: '#0d0d0f',
-              800: '#141418',
-              700: '#1c1c22',
-              600: '#242430',
-              500: '#2e2e3a',
-            }
+            brand: { 400: '#fb923c', 500: '#f97316', 600: '#ea580c' },
+            surface: { 900: '#0d0d0f', 800: '#141418', 700: '#1c1c22', 600: '#242430', 500: '#2e2e3a' }
           },
-          fontFamily: {
-            sans: ['Inter', 'system-ui', 'sans-serif'],
-          },
-          boxShadow: {
-            'glow-sm': '0 0 10px rgba(249,115,22,0.2)',
-          },
+          fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+          boxShadow: { 'glow-sm': '0 0 10px rgba(249,115,22,0.2)' },
         }
       }
     }
@@ -43,74 +29,95 @@
   <!-- Google Fonts: Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
-    rel="stylesheet" />
-
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
+
+  <style>
+    .lang-toggle {
+      display: inline-flex; align-items: center; gap: 0;
+      border-radius: 10px; overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(28,28,34,0.8);
+    }
+    .lang-btn {
+      display: inline-flex; align-items: center; gap: 0.3rem;
+      padding: 0.3rem 0.65rem;
+      font-size: 0.72rem; font-weight: 700; letter-spacing: 0.04em;
+      color: #6b7280; cursor: pointer; background: transparent;
+      border: none; font-family: inherit;
+      transition: color 0.2s, background 0.2s; line-height: 1;
+    }
+    .lang-btn:first-child { border-right: 1px solid rgba(255,255,255,0.08); }
+    .lang-btn.lang-btn--active { background: rgba(249,115,22,0.15); color: #fb923c; }
+    .lang-btn:not(.lang-btn--active):hover { color: #d1d5db; background: rgba(255,255,255,0.04); }
+    .lang-flag { font-size: 0.9rem; line-height: 1; }
+  </style>
 </head>
 
 <body class="bg-surface-900 text-gray-100 font-sans min-h-screen antialiased">
 
-  <!-- ──────────────────── HEADER ──────────────────── -->
+  <!-- HEADER -->
   <header class="border-b border-surface-600 bg-surface-900/90 backdrop-blur-md sticky top-0 z-40">
     <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex items-center justify-between h-16">
         <!-- Logo / Brand -->
         <div class="flex items-center gap-3">
-          <div
-            class="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-500 to-brand-600 flex items-center justify-center shadow-glow-sm">
-            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 3l7 7 7-7M5 12l7 7 7-7" />
-            </svg>
-          </div>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1466 1000" class="h-8 w-auto" aria-label="Boulder Jungle logo"><path fill="#d4aa00" d="M367 257.2c0 9.1 2.2 25.6 4.9 36.8 14.5 61.7 63.3 114.8 123.8 135 17 5.6 41.4 10 55.9 10h3.4V250H367zm152.5 72.7c19.5 10.4 16.3 39.2-5.1 45.7-6 1.8-8.8 1.8-15-.1-14.9-4.4-21.9-21.6-14.6-35.6 6.5-12.5 21.8-16.9 34.7-10"/><path fill="#d48000" d="M555.5 344.5c0 52.2.1 73.8.2 47.8.2-25.9.2-68.7 0-95-.1-26.3-.2-5.1-.2 47.2"/><path fill="#d40000" d="M557.8 250.7c1.2.2 3 .2 4 0 .9-.3-.1-.5-2.3-.4-2.2 0-3 .2-1.7.4m14.5 1c.9.2 2.3.2 3 0 .6-.3-.1-.5-1.8-.5-1.6 0-2.2.2-1.2.5m21.5 3c.7.3 1.6.2 1.9-.1.4-.3-.2-.6-1.3-.5-1.1 0-1.4.3-.6.6m15 4c.7.3 1.6.2 1.9-.1.4-.3-.2-.6-1.3-.5-1.1 0-1.4.3-.6.6m9.2 2.7c0 .2.7.7 1.6 1 .8.3 1.2.2.9-.4-.6-1-2.5-1.4-2.5-.6m29.2 13.2c1 1 2 1.6 2.2 1.3.3-.3-.5-1.1-1.7-1.8-2.1-1.3-2.1-1.2-.5.5m7 4c1 1 2 1.6 2.2 1.3.3-.3-.5-1.1-1.7-1.8-2.1-1.3-2.1-1.2-.5.5m10.3 7.4c.3.5.8 1 1.1 1 .2 0 .4-.5.4-1 0-.6-.5-1-1.1-1-.5 0-.7.4-.4 1m8.5 6.5c.7.8 1.7 1.5 2.2 1.5.6 0 .5-.7-.2-1.5s-1.7-1.5-2.2-1.5c-.6 0-.5.7.2 1.5m19 16.9c0 .2.8 1 1.8 1.7 1.5 1.3 1.6 1.2.3-.4s-2.1-2.1-2.1-1.3m4.4 5.1c.8.8 1.8 1.5 2.2 1.5.3 0 .1-.7-.6-1.5s-1.7-1.5-2.2-1.5-.3.7.6 1.5m5.6 6.5c0 .5.5 1 1.1 1 .5 0 .7-.5.4-1-.3-.6-.8-1-1.1-1-.2 0-.4.4-.4 1m5 6.9c0 .5.5 1.3 1 1.6.6.3 1 .2 1-.4 0-.5-.4-1.3-1-1.6-.5-.3-1-.2-1 .4m6.6 9.6c.9 1.4 1.9 2.4 2.1 2.1.6-.6-2-4.6-3-4.6-.4 0 0 1.1.9 2.5m4.5 6.9c1.2 2 2.3 3.6 2.5 3.6.7 0-2.5-5.8-3.6-6.5-.5-.3-.1 1 1.1 2.9m7.5 13.9c.3 1 .9 1.5 1.2 1.2s0-1.1-.7-1.8c-1-.9-1.1-.8-.5.6M741 411c0 .5.5 1 1.1 1 .5 0 .7-.5.4-1-.3-.6-.8-1-1.1-1-.2 0-.4.4-.4 1m3.2 23c0 1.9.2 2.7.5 1.7.2-.9.2-2.5 0-3.5-.3-.9-.5-.1-.5 1.8"/><path fill="red" d="m559.8 250.7-3.8.4V439h94.6c91.2 0 94.5-.1 94-1.8-.4-1-.7-5.8-.9-10.5-.1-4.8-.4-8.7-.8-8.7-.3 0-.4-1.4-.1-3 .2-1.7 0-3-.5-3-.6 0-1-1.2-1-2.8 0-5.3-1.1-12.4-1.9-13.1-.8-.5-1-1.3-1.6-6.4-.1-.9-.6-1.7-1.1-1.7-.4 0-.6-.4-.3-.8.7-1.2-1.5-8.2-2.6-8.2-.5 0-.6-.5-.3-1 .8-1.2-1.6-8-2.7-8-.5 0-.8-.6-.7-1.3.2-2-1.3-5.7-2.3-5.7-.5 0-.8-.6-.6-1.2.3-.7-.1-1.9-.9-2.6-.7-.8-1.1-1.8-.8-2.3.4-.5.1-.9-.4-.9-.6 0-1.1-.6-1.1-1.3 0-1.8-2.3-6.7-3.2-6.7-.7 0-3.8-5.3-3.8-6.5 0-.2-1.2-1.6-2.5-3.1-1.4-1.5-2.2-3-1.9-3.5s.1-.9-.4-.9c-.6 0-1.3-1.1-1.6-2.5-.4-1.4-1.2-2.4-1.8-2.2-.7.1-1.4-.7-1.6-1.8s-1.5-3-2.8-4.2-2.4-2.5-2.4-2.8-1.6-2.1-3.6-4-3.4-3.5-3.1-3.5-3-3.6-7.2-8c-4.3-4.4-8.3-8-8.9-8-.7 0-1.2-.5-1.2-1 0-.6-1.1-1.5-2.5-2s-2.8-1.7-3.1-2.5c-.4-.8-1.3-1.5-2.1-1.5s-1.2-.4-.9-.9c.6-.9-2.2-2.6-3.6-2.3-.4.1-1.2-.7-1.8-1.8s-1.7-2-2.5-2-1.5-.4-1.5-1c0-.5-1.1-1.2-2.4-1.6-1.4-.3-3.2-1.4-4.2-2.5-.9-1-2.5-1.9-3.4-1.9-1 0-2.3-.7-3-1.5s-1.9-1.5-2.6-1.5c-.8 0-1.4-.5-1.4-1.2 0-.6-.3-.9-.6-.5-.4.3-1.3-.1-2.1-.9s-1.9-1.2-2.4-.9c-.5.4-.9.1-.9-.5s-.4-.8-1-.5c-.5.3-1 .1-1-.5s-.4-.8-1-.5c-.5.3-1 .1-1-.6s-.3-1-.6-.6c-.4.3-2.1-.1-3.8-1-1.7-1-3.7-1.6-4.3-1.5-.7.2-1.3-.2-1.3-.9 0-.6-.6-.9-1.4-.6-.7.3-2.3-.1-3.4-.9-1.1-.7-3.7-1.7-5.9-2-2.1-.3-4-1-4.1-1.5-.2-.5-.8-.7-1.3-.3-.5.3-1.5.2-2.1-.2-.7-.5-1.9-.9-2.8-1-.8-.1-3.5-.7-6-1.3s-5.4-1.4-6.5-1.6c-2.4-.6-10.4-1.5-16.5-2-2.5-.2-5.6-.5-7-.7-1.4-.3-4.2-.3-6.2-.1"/><path fill="#aa8000" d="M505.8 326.7c.6.2 1.8.2 2.5 0 .6-.3.1-.5-1.3-.5s-1.9.2-1.2.5m-17.4 7.5-1.9 2.3 2.3-1.9c2.1-1.8 2.7-2.6 1.9-2.6-.2 0-1.2 1-2.3 2.2m36.1-.2c1 1.1 2 2 2.3 2s-.3-.9-1.3-2-2-2-2.3-2 .3.9 1.3 2m7.6 17.6c0 1.1.3 1.4.6.6.3-.7.2-1.6-.1-1.9-.3-.4-.6.2-.5 1.3"/><path fill="#805500" d="m524.4 369.2-1.9 2.3 2.3-1.9c2.1-1.8 2.7-2.6 1.9-2.6-.2 0-1.2 1-2.3 2.2m-18.6 7.5c.6.2 1.8.2 2.5 0 .6-.3.1-.5-1.3-.5s-1.9.2-1.2.5"/><path d="M498 328.6c-9.7 4.2-15.3 12.7-15.3 22.9 0 10.1 5.1 18.3 14 22.5 6.8 3.2 17.3 2.6 23.1-1.3 16.3-10.8 15.4-34-1.7-42.9-6.2-3.2-14.3-3.7-20.1-1.2m7.2 8.1c2.4 2.1 2.3 7.4-.1 10.4-1.3 1.7-2.9 2.3-5.6 2.3-4.6 0-7.5-3.1-7.5-7.9 0-6.6 8-9.5 13.2-4.8m148.1 123.8c-5.1 2.6-8.8 6.5-11.1 11.8-.9 2-1.2 11.8-1.2 34.5 0 35.9.2 36.5 7.8 43.4 8.5 7.7 20.9 7.7 29.3.1 7.9-7.2 7.9-7.1 7.9-43.6v-32.3l-3.2-5.4c-6.3-10.3-18.6-13.9-29.5-8.5m13.6 13c1.6.8 3.1 2.2 3.5 3 .3.9.6 14.7.6 30.6v29l-2.5 2.4c-1.5 1.6-3.6 2.5-5.5 2.5s-4-.9-5.5-2.5l-2.5-2.4v-58.9l3.1-2.6c3.5-3 4.9-3.2 8.8-1.1M580 506.9V555h14.8c13.4 0 15.2-.2 19.7-2.4 9.6-4.5 13.4-11.5 13.5-24.6 0-9.9-2.8-17.3-7.9-21.1l-3-2.2 2.5-1.9c4.4-3.5 6.8-9.5 6.8-17.3 0-8.4-1.6-13.5-5.7-18.1-5.8-6.7-9.4-7.8-25.9-8.2l-14.8-.4zm27.6-30.6c5.2 4.5 4.2 17.6-1.5 20.7-1.1.5-4 1-6.5 1H595v-24h4.9c3.8 0 5.7.6 7.7 2.3m-.7 37.2c3.6 1.8 5.4 6.2 5.4 12.8 0 5.7-2.2 11-5.2 12.7-1.1.5-4.2 1-7 1H595v-28h4.5c2.6 0 5.9.7 7.4 1.5m92.1-14.8c0 45.1 0 44.7 8 51.5 11.1 9.5 28.4 6.2 35-6.7l2.5-4.9.3-39.8.3-39.8h-15l-.3 38.6-.3 38.6-2.8 2.4c-3.8 3.2-8.1 3.1-11.2-.2l-2.5-2.7V459h-14zm58.5-38.5c-.3.7-.4 22.2-.3 47.8l.3 46.5h39v-14l-12.2-.3-12.3-.3V459h-7q-7.05 0-7.5 1.2m49.5 46.9v48.1l14.3-.4c14-.3 14.5-.4 19.3-3.3 5.4-3.4 8.8-7.8 10.4-13.4 1.5-5.3 1.3-58.4-.2-63.5-1.6-5.4-9.3-13.1-14.4-14.5-2.2-.6-9.6-1.1-16.6-1.1H807zm28-31.1c1.1 1.1 2.2 3 2.5 4.2.3 1.3.5 14.4.3 29.1-.3 26.9-.3 26.9-2.7 28.8-1.7 1.4-3.9 1.9-8.2 1.9H821v-66h6c4.6 0 6.4.4 8 2m29.5-15.8c-.3.7-.4 22.2-.3 47.8l.3 46.5h41v-14l-13.2-.3-13.3-.3V514h19v-13.9l-9.2-.3-9.3-.3-.3-12.7-.3-12.7 13.3-.3 13.3-.3v-14l-20.3-.3c-15.6-.2-20.4 0-20.7 1m51 0c-.3.7-.4 22.2-.3 47.8l.3 46.5 7.3.3 7.2.3V519h9.6l4.3 18 4.3 18h7.9c7.2 0 8-.2 7.5-1.8-.3-.9-2.7-10.3-5.4-20.7l-4.9-19 2.9-3.9c4.1-5.7 5-10.5 4.6-24.1-.3-10.6-.6-12.5-2.8-16.5-1.7-2.9-4.1-5.3-7-7-4.2-2.3-5.7-2.5-19.7-2.8-12.1-.3-15.4-.1-15.8 1m29.1 16.3c2.5 2.5 2.6 3 2.2 13.1-.4 13-1.5 14.4-10.9 14.4H930v-30h6c5.2 0 6.5.4 8.6 2.5"/><path fill="#aa0" d="M409 369.4c0 .2.8 1 1.8 1.7 1.5 1.3 1.6 1.2.3-.4s-2.1-2.1-2.1-1.3m8 9.1c1.3 1.4 2.6 2.5 2.8 2.5.3 0-.5-1.1-1.8-2.5s-2.6-2.5-2.8-2.5c-.3 0 .5 1.1 1.8 2.5m8 7.8c0 .2 1.5 1.6 3.3 3.3l3.2 2.9-2.9-3.3c-2.8-3-3.6-3.7-3.6-2.9m116.8 52.4c.7.3 1.6.2 1.9-.1.4-.3-.2-.6-1.3-.5-1.1 0-1.4.3-.6.6"/><path fill="#555" d="M498.8 349.7c.7.3 1.6.2 1.9-.1.4-.3-.2-.6-1.3-.5-1.1 0-1.4.3-.6.6"/><path fill="#aaa" d="M492.2 342c0 1.4.2 1.9.5 1.2.2-.6.2-1.8 0-2.5-.3-.6-.5-.1-.5 1.3m14 0c0 1.4.2 1.9.5 1.2.2-.6.2-1.8 0-2.5-.3-.6-.5-.1-.5 1.3"/><path fill="#fff" d="M495 337c-4.1 4.1-1.2 12 4.5 12 1.4 0 3.4-.9 4.5-2 4.1-4.1 1.2-12-4.5-12-1.4 0-3.4.9-4.5 2"/><path fill="#050" d="M385.5 357.2c-6.6 13.9-11.5 28.4-15.1 44.8l-2.8 12.5-.3 60.7-.4 60.8h4.9c2.8 0 8.3-.6 12.4-1.4 42.4-8.2 75.8-44.9 78.5-86.4l.6-9.2 37.1-.1c26.8-.1 35.2-.4 30.1-1-31.7-4.1-65.2-18.3-91.5-38.7-16.1-12.6-35.9-34.6-44.3-49.3-1.2-2.2-2.6-3.9-3-3.9-.5 0-3.2 5.1-6.2 11.2"/><path fill="#558000" d="M419 381.3c0 .2 1.5 1.6 3.3 3.3l3.2 2.9-2.9-3.3c-2.8-3-3.6-3.7-3.6-2.9"/><path fill="green" d="M416 378.4c0 .2.8 1 1.8 1.7 1.5 1.3 1.6 1.2.3-.4s-2.1-2.1-2.1-1.3m47.3 66.6c0 3.6.2 5 .4 3.2.2-1.7.2-4.7 0-6.5-.2-1.7-.4-.3-.4 3.3m-1.1 10.5c0 1.6.2 2.2.5 1.2.2-.9.2-2.3 0-3-.3-.6-.5.1-.5 1.8m-1.1 5.1c0 1.1.3 1.4.6.6.3-.7.2-1.6-.1-1.9-.3-.4-.6.2-.5 1.3m-1 4c0 1.1.3 1.4.6.6.3-.7.2-1.6-.1-1.9-.3-.4-.6.2-.5 1.3m-3.5 9.9c-.9 2.6-.7 3.2.5 1.2.6-1 .9-2.1.6-2.3-.2-.3-.7.2-1.1 1.1m-3.5 8.2c-1 2.6-1 2.7.4.9.8-1.1 1.5-2.3 1.5-2.8 0-1.5-.7-.8-1.9 1.9m-5.6 9.5c-1.6 2.4-2.2 3.8-1.4 3.1 1.5-1.2 5.3-7.3 4.6-7.3-.2 0-1.7 1.9-3.2 4.2m-4.6 6.5c-1.3 1.6-1.2 1.7.4.4.9-.7 1.7-1.5 1.7-1.7 0-.8-.8-.3-2.1 1.3m-7.9 9-6.5 6.8 6.8-6.5c6.2-6 7.2-7 6.4-7-.1 0-3.2 3-6.7 6.7m-10.1 9c-1.3 1.6-1.2 1.7.4.4.9-.7 1.7-1.5 1.7-1.7 0-.8-.8-.3-2.1 1.3"/><path fill="#0a0" d="M463.7 447.8c-2.6 36-28.3 69.7-63 82.4-4.5 1.6-8.3 3.1-8.5 3.3-.2.1 1.4 2.9 3.4 6.1 14.1 22.2 33.5 42.2 55.5 56.9 27.8 18.7 67.6 31.5 98.1 31.5h6.8V440.3l-5.2-.7c-2.9-.3-23.6-.6-45.9-.6h-40.6zM867 576.1c-11.6 2.3-23 11.4-28.4 22.8l-3.1 6.6v114l3.1 6.6c5.7 11.9 16.9 20.6 29.9 23 19.8 3.6 40.3-8.9 45.9-28.2 1.4-4.7 1.6-10.6 1.4-38.5l-.3-32.9h-40l-.3 12.7-.3 12.7 7.3.3 7.3.3V694c0 15.9-.3 19-1.8 21.8-5.4 10-20.8 9.5-25.9-.8-1.6-3.2-1.8-7.9-1.8-53s.2-49.8 1.8-53c5.1-10.2 19.4-10.8 25.5-1 1.8 2.9 2.2 5.3 2.5 15.7l.4 12.3h26l-.4-15.3c-.3-14.7-.4-15.4-3.5-21.9-8.2-17.4-26.3-26.4-45.3-22.7m-287.2 69.3c-.3 67.4-.3 68.5-2.4 71.2-4.4 6-6.7 6.9-18.5 7.2l-10.9.4v11.4c0 10 .2 11.6 1.8 12.2.9.4 7.1.7 13.7.7 11.6 0 12.3-.1 18.6-3.2 8.2-4.1 15-11.1 19.2-20.1l3.2-6.7v-141l-12.2-.3-12.2-.3zm47.4 2.3.3 70.8 3.2 6.7c4.2 9 11 16 19.2 20.1 6.2 3 7.1 3.2 18.1 3.2 10.6 0 12-.2 17.2-2.8 12.5-6.1 20.8-17.3 22.9-30.7.6-4 .8-32.3.7-72l-.3-65.5-13.2-.3-13.3-.3v67.3c0 62.1-.1 67.6-1.8 70.8-5.4 10.9-21.3 10.6-26.3-.4-1.7-3.9-1.9-7.9-1.9-70.9V577h-25.1zm100 14.5.3 85.3h25l.5-53c.3-29.2.8-52.3 1.3-51.5.4.8 8.1 24.4 17.2 52.5 9.1 28 16.9 51.3 17.4 51.8.4.4 6.6.6 13.7.5l12.9-.3.3-85.3.2-85.2h-26l-.1 55.7c0 30.7-.3 55.1-.7 54.3-.3-.8-7.8-25.8-16.7-55.5l-16.1-54-14.7-.3-14.7-.3zm211.3-84c-.3.7-.4 39.1-.3 85.3l.3 84h70l.3-12.8.3-12.7H964V577h-12.5c-9.1 0-12.7.3-13 1.2m87.7 84 .3 85.3h73l.3-12.8.3-12.7H1052v-47h34v-26h-34v-46h48v-26h-74z"/><path fill="#5a0" d="M550.8 439.7c1.2.2 3 .2 4 0 .9-.3-.1-.5-2.3-.4-2.2 0-3 .2-1.7.4"/></svg>
           <div>
-            <h1 class="text-sm font-bold tracking-wide text-white">BOULDER LEAGUE</h1>
-            <p class="text-xs text-gray-500 leading-none">Tırmanış Salonu Ligi</p>
+            <h1 class="text-sm font-bold tracking-wide text-white">BOULDER JUNGLE</h1>
+            <p data-i18n="brandSubtitle" class="text-xs text-gray-500 leading-none">Yaz Ligi</p>
           </div>
         </div>
 
-        <!-- Last updated + refresh -->
-        <div class="flex items-center gap-3">
+        <!-- Right side: lang toggle + cache badge + refresh -->
+        <div class="flex items-center gap-2 sm:gap-3">
+          <!-- Language toggle -->
+          <div class="lang-toggle" role="group" aria-label="Language / Dil">
+            <button id="btn-lang-tr" class="lang-btn lang-btn--active" onclick="setLang('tr')" title="Türkçe">
+              <span class="lang-flag">🇹🇷</span><span>TR</span>
+            </button>
+            <button id="btn-lang-en" class="lang-btn" onclick="setLang('en')" title="English">
+              <span class="lang-flag">🇬🇧</span><span>EN</span>
+            </button>
+          </div>
+
           <span id="lb-cache-badge" class="hidden sm:inline-flex lb-cache-badge"></span>
           <span id="last-updated" class="hidden sm:block text-xs text-gray-600"></span>
           <button id="btn-refresh" class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-surface-700 hover:bg-surface-600
                    border border-surface-500 text-sm font-medium text-gray-400 hover:text-white
                    transition-all duration-200 group">
-            <svg id="refresh-icon" class="w-4 h-4 group-hover:rotate-180 transition-transform duration-500" fill="none"
-              stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-4 h-4 group-hover:rotate-180 transition-transform duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
             </svg>
-            Yenile
+            <span data-i18n="refresh">Yenile</span>
           </button>
         </div>
       </div>
     </div>
   </header>
 
-  <!-- ──────────────────── PAGE TITLE ──────────────────── -->
+  <!-- PAGE TITLE -->
   <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-4">
     <div class="flex items-end gap-4">
       <div>
-        <p class="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-1">Sıralama</p>
-        <h2 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">Liderlik Tablosu</h2>
+        <p data-i18n="rankingLabel" class="text-xs font-semibold uppercase tracking-widest text-brand-500 mb-1">Sıralama</p>
+        <h2 data-i18n="pageHeading" class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">Liderlik Tablosu</h2>
       </div>
       <div class="mb-1 flex items-center gap-2 px-3 py-1.5 rounded-full bg-brand-500/10 border border-brand-500/30">
         <span class="w-1.5 h-1.5 rounded-full bg-brand-400 animate-pulse"></span>
-        <span class="text-xs font-semibold text-brand-400 tracking-wider">CANLI</span>
+        <span data-i18n="liveBadge" class="text-xs font-semibold text-brand-400 tracking-wider">CANLI</span>
       </div>
     </div>
   </div>
 
-  <!-- ──────────────────── MAIN ──────────────────── -->
+  <!-- MAIN -->
   <main class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
 
     <!-- Error Banner -->
-    <div id="lb-error"
-      class="hidden mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/30 flex items-center gap-3">
+    <div id="lb-error" class="hidden mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/30 flex items-center gap-3">
       <svg class="w-5 h-5 text-red-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-          d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>
       <span id="lb-error-msg" class="text-sm text-red-300"></span>
     </div>
@@ -122,10 +129,9 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
             d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
         </svg>
-        Genel Sıralama
-        <span class="lb-pill-badge">En İyi 4 Hafta</span>
+        <span data-i18n="overallPill">Genel Sıralama</span>
+        <span data-i18n="best4Badge" class="lb-pill-badge">En İyi 4 Hafta</span>
       </button>
-      <!-- Weekly pills injected by JS -->
       <div id="lb-week-pills" class="flex flex-wrap gap-2"></div>
     </div>
 
@@ -134,39 +140,35 @@
       <div class="spinner"></div>
     </div>
 
-    <!-- ── OVERALL VIEW ── -->
+    <!-- OVERALL VIEW -->
     <div id="lb-overall-view" class="hidden">
       <!-- Info bar -->
       <div class="mb-4 flex items-center gap-2 px-4 py-2.5 rounded-xl bg-brand-500/10 border border-brand-500/20 w-fit">
         <svg class="w-4 h-4 text-brand-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
-        <span class="text-xs text-brand-300">Her sporcunun en iyi 4 haftasının puanı toplanır</span>
+        <span data-i18n="best4Info" class="text-xs text-brand-300">Her sporcunun en iyi 4 haftasının puanı toplanır</span>
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
         <!-- Overall Men -->
         <div class="card-glass rounded-2xl overflow-hidden">
           <div class="px-6 py-4 border-b border-surface-600 flex items-center gap-3">
             <div class="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center text-lg">🧗</div>
             <div>
-              <h3 class="font-bold text-white">Erkekler</h3>
-              <p id="men-count" class="text-xs text-gray-500">— sporcu</p>
+              <h3 data-i18n="men" class="font-bold text-white">Erkekler</h3>
+              <p id="men-count" class="text-xs text-gray-500">—</p>
             </div>
           </div>
           <div class="overflow-x-auto">
-            <div id="men-loading" class="flex items-center justify-center py-16">
-              <div class="spinner"></div>
-            </div>
+            <div id="men-loading" class="flex items-center justify-center py-16"><div class="spinner"></div></div>
             <table id="men-table" class="w-full hidden">
               <thead>
                 <tr class="text-xs font-semibold text-gray-500 uppercase tracking-wider border-b border-surface-600">
                   <th class="px-5 py-3 text-left w-10">#</th>
-                  <th class="px-5 py-3 text-left">Sporcu</th>
-                  <th class="px-5 py-3 text-right whitespace-nowrap">En İyi 4</th>
-                  <th class="px-5 py-3 text-right whitespace-nowrap">Toplam</th>
+                  <th data-i18n="colAthlete" class="px-5 py-3 text-left">Sporcu</th>
+                  <th data-i18n="colBest4" class="px-5 py-3 text-right whitespace-nowrap">En İyi 4</th>
+                  <th data-i18n="colTotal" class="px-5 py-3 text-right whitespace-nowrap">Toplam</th>
                 </tr>
               </thead>
               <tbody id="men-tbody" class="divide-y divide-surface-700"></tbody>
@@ -176,7 +178,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
                   d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
               </svg>
-              <p class="text-sm">Henüz veri yok</p>
+              <p data-i18n="noData" class="text-sm">Henüz veri yok</p>
             </div>
           </div>
         </div>
@@ -186,21 +188,19 @@
           <div class="px-6 py-4 border-b border-surface-600 flex items-center gap-3">
             <div class="w-8 h-8 rounded-lg bg-pink-500/20 flex items-center justify-center text-lg">🧗‍♀️</div>
             <div>
-              <h3 class="font-bold text-white">Kadınlar</h3>
-              <p id="women-count" class="text-xs text-gray-500">— sporcu</p>
+              <h3 data-i18n="women" class="font-bold text-white">Kadınlar</h3>
+              <p id="women-count" class="text-xs text-gray-500">—</p>
             </div>
           </div>
           <div class="overflow-x-auto">
-            <div id="women-loading" class="flex items-center justify-center py-16">
-              <div class="spinner"></div>
-            </div>
+            <div id="women-loading" class="flex items-center justify-center py-16"><div class="spinner"></div></div>
             <table id="women-table" class="w-full hidden">
               <thead>
                 <tr class="text-xs font-semibold text-gray-500 uppercase tracking-wider border-b border-surface-600">
                   <th class="px-5 py-3 text-left w-10">#</th>
-                  <th class="px-5 py-3 text-left">Sporcu</th>
-                  <th class="px-5 py-3 text-right whitespace-nowrap">En İyi 4</th>
-                  <th class="px-5 py-3 text-right whitespace-nowrap">Toplam</th>
+                  <th data-i18n="colAthlete" class="px-5 py-3 text-left">Sporcu</th>
+                  <th data-i18n="colBest4" class="px-5 py-3 text-right whitespace-nowrap">En İyi 4</th>
+                  <th data-i18n="colTotal" class="px-5 py-3 text-right whitespace-nowrap">Toplam</th>
                 </tr>
               </thead>
               <tbody id="women-tbody" class="divide-y divide-surface-700"></tbody>
@@ -210,37 +210,33 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
                   d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
               </svg>
-              <p class="text-sm">Henüz veri yok</p>
+              <p data-i18n="noData" class="text-sm">Henüz veri yok</p>
             </div>
           </div>
         </div>
-
       </div>
     </div>
 
-    <!-- ── WEEKLY VIEW ── -->
+    <!-- WEEKLY VIEW -->
     <div id="lb-weekly-view" class="hidden">
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
         <!-- Weekly Men -->
         <div class="card-glass rounded-2xl overflow-hidden">
           <div class="px-6 py-4 border-b border-surface-600 flex items-center gap-3">
             <div class="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center text-lg">🧗</div>
             <div>
-              <h3 class="font-bold text-white">Erkekler</h3>
-              <p id="wk-men-count" class="text-xs text-gray-500">— sporcu</p>
+              <h3 data-i18n="men" class="font-bold text-white">Erkekler</h3>
+              <p id="wk-men-count" class="text-xs text-gray-500">—</p>
             </div>
           </div>
           <div class="overflow-x-auto">
-            <div id="wk-men-loading" class="flex items-center justify-center py-16">
-              <div class="spinner"></div>
-            </div>
+            <div id="wk-men-loading" class="flex items-center justify-center py-16"><div class="spinner"></div></div>
             <table id="wk-men-table" class="w-full hidden">
               <thead>
                 <tr class="text-xs font-semibold text-gray-500 uppercase tracking-wider border-b border-surface-600">
                   <th class="px-5 py-3 text-left w-10">#</th>
-                  <th class="px-5 py-3 text-left">Sporcu</th>
-                  <th class="px-5 py-3 text-right">Puan</th>
+                  <th data-i18n="colAthlete" class="px-5 py-3 text-left">Sporcu</th>
+                  <th data-i18n="colPoints" class="px-5 py-3 text-right">Puan</th>
                 </tr>
               </thead>
               <tbody id="wk-men-tbody" class="divide-y divide-surface-700"></tbody>
@@ -250,7 +246,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
                   d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
               </svg>
-              <p class="text-sm">Bu hafta için veri yok</p>
+              <p data-i18n="noWeekData" class="text-sm">Bu hafta için veri yok</p>
             </div>
           </div>
         </div>
@@ -260,20 +256,18 @@
           <div class="px-6 py-4 border-b border-surface-600 flex items-center gap-3">
             <div class="w-8 h-8 rounded-lg bg-pink-500/20 flex items-center justify-center text-lg">🧗‍♀️</div>
             <div>
-              <h3 class="font-bold text-white">Kadınlar</h3>
-              <p id="wk-women-count" class="text-xs text-gray-500">— sporcu</p>
+              <h3 data-i18n="women" class="font-bold text-white">Kadınlar</h3>
+              <p id="wk-women-count" class="text-xs text-gray-500">—</p>
             </div>
           </div>
           <div class="overflow-x-auto">
-            <div id="wk-women-loading" class="flex items-center justify-center py-16">
-              <div class="spinner"></div>
-            </div>
+            <div id="wk-women-loading" class="flex items-center justify-center py-16"><div class="spinner"></div></div>
             <table id="wk-women-table" class="w-full hidden">
               <thead>
                 <tr class="text-xs font-semibold text-gray-500 uppercase tracking-wider border-b border-surface-600">
                   <th class="px-5 py-3 text-left w-10">#</th>
-                  <th class="px-5 py-3 text-left">Sporcu</th>
-                  <th class="px-5 py-3 text-right">Puan</th>
+                  <th data-i18n="colAthlete" class="px-5 py-3 text-left">Sporcu</th>
+                  <th data-i18n="colPoints" class="px-5 py-3 text-right">Puan</th>
                 </tr>
               </thead>
               <tbody id="wk-women-tbody" class="divide-y divide-surface-700"></tbody>
@@ -283,32 +277,136 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
                   d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
               </svg>
-              <p class="text-sm">Bu hafta için veri yok</p>
+              <p data-i18n="noWeekData" class="text-sm">Bu hafta için veri yok</p>
             </div>
           </div>
         </div>
-
       </div>
     </div>
 
   </main>
 
-  <!-- ──────────────────── SCRIPT ──────────────────── -->
   <script>
-    /* ══════════════════════════════════════════
-       Standalone Leaderboard — Self-contained JS
-       Uses GET /api/v2/leaderboard/full
-       Client-side TTL Cache: 1 saat
-    ══════════════════════════════════════════ */
     const API_BASE = 'https://boulderchamphionship-810252893028.europe-west1.run.app/api/v2';
 
-    /* ── TTL Cache ── */
-    const CACHE_TTL_MS = 60 * 60 * 1000; // 1 saat
+    /* ════════════════════════════════════════
+       i18n — Translation Dictionary
+    ════════════════════════════════════════ */
+    const TRANSLATIONS = {
+      tr: {
+        pageTitle:    'Liderlik Tablosu | Boulder Jungle',
+        metaDesc:     'Boulder Jungle Yaz Ligi — Haftalık ve genel erkekler / kadınlar liderlik tablosu.',
+        brandSubtitle:'Yaz Ligi',
+        refresh:      'Yenile',
+        rankingLabel: 'Sıralama',
+        pageHeading:  'Liderlik Tablosu',
+        liveBadge:    'CANLI',
+        overallPill:  'Genel Sıralama',
+        best4Badge:   'En İyi 4 Hafta',
+        weekPill:     (n) => `${n}. Hafta`,
+        colAthlete:   'Sporcu',
+        colBest4:     'En İyi 4',
+        colTotal:     'Toplam',
+        colPoints:    'Puan',
+        men:          'Erkekler',
+        women:        'Kadınlar',
+        best4Info:    'Her sporcunun en iyi 4 haftasının puanı toplanır',
+        noData:       'Henüz veri yok',
+        noWeekData:   'Bu hafta için veri yok',
+        athleteCount: (n) => `${n} sporcu`,
+        cacheFromCache: (t) => `⚡ Önbellekten · ${t}`,
+        cacheLive:      (t) => `🔄 Canlı · ${t}`,
+        cacheTooltipOld:(dt) => `Veri ${dt} tarihinde önbelleğe alındı. 1 saat geçerlidir.`,
+        cacheTooltipNew:'Veri sunucudan yeni çekildi ve önbelleğe alındı.',
+        loadError:    (msg) => `Liderlik tablosu yüklenemedi: ${msg}`,
+        weekChipTitle:(n) => `Hafta ${n}`,
+      },
+      en: {
+        pageTitle:    'Leaderboard | Boulder Jungle',
+        metaDesc:     "Boulder Jungle Summer League — Weekly and overall men's / women's leaderboard.",
+        brandSubtitle:'Summer League',
+        refresh:      'Refresh',
+        rankingLabel: 'Rankings',
+        pageHeading:  'Leaderboard',
+        liveBadge:    'LIVE',
+        overallPill:  'Overall Ranking',
+        best4Badge:   'Best 4 Weeks',
+        weekPill:     (n) => `Week ${n}`,
+        colAthlete:   'Athlete',
+        colBest4:     'Best 4',
+        colTotal:     'Total',
+        colPoints:    'Points',
+        men:          'Men',
+        women:        'Women',
+        best4Info:    "Each athlete's best 4 weekly scores are summed",
+        noData:       'No data yet',
+        noWeekData:   'No data for this week',
+        athleteCount: (n) => `${n} athlete${n === 1 ? '' : 's'}`,
+        cacheFromCache: (t) => `⚡ Cached · ${t}`,
+        cacheLive:      (t) => `🔄 Live · ${t}`,
+        cacheTooltipOld:(dt) => `Data cached at ${dt}. Valid for 1 hour.`,
+        cacheTooltipNew:'Data freshly fetched from server and cached.',
+        loadError:    (msg) => `Failed to load leaderboard: ${msg}`,
+        weekChipTitle:(n) => `Week ${n}`,
+      },
+    };
+
+    /* ════════════════════════════════════════
+       i18n — State & Apply
+    ════════════════════════════════════════ */
+    let currentLang = localStorage.getItem('jsl_lang') || 'tr';
+
+    function t(key, ...args) {
+      const val = TRANSLATIONS[currentLang][key];
+      return typeof val === 'function' ? val(...args) : (val ?? key);
+    }
+
+    function applyLang() {
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        el.textContent = t(el.dataset.i18n);
+      });
+      document.title = t('pageTitle');
+      const meta = document.querySelector('meta[name="description"]');
+      if (meta) meta.setAttribute('content', t('metaDesc'));
+      document.documentElement.lang = currentLang;
+
+      document.getElementById('btn-lang-tr').classList.toggle('lang-btn--active', currentLang === 'tr');
+      document.getElementById('btn-lang-en').classList.toggle('lang-btn--active', currentLang === 'en');
+
+      if (lbData) {
+        rerenderAfterLangChange();
+      }
+      if (_lastCacheState) {
+        updateCacheBadge(_lastCacheState.fromCache, _lastCacheState.cachedAt);
+      }
+    }
+
+    function setLang(lang) {
+      if (lang === currentLang) return;
+      currentLang = lang;
+      localStorage.setItem('jsl_lang', lang);
+      applyLang();
+    }
+
+    function rerenderAfterLangChange() {
+      const overall = lbData.overall ?? {};
+      renderOverallTable(overall.men,   'men-tbody',   'men-table',   'men-empty',   'men-loading',   'men-count');
+      renderOverallTable(overall.women, 'women-tbody', 'women-table', 'women-empty', 'women-loading', 'women-count');
+      buildWeekPills(lbData.weekly);
+      document.querySelectorAll('.lb-pill').forEach(btn => {
+        btn.classList.toggle('lb-pill-active', btn.dataset.view === lbActiveView);
+      });
+      if (lbActiveView !== 'overall') renderWeekView(lbActiveView);
+    }
+
+    /* ════════════════════════════════════════
+       TTL Cache
+    ════════════════════════════════════════ */
+    const CACHE_TTL_MS = 60 * 60 * 1000;
     const CACHE_PREFIX = 'jsl_cache_';
 
     async function cachedApiFetch(path, force = false) {
       const key = CACHE_PREFIX + path;
-
       if (!force) {
         try {
           const raw = localStorage.getItem(key);
@@ -320,17 +418,14 @@
           }
         } catch (_) { }
       }
-
       const data = await apiFetch(path);
-
-      try {
-        localStorage.setItem(key, JSON.stringify({ ts: Date.now(), data }));
-      } catch (_) { }
-
+      try { localStorage.setItem(key, JSON.stringify({ ts: Date.now(), data })); } catch (_) { }
       return { data, fromCache: false, cachedAt: new Date() };
     }
 
-    // ── API ──
+    /* ════════════════════════════════════════
+       API
+    ════════════════════════════════════════ */
     async function apiFetch(path) {
       const res = await fetch(`${API_BASE}${path}`);
       if (!res.ok) {
@@ -344,116 +439,103 @@
       return json;
     }
 
-    // ── XSS escape ──
+    /* ════════════════════════════════════════
+       XSS escape
+    ════════════════════════════════════════ */
     function escHtml(str) {
       const d = document.createElement('div');
       d.appendChild(document.createTextNode(String(str ?? '')));
       return d.innerHTML;
     }
 
-    // ── State ──
+    /* ════════════════════════════════════════
+       State
+    ════════════════════════════════════════ */
     let lbData = null;
     let lbActiveView = 'overall';
+    let _lastCacheState = null;
 
-    // ── Table state helper ──
+    /* ════════════════════════════════════════
+       Table state helper
+    ════════════════════════════════════════ */
     function lbSetTableState(loadingId, tableId, emptyId, state) {
       document.getElementById(loadingId)?.classList.toggle('hidden', state !== 'loading');
       document.getElementById(tableId)?.classList.toggle('hidden', state !== 'data');
       document.getElementById(emptyId)?.classList.toggle('hidden', state !== 'empty');
     }
 
-    // ── Render OVERALL table (ClimberWeeklyDetail) ──
+    /* ════════════════════════════════════════
+       Render OVERALL table
+    ════════════════════════════════════════ */
     function renderOverallTable(climbers, tbodyId, tableId, emptyId, loadingId, countId) {
-      document.getElementById(countId).textContent = `${climbers?.length ?? 0} sporcu`;
-
+      document.getElementById(countId).textContent = t('athleteCount', climbers?.length ?? 0);
       if (!climbers || climbers.length === 0) {
         lbSetTableState(loadingId, tableId, emptyId, 'empty');
         return;
       }
       lbSetTableState(loadingId, tableId, emptyId, 'data');
-
       document.getElementById(tbodyId).innerHTML = climbers.map((c, i) => {
         const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : null;
         const rankCell = medal
           ? `<td class="px-5 py-4 text-lg">${medal}</td>`
           : `<td class="px-5 py-4 text-gray-500 text-sm font-mono">${i + 1}</td>`;
-
         const rowBg = i === 0 ? 'bg-amber-500/5' : '';
         const scoreColor = i === 0 ? 'text-amber-400' : 'text-brand-400';
         const best4 = (c.bestFourPoints ?? 0).toFixed(2);
         const total = (c.totalPoints ?? 0).toFixed(2);
-
-        const weeks = c.weeklyPoints
-          ? Object.keys(c.weeklyPoints).sort((a, b) => Number(a) - Number(b))
-          : [];
+        const weeks = c.weeklyPoints ? Object.keys(c.weeklyPoints).sort((a, b) => Number(a) - Number(b)) : [];
         const weekBadges = weeks.map(w =>
-          `<span class="lb-week-chip" title="Hafta ${w}">${(c.weeklyPoints[w]).toFixed(1)}</span>`
+          `<span class="lb-week-chip" title="${escHtml(t('weekChipTitle', w))}">${(c.weeklyPoints[w]).toFixed(1)}</span>`
         ).join('');
-
         return `
           <tr class="leaderboard-row ${rowBg}">
             ${rankCell}
             <td class="px-5 py-3">
-              <div class="font-semibold text-white leading-snug">
-                ${escHtml(c.firstName)} ${escHtml(c.lastName)}
-              </div>
+              <div class="font-semibold text-white leading-snug">${escHtml(c.firstName)} ${escHtml(c.lastName)}</div>
               ${weekBadges ? `<div class="flex flex-wrap gap-1 mt-1">${weekBadges}</div>` : ''}
             </td>
-            <td class="px-5 py-3 text-right">
-              <span class="font-bold text-base ${scoreColor}">${best4}</span>
-            </td>
-            <td class="px-5 py-3 text-right">
-              <span class="text-sm text-gray-500">${total}</span>
-            </td>
+            <td class="px-5 py-3 text-right"><span class="font-bold text-base ${scoreColor}">${best4}</span></td>
+            <td class="px-5 py-3 text-right"><span class="text-sm text-gray-500">${total}</span></td>
           </tr>`;
       }).join('');
     }
 
-    // ── Render WEEKLY table (ClimberWeekEntry) ──
+    /* ════════════════════════════════════════
+       Render WEEKLY table
+    ════════════════════════════════════════ */
     function renderWeeklyTable(climbers, tbodyId, tableId, emptyId, loadingId, countId) {
-      document.getElementById(countId).textContent = `${climbers?.length ?? 0} sporcu`;
-
+      document.getElementById(countId).textContent = t('athleteCount', climbers?.length ?? 0);
       if (!climbers || climbers.length === 0) {
         lbSetTableState(loadingId, tableId, emptyId, 'empty');
         return;
       }
       lbSetTableState(loadingId, tableId, emptyId, 'data');
-
       document.getElementById(tbodyId).innerHTML = climbers.map((c, i) => {
         const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : null;
         const rankCell = medal
           ? `<td class="px-5 py-4 text-lg">${medal}</td>`
           : `<td class="px-5 py-4 text-gray-500 text-sm font-mono">${i + 1}</td>`;
-
         const rowBg = i === 0 ? 'bg-amber-500/5' : '';
         const scoreColor = i === 0 ? 'text-amber-400' : 'text-brand-400';
-
         return `
           <tr class="leaderboard-row ${rowBg}">
             ${rankCell}
-            <td class="px-5 py-4">
-              <span class="font-semibold text-white">
-                ${escHtml(c.firstName)} ${escHtml(c.lastName)}
-              </span>
-            </td>
-            <td class="px-5 py-4 text-right">
-              <span class="font-bold text-base ${scoreColor}">${(c.points ?? 0).toFixed(2)}</span>
-            </td>
+            <td class="px-5 py-4"><span class="font-semibold text-white">${escHtml(c.firstName)} ${escHtml(c.lastName)}</span></td>
+            <td class="px-5 py-4 text-right"><span class="font-bold text-base ${scoreColor}">${(c.points ?? 0).toFixed(2)}</span></td>
           </tr>`;
       }).join('');
     }
 
-    // ── View switcher ──
+    /* ════════════════════════════════════════
+       View switcher
+    ════════════════════════════════════════ */
     function setActivePill(viewKey) {
       lbActiveView = viewKey;
-
       document.querySelectorAll('.lb-pill').forEach(btn => {
         btn.classList.toggle('lb-pill-active', btn.dataset.view === viewKey);
       });
-
       const overallEl = document.getElementById('lb-overall-view');
-      const weeklyEl = document.getElementById('lb-weekly-view');
-
+      const weeklyEl  = document.getElementById('lb-weekly-view');
       if (viewKey === 'overall') {
         overallEl.classList.remove('hidden');
         weeklyEl.classList.add('hidden');
@@ -470,21 +552,17 @@
       if (!weekData) {
         lbSetTableState('wk-men-loading', 'wk-men-table', 'wk-men-empty', 'empty');
         lbSetTableState('wk-women-loading', 'wk-women-table', 'wk-women-empty', 'empty');
-        document.getElementById('wk-men-count').textContent = '0 sporcu';
-        document.getElementById('wk-women-count').textContent = '0 sporcu';
+        document.getElementById('wk-men-count').textContent   = t('athleteCount', 0);
+        document.getElementById('wk-women-count').textContent = t('athleteCount', 0);
         return;
       }
-      renderWeeklyTable(
-        weekData.men,
-        'wk-men-tbody', 'wk-men-table', 'wk-men-empty', 'wk-men-loading', 'wk-men-count'
-      );
-      renderWeeklyTable(
-        weekData.women,
-        'wk-women-tbody', 'wk-women-table', 'wk-women-empty', 'wk-women-loading', 'wk-women-count'
-      );
+      renderWeeklyTable(weekData.men,   'wk-men-tbody',   'wk-men-table',   'wk-men-empty',   'wk-men-loading',   'wk-men-count');
+      renderWeeklyTable(weekData.women, 'wk-women-tbody', 'wk-women-table', 'wk-women-empty', 'wk-women-loading', 'wk-women-count');
     }
 
-    // ── Build week pills ──
+    /* ════════════════════════════════════════
+       Build week pills
+    ════════════════════════════════════════ */
     function buildWeekPills(weeklyData) {
       const container = document.getElementById('lb-week-pills');
       container.innerHTML = '';
@@ -494,75 +572,72 @@
           const btn = document.createElement('button');
           btn.className = 'lb-pill';
           btn.dataset.view = wk;
-          btn.textContent = `${wk}. Hafta`;
+          btn.textContent = t('weekPill', wk);
           btn.addEventListener('click', () => setActivePill(wk));
           container.appendChild(btn);
         });
     }
 
-    // ── Cache badge güncelleyici ──
+    /* ════════════════════════════════════════
+       Cache badge
+    ════════════════════════════════════════ */
     function updateCacheBadge(fromCache, cachedAt) {
+      _lastCacheState = { fromCache, cachedAt };
       const badge = document.getElementById('lb-cache-badge');
       const tsEl  = document.getElementById('last-updated');
       if (!badge) return;
-
       badge.classList.remove('hidden');
-
+      const locale = currentLang === 'tr' ? 'tr-TR' : 'en-GB';
       if (fromCache && cachedAt) {
-        const timeStr = cachedAt.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
-        badge.textContent = `⚡ Önbellekten · ${timeStr}`;
-        badge.title = `Veri ${cachedAt.toLocaleString('tr-TR')} tarihinde önbelleğe alındı. 1 saat geçerlidir.`;
+        const timeStr = cachedAt.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
+        badge.textContent = t('cacheFromCache', timeStr);
+        badge.title = t('cacheTooltipOld', cachedAt.toLocaleString(locale));
         badge.className = 'lb-cache-badge lb-cache-badge--cached';
         if (tsEl) { tsEl.textContent = ''; tsEl.classList.add('hidden'); }
       } else if (cachedAt) {
-        const timeStr = cachedAt.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
-        badge.textContent = `🔄 Canlı · ${timeStr}`;
-        badge.title = `Veri sunucudan yeni çekildi ve önbelleğe alındı.`;
+        const timeStr = cachedAt.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
+        badge.textContent = t('cacheLive', timeStr);
+        badge.title = t('cacheTooltipNew');
         badge.className = 'lb-cache-badge lb-cache-badge--live';
         if (tsEl) { tsEl.textContent = ''; tsEl.classList.add('hidden'); }
       }
     }
 
-    // ── Load leaderboard ──
+    /* ════════════════════════════════════════
+       Load leaderboard
+    ════════════════════════════════════════ */
     async function loadLeaderboard(force = false) {
       document.getElementById('lb-global-loading').classList.remove('hidden');
       document.getElementById('lb-overall-view').classList.add('hidden');
       document.getElementById('lb-weekly-view').classList.add('hidden');
       document.getElementById('lb-error').classList.add('hidden');
-
       try {
         const { data, fromCache, cachedAt } = await cachedApiFetch('/leaderboard/full', force);
         lbData = data;
-
         buildWeekPills(lbData.weekly);
-
         const overall = lbData.overall ?? {};
-        renderOverallTable(overall.men, 'men-tbody', 'men-table', 'men-empty', 'men-loading', 'men-count');
+        renderOverallTable(overall.men,   'men-tbody',   'men-table',   'men-empty',   'men-loading',   'men-count');
         renderOverallTable(overall.women, 'women-tbody', 'women-table', 'women-empty', 'women-loading', 'women-count');
-
         document.getElementById('lb-global-loading').classList.add('hidden');
         setActivePill(lbActiveView);
-
         updateCacheBadge(fromCache, cachedAt);
-
       } catch (err) {
-        console.error('[Leaderboard] Yüklenemedi:', err);
+        console.error('[Leaderboard] Load failed:', err);
         document.getElementById('lb-global-loading').classList.add('hidden');
-        document.getElementById('lb-error-msg').textContent = `Liderlik tablosu yüklenemedi: ${err.message}`;
+        document.getElementById('lb-error-msg').textContent = t('loadError', err.message);
         document.getElementById('lb-error').classList.remove('hidden');
       }
     }
 
-    // ── Overall pill click ──
+    /* ════════════════════════════════════════
+       Init
+    ════════════════════════════════════════ */
     document.getElementById('lb-view-overall').addEventListener('click', () => setActivePill('overall'));
-
-    // ── Refresh butonu — force=true ile cache'i atlayarak sunucudan çeker ──
     document.getElementById('btn-refresh').addEventListener('click', () => loadLeaderboard(true));
 
-    // ── İlk yükleme (cache'den gelirse sunucuya istek gitmez) ──
+    applyLang();
     loadLeaderboard();
   </script>
 
 </body>
-
 </html>
