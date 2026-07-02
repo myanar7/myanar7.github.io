@@ -377,11 +377,15 @@
                 <input id="climber-lastname" type="text" placeholder="Soyad" required
                   class="input-field flex-1" autocomplete="off" />
               </div>
-              <select id="climber-gender" required class="input-field">
-                <option value="" disabled selected>Cinsiyet Seç</option>
-                <option value="M">Erkek</option>
-                <option value="F">Kadın</option>
-              </select>
+              <div class="flex gap-2">
+                <select id="climber-gender" required class="input-field flex-1">
+                  <option value="" disabled selected>Cinsiyet Seç</option>
+                  <option value="M">Erkek</option>
+                  <option value="F">Kadın</option>
+                </select>
+                <input id="climber-number" type="number" placeholder="# No (ops.)" min="1"
+                  class="input-field w-28" title="Sporcu numarası (opsiyonel)" />
+              </div>
               <button type="submit" id="btn-add-climber"
                 class="btn-primary flex items-center justify-center gap-2">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -512,6 +516,29 @@
 
         <!-- Left: Selector Panel -->
         <div class="card-glass rounded-2xl p-6 flex flex-col gap-5 lg:col-span-1">
+
+          <!-- Numara ile hızlı arama -->
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">
+              🔍 Numara ile Sporcu Ara
+            </label>
+            <div class="flex gap-2">
+              <input id="attempt-climber-number-search" type="number" placeholder="Sporcu #" min="1"
+                class="input-field flex-1" />
+              <button id="btn-search-climber-by-number"
+                class="btn-primary px-4 whitespace-nowrap text-sm">
+                Ara
+              </button>
+            </div>
+            <div id="attempt-number-search-result" class="hidden mt-2 px-3 py-2 rounded-lg bg-surface-700/60 border border-surface-600"></div>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <div class="flex-1 h-px bg-surface-600"></div>
+            <span class="text-xs text-gray-600 font-medium">veya listeden seç</span>
+            <div class="flex-1 h-px bg-surface-600"></div>
+          </div>
+
           <div>
             <label class="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">
               1 · Tırmanışçı Seç

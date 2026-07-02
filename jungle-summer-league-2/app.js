@@ -108,6 +108,7 @@ const api = {
 
   // Climbers
   getClimbers: () => apiFetch('/climbers'),
+  getClimberByNumber: (number) => apiFetch(`/climbers/number/${number}`),
   addClimber: (body) => apiFetch('/climbers', { method: 'POST', body: JSON.stringify(body) }),
   deleteClimber: (id) => apiFetch(`/climbers/${id}`, { method: 'DELETE' }),
 
@@ -286,15 +287,31 @@ function renderOverallTable(climbers, tbodyId, tableId, emptyId, loadingId, coun
   lbSetTableState(loadingId, tableId, emptyId, 'data');
 
   const tbody = document.getElementById(tbodyId);
+
+  // Standard (Olympic) ranking: eşit puana sahip kişiler aynı sırayı alır,
+  // sonraki sıra atlanır (2, 2, 4 — 2, 2, 3 değil)
+  let rank = 0;
+  let prevScore = null;
+  let skipped = 0;
+
   tbody.innerHTML = climbers.map((c, i) => {
-    const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : null;
+    const score = c.bestFourPoints ?? 0;
+    if (prevScore === null || score !== prevScore) {
+      rank += 1 + skipped;
+      skipped = 0;
+    } else {
+      skipped++;
+    }
+    prevScore = score;
+
+    const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : null;
     const rankCell = medal
       ? `<td class="px-5 py-4 text-lg">${medal}</td>`
-      : `<td class="px-5 py-4 text-gray-500 text-sm font-mono">${i + 1}</td>`;
+      : `<td class="px-5 py-4 text-gray-500 text-sm font-mono">${rank}</td>`;
 
-    const rowBg = i === 0 ? 'bg-amber-500/5' : '';
-    const scoreColor = i === 0 ? 'text-amber-400' : 'text-brand-400';
-    const best4 = (c.bestFourPoints ?? 0).toFixed(2);
+    const rowBg = rank === 1 ? 'bg-amber-500/5' : '';
+    const scoreColor = rank === 1 ? 'text-amber-400' : 'text-brand-400';
+    const best4 = score.toFixed(2);
     const total = (c.totalPoints ?? 0).toFixed(2);
 
     // Build week breakdown mini-badges
@@ -336,13 +353,28 @@ function renderWeeklyTable(climbers, tbodyId, tableId, emptyId, loadingId, count
   lbSetTableState(loadingId, tableId, emptyId, 'data');
 
   const tbody = document.getElementById(tbodyId);
+
+  // Standard (Olympic) ranking
+  let rank = 0;
+  let prevScore = null;
+  let skipped = 0;
+
   tbody.innerHTML = climbers.map((c, i) => {
-    const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : null;
+    const score = c.points ?? 0;
+    if (prevScore === null || score !== prevScore) {
+      rank += 1 + skipped;
+      skipped = 0;
+    } else {
+      skipped++;
+    }
+    prevScore = score;
+
+    const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : null;
     const rankCell = medal
       ? `<td class="px-5 py-4 text-lg">${medal}</td>`
-      : `<td class="px-5 py-4 text-gray-500 text-sm font-mono">${i + 1}</td>`;
-    const rowBg = i === 0 ? 'bg-amber-500/5' : '';
-    const scoreColor = i === 0 ? 'text-amber-400' : 'text-brand-400';
+      : `<td class="px-5 py-4 text-gray-500 text-sm font-mono">${rank}</td>`;
+    const rowBg = rank === 1 ? 'bg-amber-500/5' : '';
+    const scoreColor = rank === 1 ? 'text-amber-400' : 'text-brand-400';
     return `
       <tr class="leaderboard-row ${rowBg}">
         ${rankCell}
@@ -352,7 +384,7 @@ function renderWeeklyTable(climbers, tbodyId, tableId, emptyId, loadingId, count
           </span>
         </td>
         <td class="px-5 py-4 text-right">
-          <span class="font-bold text-base ${scoreColor}">${(c.points ?? 0).toFixed(2)}</span>
+          <span class="font-bold text-base ${scoreColor}">${score.toFixed(2)}</span>
         </td>
       </tr>`;
   }).join('');
@@ -515,9 +547,15 @@ function renderClimberItem(climber) {
     ? `<span class="badge-blue">E</span>`
     : `<span class="badge-pink">K</span>`;
 
+  const num = climber.climberNumber ?? climber.climber_number ?? 0;
+  const numberBadge = num > 0
+    ? `<span class="inline-flex items-center justify-center w-6 h-6 rounded-md bg-brand-500/20 text-brand-400 text-[10px] font-bold flex-shrink-0" title="Sporcu #${num}">#${num}</span>`
+    : '';
+
   li.innerHTML = `
     <div class="flex items-center gap-2 min-w-0">
       ${genderBadge}
+      ${numberBadge}
       <span class="text-sm font-medium text-gray-200 truncate">
         ${escHtml(climber.firstName || climber.first_name || '')} ${escHtml(climber.lastName || climber.last_name || '')}
       </span>
@@ -586,12 +624,20 @@ function initClimberForm() {
     const firstName = document.getElementById('climber-firstname').value.trim();
     const lastName = document.getElementById('climber-lastname').value.trim();
     const gender = document.getElementById('climber-gender').value;
+    const climberNumberRaw = document.getElementById('climber-number').value.trim();
+    const climberNumber = climberNumberRaw ? parseInt(climberNumberRaw, 10) : 0;
 
     if (!firstName || !lastName || !gender) return;
+    if (climberNumberRaw && (isNaN(climberNumber) || climberNumber < 1)) {
+      showToast('Sporcu numarası geçerli bir pozitif tam sayı olmalıdır.', 'info');
+      return;
+    }
 
     setButtonLoading(btn, true);
+    const body = { firstName, lastName, gender };
+    if (climberNumber > 0) body.climberNumber = climberNumber;
     try {
-      const newClimber = await api.addClimber({ firstName, lastName, gender });
+      const newClimber = await api.addClimber(body);
       showToast(`${firstName} ${lastName} eklendi!`, 'success');
       form.reset();
 
@@ -980,6 +1026,12 @@ function initAttempts() {
   const nameEl = document.getElementById('attempt-climber-name');
   const weekEl = document.getElementById('attempt-week-label');
 
+  // ── Numara ile sporcu arama ──
+  const numberSearchIn = document.getElementById('attempt-climber-number-search');
+  const numberSearchBtn = document.getElementById('btn-search-climber-by-number');
+  const numberSearchResult = document.getElementById('attempt-number-search-result');
+
+  /** Seçili sporcu özetini güncelle */
   const updateSummary = () => {
     const climberId = select.value;
     const week = weekIn.value;
@@ -997,6 +1049,68 @@ function initAttempts() {
 
   select.addEventListener('change', updateSummary);
   weekIn.addEventListener('input', updateSummary);
+
+  /** Numara ile sporcu arama handler */
+  const doNumberSearch = async () => {
+    const num = numberSearchIn.value.trim();
+    if (!num) { showToast('Sporcu numarası girin.', 'info'); return; }
+    const parsed = parseInt(num, 10);
+    if (isNaN(parsed) || parsed < 1) { showToast('Geçerli bir sporcu numarası girin.', 'info'); return; }
+
+    setButtonLoading(numberSearchBtn, true);
+    numberSearchResult.classList.add('hidden');
+    try {
+      const climber = await api.getClimberByNumber(parsed);
+
+      // Dropdown'da bu kişiyi seç (varsa)
+      const opt = select.querySelector(`option[value="${climber.id}"]`);
+      if (opt) {
+        select.value = climber.id;
+      } else {
+        // Listede yoksa dinamik olarak ekle
+        const newOpt = document.createElement('option');
+        newOpt.value = climber.id;
+        newOpt.textContent = `${climber.firstName || climber.first_name || ''} ${climber.lastName || climber.last_name || ''}`;
+        select.appendChild(newOpt);
+        select.value = climber.id;
+      }
+
+      // Sonuç kartını göster
+      const numLabel = (climber.climberNumber ?? climber.climber_number ?? 0) > 0
+        ? ` <span class="text-brand-400 font-bold">#${climber.climberNumber ?? climber.climber_number}</span>` : '';
+      numberSearchResult.innerHTML = `
+        <div class="flex items-center gap-2">
+          <svg class="w-4 h-4 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+          </svg>
+          <span class="text-sm text-gray-300">
+            ${escHtml((climber.firstName || climber.first_name || '') + ' ' + (climber.lastName || climber.last_name || ''))}${numLabel} seçildi
+          </span>
+        </div>`;
+      numberSearchResult.classList.remove('hidden');
+
+      updateSummary();
+    } catch (err) {
+      if (err.message && err.message.includes('404')) {
+        numberSearchResult.innerHTML = `
+          <div class="flex items-center gap-2">
+            <svg class="w-4 h-4 text-red-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+            <span class="text-sm text-red-400">#${parsed} numaralı sporcu bulunamadı</span>
+          </div>`;
+        numberSearchResult.classList.remove('hidden');
+      } else {
+        showToast(`Arama hatası: ${err.message}`, 'error');
+      }
+      console.error('[Attempts] Numara ile sporcu aranamadı:', err);
+    } finally {
+      setButtonLoading(numberSearchBtn, false);
+    }
+  };
+
+  numberSearchBtn.addEventListener('click', doNumberSearch);
+  numberSearchIn.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); doNumberSearch(); } });
 
   fetchBtn.addEventListener('click', async () => {
     const climberId = select.value;
