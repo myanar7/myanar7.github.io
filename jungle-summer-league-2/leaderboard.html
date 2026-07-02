@@ -474,14 +474,23 @@
         return;
       }
       lbSetTableState(loadingId, tableId, emptyId, 'data');
+
+      // Standard (Olympic) ranking: eşit puana sahip kişiler aynı sırayı alır
+      let rank = 0, prevScore = null, skipped = 0;
+
       document.getElementById(tbodyId).innerHTML = climbers.map((c, i) => {
-        const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : null;
+        const score = c.bestFourPoints ?? 0;
+        if (prevScore === null || score !== prevScore) { rank += 1 + skipped; skipped = 0; }
+        else { skipped++; }
+        prevScore = score;
+
+        const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : null;
         const rankCell = medal
           ? `<td class="px-5 py-4 text-lg">${medal}</td>`
-          : `<td class="px-5 py-4 text-gray-500 text-sm font-mono">${i + 1}</td>`;
-        const rowBg = i === 0 ? 'bg-amber-500/5' : '';
-        const scoreColor = i === 0 ? 'text-amber-400' : 'text-brand-400';
-        const best4 = (c.bestFourPoints ?? 0).toFixed(2);
+          : `<td class="px-5 py-4 text-gray-500 text-sm font-mono">${rank}</td>`;
+        const rowBg = rank === 1 ? 'bg-amber-500/5' : '';
+        const scoreColor = rank === 1 ? 'text-amber-400' : 'text-brand-400';
+        const best4 = score.toFixed(2);
         const total = (c.totalPoints ?? 0).toFixed(2);
         const weeks = c.weeklyPoints ? Object.keys(c.weeklyPoints).sort((a, b) => Number(a) - Number(b)) : [];
         const weekBadges = weeks.map(w =>
@@ -510,18 +519,27 @@
         return;
       }
       lbSetTableState(loadingId, tableId, emptyId, 'data');
+
+      // Standard (Olympic) ranking
+      let rank = 0, prevScore = null, skipped = 0;
+
       document.getElementById(tbodyId).innerHTML = climbers.map((c, i) => {
-        const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : null;
+        const score = c.points ?? 0;
+        if (prevScore === null || score !== prevScore) { rank += 1 + skipped; skipped = 0; }
+        else { skipped++; }
+        prevScore = score;
+
+        const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : null;
         const rankCell = medal
           ? `<td class="px-5 py-4 text-lg">${medal}</td>`
-          : `<td class="px-5 py-4 text-gray-500 text-sm font-mono">${i + 1}</td>`;
-        const rowBg = i === 0 ? 'bg-amber-500/5' : '';
-        const scoreColor = i === 0 ? 'text-amber-400' : 'text-brand-400';
+          : `<td class="px-5 py-4 text-gray-500 text-sm font-mono">${rank}</td>`;
+        const rowBg = rank === 1 ? 'bg-amber-500/5' : '';
+        const scoreColor = rank === 1 ? 'text-amber-400' : 'text-brand-400';
         return `
           <tr class="leaderboard-row ${rowBg}">
             ${rankCell}
             <td class="px-5 py-4"><span class="font-semibold text-white">${escHtml(c.firstName)} ${escHtml(c.lastName)}</span></td>
-            <td class="px-5 py-4 text-right"><span class="font-bold text-base ${scoreColor}">${(c.points ?? 0).toFixed(2)}</span></td>
+            <td class="px-5 py-4 text-right"><span class="font-bold text-base ${scoreColor}">${score.toFixed(2)}</span></td>
           </tr>`;
       }).join('');
     }
