@@ -119,6 +119,7 @@ const api = {
   // Attempts
   getAttempts: (id, week) => apiFetch(`/climbers/${id}/attempts?week=${week}`),
   addAttempt: (body) => apiFetch('/attempts', { method: 'POST', body: JSON.stringify(body) }),
+  deleteAttempt: (attemptId) => apiFetch(`/attempts/${attemptId}`, { method: 'DELETE' }),
 
   // Actions
   calculateWeekPoints: (week) => apiFetch('/actions/calculate-weekly-points', {
@@ -841,10 +842,24 @@ async function renderAttemptRoutes(routes, climberId, week) {
   routes.forEach((route, idx) => {
     const existing = attemptsByRoute[route.id];
     const existingTries = existing ? (existing.triesCount ?? existing.tries_count ?? '') : '';
+    const existingId = existing ? (existing.id ?? existing.attemptId ?? null) : null;
 
     const card = document.createElement('div');
     card.className = 'attempt-route-card flex items-center gap-4 p-4 rounded-xl bg-surface-700/50 border border-surface-600';
     card.style.animationDelay = `${idx * 60}ms`;
+
+    const deleteBtn = existingId
+      ? `<button
+          data-attempt-id="${existingId}"
+          class="btn-delete-attempt flex-shrink-0 p-2 rounded-lg text-gray-500
+            hover:text-red-400 hover:bg-red-500/10 transition-all duration-200"
+          title="Denemeyi sil" aria-label="Denemeyi sil">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+          </svg>
+        </button>`
+      : '';
 
     card.innerHTML = `
       <div class="flex-1 min-w-0">
@@ -874,13 +889,55 @@ async function renderAttemptRoutes(routes, climberId, week) {
           class="btn-save-attempt btn-primary px-4 py-2 text-sm ${existing ? 'btn-success' : ''}">
           ${existing ? '✓ Güncelle' : 'Kaydet'}
         </button>
+        ${deleteBtn}
       </div>
     `;
 
     const saveBtn = card.querySelector('.btn-save-attempt');
     saveBtn.addEventListener('click', () => handleSaveAttempt(saveBtn, route.id, climberId, week));
+
+    if (existingId) {
+      const delBtn = card.querySelector('.btn-delete-attempt');
+      delBtn.addEventListener('click', () => handleDeleteAttempt(delBtn, existingId, route.id, card));
+    }
+
     listEl.appendChild(card);
   });
+}
+
+/**
+ * Mevcut bir attempt'i siler (DELETE /api/v2/attempts/{attemptId}).
+ * Başarılıysa ilgili kartın input'unu sıfırlar ve butonu "Kaydet" moduna döndürür.
+ */
+async function handleDeleteAttempt(btn, attemptId, routeId, card) {
+  if (!confirm('Bu deneme girişini silmek istediğinize emin misiniz?')) return;
+  setButtonLoading(btn, true);
+  try {
+    await api.deleteAttempt(attemptId);
+
+    // Input'u temizle
+    const triesInput = document.getElementById(`tries-${routeId}`);
+    if (triesInput) triesInput.value = '';
+
+    // Kaydet butonunu sıfırla (Güncelle → Kaydet)
+    const saveBtn = card.querySelector('.btn-save-attempt');
+    if (saveBtn) {
+      saveBtn.textContent = 'Kaydet';
+      saveBtn.classList.remove('btn-success');
+      saveBtn.dataset.originalText = 'Kaydet';
+    }
+
+    // Sil butonunu kaldır (attempt artık yok)
+    btn.remove();
+
+    showToast('Deneme girişi silindi.', 'success');
+  } catch (err) {
+    console.error('[Attempts] Deneme silinemedi:', err);
+    showToast(`Deneme silinemedi: ${err.message}`, 'error');
+  } finally {
+    // btn zaten DOM'dan kaldırıldıysa setButtonLoading çağrısı zararsız olur
+    if (btn.isConnected) setButtonLoading(btn, false);
+  }
 }
 
 async function handleSaveAttempt(btn, routeId, climberId, week) {
