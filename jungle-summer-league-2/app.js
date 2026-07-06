@@ -10,6 +10,20 @@
 const API_BASE = 'https://boulderchamphionship-810252893028.europe-west1.run.app/api/v2';
 
 /**
+ * Kilitli hafta durumunda fırlatılan özel hata sınıfı.
+ * Backend HTTP 403 + { error: "week is locked" } döndürdüğünde kullanılır.
+ */
+class LockedWeekError extends Error {
+  /**
+   * @param {string} userMessage  - Backend'den gelen, kullanıcıya gösterilecek mesaj
+   */
+  constructor(userMessage) {
+    super(userMessage);
+    this.name = 'LockedWeekError';
+  }
+}
+
+/**
  * Generic fetch wrapper with error handling.
  * @param {string} path  - endpoint path (e.g. '/leaderboard')
  * @param {RequestInit} [options] - fetch options
@@ -26,10 +40,17 @@ async function apiFetch(path, options = {}) {
 
   if (!res.ok) {
     let msg = `HTTP ${res.status}`;
+    let body = null;
     try {
-      const body = await res.json();
+      body = await res.json();
       msg = body.message || body.error || msg;
     } catch (_) { /* ignore parse error */ }
+
+    // Kilitli hafta: HTTP 403 + { error: "week is locked" }
+    if (res.status === 403 && body?.error === 'week is locked') {
+      throw new LockedWeekError(body.message || 'Bu hafta kilitlendi, puan hesabı artık yapılamaz');
+    }
+
     throw new Error(msg);
   }
 
@@ -802,8 +823,14 @@ function initCalculate() {
         loadLeaderboard();
       }
     } catch (err) {
-      console.error('[Admin] Puan hesaplanamadı:', err);
-      showToast(`Puan hesaplanamadı: ${err.message}`, 'error');
+      if (err instanceof LockedWeekError) {
+        // Kilitli hafta — backend'den gelen mesajı kullanıcıya göster
+        console.warn('[Admin] Hafta kilitli:', err.message);
+        showToast(`🔒 ${err.message}`, 'info');
+      } else {
+        console.error('[Admin] Puan hesaplanamadı:', err);
+        showToast(`Puan hesaplanamadı: ${err.message}`, 'error');
+      }
     } finally {
       setButtonLoading(btn, false);
     }
@@ -954,12 +981,15 @@ async function renderAttemptRoutes(routes, climberId, week) {
 /**
  * Mevcut bir attempt'i siler (DELETE /api/v2/attempts/{attemptId}).
  * Başarılıysa ilgili kartın input'unu sıfırlar ve butonu "Kaydet" moduna döndürür.
+ * Kilitli hafta (HTTP 403) durumunda UI değiştirilmez, kullanıcıya bilgi toastı gösterilir.
  */
 async function handleDeleteAttempt(btn, attemptId, routeId, card) {
   if (!confirm('Bu deneme girişini silmek istediğinize emin misiniz?')) return;
   setButtonLoading(btn, true);
   try {
     await api.deleteAttempt(attemptId);
+
+    // Silme başarılı — UI'ı güncelle
 
     // Input'u temizle
     const triesInput = document.getElementById(`tries-${routeId}`);
@@ -978,8 +1008,14 @@ async function handleDeleteAttempt(btn, attemptId, routeId, card) {
 
     showToast('Deneme girişi silindi.', 'success');
   } catch (err) {
-    console.error('[Attempts] Deneme silinemedi:', err);
-    showToast(`Deneme silinemedi: ${err.message}`, 'error');
+    if (err instanceof LockedWeekError) {
+      // Kilitli hafta — UI dokunulmaz, backend mesajı gösterilir
+      console.warn('[Attempts] Hafta kilitli (sil):', err.message);
+      showToast(`🔒 ${err.message}`, 'info');
+    } else {
+      console.error('[Attempts] Deneme silinemedi:', err);
+      showToast(`Deneme silinemedi: ${err.message}`, 'error');
+    }
   } finally {
     // btn zaten DOM'dan kaldırıldıysa setButtonLoading çağrısı zararsız olur
     if (btn.isConnected) setButtonLoading(btn, false);
@@ -1004,12 +1040,19 @@ async function handleSaveAttempt(btn, routeId, climberId, week) {
       week: Number(week),
       triesCount,
     });
+    // Kayıt başarılı — butonu "Güncelle" moduna al
     showToast('Deneme kaydedildi!', 'success');
     btn.dataset.originalText = '✓ Güncelle';
     btn.classList.add('btn-success');
   } catch (err) {
-    console.error('[Attempts] Deneme kaydedilemedi:', err);
-    showToast(`Deneme kaydedilemedi: ${err.message}`, 'error');
+    if (err instanceof LockedWeekError) {
+      // Kilitli hafta — buton durumu değiştirilmez, backend mesajı gösterilir
+      console.warn('[Attempts] Hafta kilitli (kaydet):', err.message);
+      showToast(`🔒 ${err.message}`, 'info');
+    } else {
+      console.error('[Attempts] Deneme kaydedilemedi:', err);
+      showToast(`Deneme kaydedilemedi: ${err.message}`, 'error');
+    }
   } finally {
     setButtonLoading(btn, false);
   }
