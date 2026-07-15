@@ -1026,7 +1026,7 @@ async function handleSaveAttempt(btn, routeId, climberId, week) {
   const triesInput = document.getElementById(`tries-${routeId}`);
   const triesCount = parseInt(triesInput.value, 10);
 
-  if (!triesCount || triesCount < 1) {
+  if (!triesCount || triesCount < 0) {
     showToast('Lütfen geçerli bir deneme sayısı girin.', 'info');
     triesInput.focus();
     return;
